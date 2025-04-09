@@ -1,7 +1,6 @@
 
 import React, { PropsWithChildren } from 'react';
 import { render } from '@testing-library/react';
-import type { RenderResult } from '@testing-library/react';
 import { FormCanvasProvider } from '@/components/form-builder/context/FormCanvasContext';
 import { GroupingProvider } from '@/components/form-builder/GroupingContext';
 import { vi } from 'vitest';
@@ -9,6 +8,26 @@ import { vi } from 'vitest';
 // Define RenderOptions type since it's not exported from testing-library
 interface RenderOptions {
   wrapper?: React.ComponentType<any>;
+  [key: string]: any;
+}
+
+// Define RenderResult type since it's not exported from testing-library
+interface RenderResult {
+  container: HTMLElement;
+  baseElement: HTMLElement;
+  debug: (baseElement?: HTMLElement | DocumentFragment) => void;
+  unmount: () => void;
+  rerender: (ui: React.ReactElement) => void;
+  findByText: (text: string | RegExp) => Promise<HTMLElement>;
+  findAllByText: (text: string | RegExp) => Promise<HTMLElement[]>;
+  findByRole: (role: string) => Promise<HTMLElement>;
+  findAllByRole: (role: string) => Promise<HTMLElement[]>;
+  findByLabelText: (text: string | RegExp) => Promise<HTMLElement>;
+  findAllByLabelText: (text: string | RegExp) => Promise<HTMLElement[]>;
+  findByPlaceholderText: (text: string | RegExp) => Promise<HTMLElement>;
+  findAllByPlaceholderText: (text: string | RegExp) => Promise<HTMLElement[]>;
+  findByTestId: (text: string | RegExp) => Promise<HTMLElement>;
+  findAllByTestId: (text: string | RegExp) => Promise<HTMLElement[]>;
   [key: string]: any;
 }
 
@@ -37,7 +56,7 @@ const AllProviders = ({ children }: PropsWithChildren<{}>) => {
 const customRender = (
   ui: React.ReactElement,
   options?: Omit<RenderOptions, 'wrapper'>
-): RenderResult => render(ui, { wrapper: AllProviders, ...options });
+): RenderResult => render(ui, { wrapper: AllProviders, ...options }) as RenderResult;
 
 // Re-export everything from testing-library
 export * from '@testing-library/react';
