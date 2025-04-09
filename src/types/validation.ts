@@ -1,46 +1,27 @@
 
-// Validation types
-export interface ValidationBase {
-  type: string;
+// Define all possible validation types
+export type ValidationTypes = 'email' | 'number' | 'regex' | 'length' | 'date' | 'custom';
+
+// Base validation interface that all validations extend
+export interface Validation {
+  type: ValidationTypes;
   message?: string;
-}
-
-export interface LengthValidation extends ValidationBase {
-  type: 'length';
-  minLength?: number;
-  maxLength?: number;
-}
-
-export interface NumberValidation extends ValidationBase {
-  type: 'number';
+  
+  // Number validation
   min?: number;
   max?: number;
+  
+  // Text length validation
+  minLength?: number;
+  maxLength?: number;
+  
+  // Regex validation
+  pattern?: string;
+  
+  // Date validation
+  minDate?: Date;
+  maxDate?: Date;
+  
+  // Custom validation (can be anything)
+  [key: string]: any;
 }
-
-export interface RegexValidation extends ValidationBase {
-  type: 'regex';
-  pattern: string;
-}
-
-export interface EmailValidation extends ValidationBase {
-  type: 'email';
-}
-
-export interface DateValidation extends ValidationBase {
-  type: 'date';
-  minDate?: string;
-  maxDate?: string;
-}
-
-export interface CustomValidation extends ValidationBase {
-  type: 'custom';
-  validator?: (value: any) => boolean;
-}
-
-export type Validation = 
-  | LengthValidation
-  | NumberValidation
-  | RegexValidation
-  | EmailValidation
-  | DateValidation
-  | CustomValidation;

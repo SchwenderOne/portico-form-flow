@@ -1,5 +1,11 @@
-
 import { FormElement } from "@/types/form";
+import { 
+  getSmartLabel, 
+  getSmartPlaceholder, 
+  getSmartValidation, 
+  getSmartOptions, 
+  notifySmartDefaults 
+} from "./smart-defaults";
 
 /**
  * Finds a valid position for a new element that doesn't overlap with existing elements
@@ -63,8 +69,18 @@ export const findValidPosition = (
  */
 export const createNewElement = (
   type: string,
-  position: { x: number, y: number }
+  position: { x: number, y: number },
+  existingElements: FormElement[] = []
 ): FormElement => {
+  // Get smart defaults based on field type and context
+  const smartLabel = getSmartLabel(type, existingElements, position);
+  const smartPlaceholder = getSmartPlaceholder(type);
+  const smartValidation = getSmartValidation(type);
+  const smartOptions = getSmartOptions(type);
+  
+  // Notify user about smart defaults being applied
+  notifySmartDefaults(type);
+  
   const newElement: FormElement = {
     id: `${type}-${Date.now()}`,
     type,
@@ -75,12 +91,11 @@ export const createNewElement = (
               type === 'checkbox' || type === 'radio' ? 100 : 
               type === 'file' ? 120 : 80 
     },
-    label: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
-    placeholder: type === 'file' ? 'Upload file (PDF, PNG)' : 
-                type === 'date' ? 'Select a date...' : 
-                `Enter ${type}...`,
+    label: smartLabel,
+    placeholder: smartPlaceholder,
     required: false,
-    groupId: null
+    groupId: null,
+    validation: smartValidation
   };
 
   // Add specific properties based on element type
@@ -89,9 +104,9 @@ export const createNewElement = (
   } else if (type === 'paragraph') {
     (newElement as any).content = 'Add your paragraph text here...';
   } else if (type === 'checkbox' || type === 'radio') {
-    (newElement as any).options = ['Option 1', 'Option 2', 'Option 3'];
+    (newElement as any).options = smartOptions || ['Option 1', 'Option 2', 'Option 3'];
   } else if (type === 'select') {
-    (newElement as any).options = ['Select an option', 'Option 1', 'Option 2', 'Option 3'];
+    (newElement as any).options = smartOptions || ['Select an option', 'Option 1', 'Option 2', 'Option 3'];
   } else if (type === 'date') {
     (newElement as any).value = null;
   } else if (type === 'file') {

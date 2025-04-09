@@ -1,25 +1,15 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FormElement } from "@/types/form";
-import { 
-  Box, 
-  Type, 
-  Palette, 
-  Settings as SettingsIcon, 
-  Wand2, 
-  Group
-} from "lucide-react";
-
-// Import tab components
 import PropertiesTab from "./toolbars/tabs/PropertiesTab";
 import ValidationTab from "./toolbars/tabs/ValidationTab";
 import AppearanceTab from "./toolbars/tabs/AppearanceTab";
-import SettingsTab from "./toolbars/tabs/SettingsTab";
 import AIAssistTab from "./toolbars/tabs/AIAssistTab";
-import GroupTab from "./toolbars/tabs/GroupTab";
+import SettingsTab from "./toolbars/tabs/SettingsTab";
 import MultipleSelectionPanel from "./toolbars/MultipleSelectionPanel";
 import NoSelectionPanel from "./toolbars/NoSelectionPanel";
+import { FormElement } from "@/types/form";
+import { Settings, Wand, Paintbrush, ListChecks, SlidersHorizontal } from "lucide-react";
 
 interface FormToolbarProps {
   selectedElement: FormElement | null;
@@ -29,100 +19,109 @@ interface FormToolbarProps {
   onUngroup: () => void;
 }
 
-const FormToolbar: React.FC<FormToolbarProps> = ({ 
-  selectedElement, 
+const FormToolbar: React.FC<FormToolbarProps> = ({
+  selectedElement,
   selectedCount,
   onUpdate,
   onGroup,
-  onUngroup
+  onUngroup,
 }) => {
-  // Handle multiple elements selected
-  if (selectedCount > 1) {
-    return <MultipleSelectionPanel selectedCount={selectedCount} onGroup={onGroup} />;
-  }
+  const [activeTab, setActiveTab] = useState<string>("properties");
 
-  // Handle grouped element case
-  if (selectedElement && selectedElement.groupId) {
+  // Determine which panel to show based on selection state
+  if (selectedCount === 0) {
     return (
-      <div className="h-64 border-t border-border">
-        <Tabs defaultValue="properties">
-          <div className="flex items-center px-4 pt-2 border-b">
-            <p className="text-sm font-medium mr-4">
-              Editing: <span className="text-portico-purple">{selectedElement.type.charAt(0).toUpperCase() + selectedElement.type.slice(1)}</span>
-              <span className="text-xs ml-2 bg-portico-purple/10 text-portico-purple px-1 rounded">Grouped</span>
-            </p>
-            <TabsList>
-              <TabsTrigger value="properties" className="text-xs">
-                <Box className="h-3 w-3 mr-1" />
-                Properties
-              </TabsTrigger>
-              <TabsTrigger value="group" className="text-xs">
-                <Group className="h-3 w-3 mr-1" />
-                Group
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
-          <TabsContent value="properties">
-            <PropertiesTab element={selectedElement} onElementUpdate={onUpdate} />
-          </TabsContent>
-
-          <TabsContent value="group">
-            <GroupTab onUngroup={onUngroup} />
-          </TabsContent>
-        </Tabs>
+      <div className="h-48 border-t bg-background flex flex-col">
+        <NoSelectionPanel />
       </div>
     );
   }
 
-  // No element selected
-  if (!selectedElement) {
-    return <NoSelectionPanel />;
+  if (selectedCount > 1) {
+    return (
+      <div className="h-48 border-t bg-background flex flex-col">
+        <MultipleSelectionPanel
+          count={selectedCount}
+          onGroup={onGroup}
+          onUngroup={onUngroup}
+        />
+      </div>
+    );
   }
 
-  // Standard case - one element selected
   return (
-    <div className="h-64 border-t border-border">
-      <Tabs defaultValue="properties">
-        <div className="flex items-center px-4 pt-2 border-b">
-          <p className="text-sm font-medium mr-4">
-            Editing: <span className="text-portico-purple">{selectedElement.type.charAt(0).toUpperCase() + selectedElement.type.slice(1)}</span>
-          </p>
-          <TabsList>
-            <TabsTrigger value="properties" className="text-xs">
-              <Box className="h-3 w-3 mr-1" />
+    <div className="h-48 border-t bg-background">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
+        <div className="border-b px-4 bg-muted/30">
+          <TabsList className="bg-transparent h-10 justify-start border-b-0">
+            <TabsTrigger
+              value="properties"
+              className="data-[state=active]:bg-background rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
+            >
+              <ListChecks className="h-4 w-4 mr-2" />
               Properties
             </TabsTrigger>
-            <TabsTrigger value="appearance" className="text-xs">
-              <Palette className="h-3 w-3 mr-1" />
+            {selectedElement && (
+              <TabsTrigger
+                value="validation"
+                className="data-[state=active]:bg-background rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
+              >
+                <SlidersHorizontal className="h-4 w-4 mr-2" />
+                Validation
+              </TabsTrigger>
+            )}
+            <TabsTrigger
+              value="appearance"
+              className="data-[state=active]:bg-background rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
+            >
+              <Paintbrush className="h-4 w-4 mr-2" />
               Appearance
             </TabsTrigger>
-            <TabsTrigger value="settings" className="text-xs">
-              <SettingsIcon className="h-3 w-3 mr-1" />
-              Settings
-            </TabsTrigger>
-            <TabsTrigger value="ai" className="text-xs">
-              <Wand2 className="h-3 w-3 mr-1" />
+            <TabsTrigger
+              value="ai"
+              className="data-[state=active]:bg-background rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
+            >
+              <Wand className="h-4 w-4 mr-2" />
               AI Assist
+            </TabsTrigger>
+            <TabsTrigger
+              value="settings"
+              className="data-[state=active]:bg-background rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
             </TabsTrigger>
           </TabsList>
         </div>
 
-        <TabsContent value="properties">
-          <PropertiesTab element={selectedElement} onElementUpdate={onUpdate} />
-          <ValidationTab element={selectedElement} onElementUpdate={onUpdate} />
+        <TabsContent value="properties" className="m-0 h-full">
+          {selectedElement && (
+            <PropertiesTab
+              element={selectedElement}
+              onElementUpdate={onUpdate}
+            />
+          )}
         </TabsContent>
 
-        <TabsContent value="appearance">
-          <AppearanceTab element={selectedElement} onElementUpdate={onUpdate} />
+        <TabsContent value="validation" className="m-0 h-full">
+          {selectedElement && (
+            <ValidationTab
+              element={selectedElement}
+              onElementUpdate={onUpdate}
+            />
+          )}
         </TabsContent>
 
-        <TabsContent value="settings">
-          <SettingsTab />
+        <TabsContent value="appearance" className="m-0 h-full">
+          {selectedElement && <AppearanceTab element={selectedElement} />}
         </TabsContent>
 
-        <TabsContent value="ai">
+        <TabsContent value="ai" className="m-0 h-full">
           <AIAssistTab />
+        </TabsContent>
+
+        <TabsContent value="settings" className="m-0 h-full">
+          <SettingsTab />
         </TabsContent>
       </Tabs>
     </div>

@@ -1,4 +1,3 @@
-
 import { useCallback } from "react";
 import { FormElement } from "@/types/form";
 import { useToast } from "@/hooks/use-toast";
@@ -40,11 +39,9 @@ export const useElementActions = (
   const handleElementDrop = useCallback((type: string, position: { x: number, y: number }) => {
     console.log(`Dropping element of type: ${type} at position:`, position);
     
-    // Find a valid position that doesn't overlap with existing elements
     const validPosition = findValidPosition(position.x, position.y, type, elements);
     
-    // Create the new element with appropriate defaults
-    const newElement = createNewElement(type, validPosition);
+    const newElement = createNewElement(type, validPosition, elements);
 
     setElements(prev => [...prev, newElement]);
     setSelectedElements([newElement.id]);
