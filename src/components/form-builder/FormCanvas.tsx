@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import FormElement from "./FormElement";
 import FormToolbar from "./FormToolbar";
+import FormTopToolbar from "./FormTopToolbar";
 import FormElementsPanel from "./FormElementsPanel";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -213,6 +214,14 @@ const FormCanvas = () => {
     }
   };
 
+  const handleRequiredToggle = (id: string, required: boolean) => {
+    setElements(prev => 
+      prev.map(el => 
+        el.id === id ? { ...el, required } : el
+      )
+    );
+  };
+
   const handleGroupElements = () => {
     if (selectedElements.length < 2) {
       toast({
@@ -309,6 +318,14 @@ const FormCanvas = () => {
       ungroupElements: handleUngroupElements 
     }}>
       <div className="flex flex-col h-full">
+        <FormTopToolbar 
+          selectedElement={selectedElements.length === 1 
+            ? elements.find(el => el.id === selectedElements[0]) || null 
+            : null
+          }
+          onDuplicate={handleDuplicateElement}
+          onRequiredToggle={handleRequiredToggle}
+        />
         <div className="flex-1 flex">
           <FormElementsPanel onElementDrop={handleElementDrop} />
           <div className="flex-1 relative overflow-auto">
