@@ -15,6 +15,7 @@ import NotFound from "./pages/NotFound";
 import FormBuilder from "./pages/FormBuilder";
 import Compliance from "./pages/Compliance";
 import FormMetadata from "./pages/FormMetadata";
+import Analytics from "./pages/Analytics";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient({
@@ -44,7 +45,7 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   <Route path="/templates" element={<Templates />} />
                   <Route path="/distribute" element={<NotFound />} />
-                  <Route path="/analytics" element={<NotFound />} />
+                  <Route path="/analytics" element={<Analytics />} />
                   <Route path="/branding" element={<Index />} /> {/* Redirects to Index but will open Brand Settings panel */}
                   <Route path="/team" element={<Index />} /> {/* Redirects to Index but will open Team Management panel */}
                   <Route path="/history" element={<NotFound />} />
