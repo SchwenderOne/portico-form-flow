@@ -1,8 +1,10 @@
+
 import React, { useState, useRef } from "react";
 import { FormElement as FormElementType } from "@/types/form";
 import { cn } from "@/lib/utils";
 import { useGrouping } from "../GroupingContext";
 import FloatingToolbar from "../FloatingToolbar";
+import TextSelectionToolbar from "../toolbars/TextSelectionToolbar";
 import ElementContent from "../ElementContent";
 import ElementToolbar from "../toolbars/ElementToolbar";
 import ElementDragHandle from "./ElementDragHandle";
@@ -33,15 +35,21 @@ const FormElement: React.FC<FormElementProps> = ({
   const [hovered, setHovered] = useState(false);
   const [isDraggingElement, setIsDraggingElement] = useState(false);
   const grouping = useGrouping();
-  const elementRef = useRef<HTMLDivElement>(null);
   
   const {
     isEditing,
     elementRect,
+    elementRef,
+    isTextSelected,
+    selectionRect,
     handleDoubleClick,
     handleBold,
     handleItalic,
-    handleLink
+    handleUnderline,
+    handleLink,
+    getSelectedText,
+    setIsEditing,
+    saveChanges
   } = useElementEditor(element.id);
 
   const isGrouped = element.groupId !== null;
@@ -208,6 +216,17 @@ const FormElement: React.FC<FormElementProps> = ({
           onLink={handleLink}
           onDuplicate={() => onDuplicate(element.id)}
           onDelete={() => onDelete(element.id)}
+        />
+      )}
+      
+      {isEditing && isTextSelected && selectionRect && (
+        <TextSelectionToolbar
+          selectionRect={selectionRect}
+          onBold={handleBold}
+          onItalic={handleItalic}
+          onUnderline={handleUnderline}
+          onLink={handleLink}
+          selectedText={getSelectedText()}
         />
       )}
     </div>

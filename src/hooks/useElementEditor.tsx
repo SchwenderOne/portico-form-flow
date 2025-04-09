@@ -1,12 +1,16 @@
+
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 export const useElementEditor = (elementId: string) => {
   const [isEditing, setIsEditing] = useState(false);
   const [elementRect, setElementRect] = useState<DOMRect | null>(null);
+  const [isTextSelected, setIsTextSelected] = useState(false);
+  const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
   const elementRef = useRef<HTMLDivElement>(null);
   const contentEditableRef = useRef<HTMLElement | null>(null);
 
+  // Handle click outside for editing mode
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -22,6 +26,39 @@ export const useElementEditor = (elementId: string) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isEditing]);
+
+  // Handle text selection within the element
+  useEffect(() => {
+    if (!isEditing) return;
+
+    const checkTextSelection = () => {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) {
+        setIsTextSelected(false);
+        setSelectionRect(null);
+        return;
+      }
+
+      const selectedText = selection.toString();
+      if (selectedText && elementRef.current?.contains(selection.anchorNode)) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        setSelectionRect(rect);
+        setIsTextSelected(true);
+      } else {
+        setIsTextSelected(false);
+        setSelectionRect(null);
+      }
+    };
+
+    document.addEventListener('selectionchange', checkTextSelection);
+    document.addEventListener('mouseup', checkTextSelection);
+    
+    return () => {
+      document.removeEventListener('selectionchange', checkTextSelection);
+      document.removeEventListener('mouseup', checkTextSelection);
     };
   }, [isEditing]);
 
@@ -88,6 +125,14 @@ export const useElementEditor = (elementId: string) => {
     toast.success("Text formatted: Italic");
   };
 
+  const handleUnderline = () => {
+    if (!contentEditableRef.current) return;
+    
+    document.execCommand('underline', false);
+    saveChanges();
+    toast.success("Text formatted: Underline");
+  };
+
   const handleLink = (url?: string) => {
     if (!contentEditableRef.current || !url) return;
     
@@ -108,11 +153,15 @@ export const useElementEditor = (elementId: string) => {
     isEditing,
     elementRect,
     elementRef,
+    isTextSelected,
+    selectionRect,
     handleDoubleClick,
     handleBold,
     handleItalic,
+    handleUnderline,
     handleLink,
     setIsEditing,
-    saveChanges
+    saveChanges,
+    getSelectedText
   };
 };
