@@ -9,10 +9,10 @@ import { generateFieldFromPrompt } from "@/services/ai-field-generator";
 import { FormElement } from "@/types/form";
 
 interface AIAssistTabProps {
-  onAddElement?: (element: FormElement) => void;
+  onAddElements?: (elements: FormElement[]) => void;
 }
 
-const AIAssistTab: React.FC<AIAssistTabProps> = ({ onAddElement }) => {
+const AIAssistTab: React.FC<AIAssistTabProps> = ({ onAddElements }) => {
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
@@ -57,8 +57,8 @@ const AIAssistTab: React.FC<AIAssistTabProps> = ({ onAddElement }) => {
   };
 
   const handleAddToCanvas = () => {
-    if (generatedField && onAddElement) {
-      onAddElement(generatedField);
+    if (generatedField && onAddElements) {
+      onAddElements([generatedField]);
       setGeneratedField(null);
       setPrompt("");
       toast.success("Field added to canvas");
