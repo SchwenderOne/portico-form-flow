@@ -40,21 +40,30 @@ export const mockFormElements: FormElement[] = [
     type: "text",
     label: "Full Name",
     placeholder: "Enter your full name",
-    required: true
+    required: true,
+    position: { x: 100, y: 50 },
+    size: { width: 300, height: 80 },
+    groupId: null
   },
   {
     id: "field-2",
     type: "email",
     label: "Email Address",
     placeholder: "Enter your email",
-    required: true
+    required: true,
+    position: { x: 100, y: 150 },
+    size: { width: 300, height: 80 },
+    groupId: null
   },
   {
     id: "field-3",
     type: "number",
     label: "Age",
     placeholder: "Enter your age",
-    required: false
+    required: false,
+    position: { x: 100, y: 250 },
+    size: { width: 300, height: 80 },
+    groupId: null
   },
   {
     id: "field-4",
@@ -62,18 +71,20 @@ export const mockFormElements: FormElement[] = [
     label: "Country",
     placeholder: "Select your country",
     required: true,
-    options: [
-      { label: "United States", value: "us" },
-      { label: "Canada", value: "ca" },
-      { label: "United Kingdom", value: "uk" }
-    ]
+    options: ["United States", "Canada", "United Kingdom"],
+    position: { x: 100, y: 350 },
+    size: { width: 300, height: 100 },
+    groupId: null
   },
   {
     id: "field-5",
     type: "textarea",
     label: "Additional Comments",
     placeholder: "Enter any additional comments",
-    required: false
+    required: false,
+    position: { x: 100, y: 450 },
+    size: { width: 300, height: 120 },
+    groupId: null
   }
 ];
 
