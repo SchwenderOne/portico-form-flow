@@ -14,7 +14,7 @@ import {
   Heading1,
   TextCursor,
   CheckSquare,
-  RadioButton,
+  CircleDot, // Changed from RadioButton to CircleDot
   Type,
   FolderPlus,
   X,
@@ -54,7 +54,7 @@ const FormElementsPanel: React.FC<FormElementsPanelProps> = ({ onElementDrop }) 
     { type: "textarea", label: "Text Area", icon: AlignLeft },
     { type: "select", label: "Dropdown", icon: ListChecks },
     { type: "checkbox", label: "Checkbox", icon: CheckSquare },
-    { type: "radio", label: "Radio Buttons", icon: RadioButton },
+    { type: "radio", label: "Radio Buttons", icon: CircleDot }, // Changed from RadioButton to CircleDot
     { type: "date", label: "Date Picker", icon: Calendar },
     { type: "file", label: "File Upload", icon: Upload },
   ];

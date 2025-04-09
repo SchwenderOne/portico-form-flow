@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { FormElement as FormElementType } from '@/types/form';
 import ElementDragHandle from './ElementDragHandle';
 import { toast } from "sonner";
 import { useCollaboration } from '@/context/CollaborationContext';
 import { useFormCanvas } from '@/components/form-builder/context/FormCanvasContext';
-import { DragHandleHorizontal } from 'lucide-react';
+import { GripHorizontal } from 'lucide-react';
 
 interface FormElementProps {
   element: FormElementType;
@@ -35,7 +34,6 @@ const FormElement: React.FC<FormElementProps> = ({
     onSelect(element.id);
     setIsDragging(true);
     
-    // Set the drag data
     e.dataTransfer.setData('elementId', element.id);
     e.dataTransfer.setData('action', 'move');
     e.dataTransfer.setData('startX', e.clientX.toString());
@@ -43,7 +41,6 @@ const FormElement: React.FC<FormElementProps> = ({
     e.dataTransfer.setData('elementX', element.position.x.toString());
     e.dataTransfer.setData('elementY', element.position.y.toString());
     
-    // Set a drag image (optional)
     const dragImage = document.createElement('div');
     dragImage.style.width = `${element.size.width}px`;
     dragImage.style.height = `${element.size.height}px`;
@@ -109,7 +106,7 @@ const FormElement: React.FC<FormElementProps> = ({
     >
       <div className="absolute top-0 left-0 w-full h-6 bg-gray-100 rounded-t-md flex items-center px-2 cursor-move"
            onMouseDown={handleDrag}>
-        <DragHandleHorizontal size={14} className="text-gray-400 mr-2" />
+        <GripHorizontal size={14} className="text-gray-400 mr-2" />
         <span className="text-xs text-gray-600 truncate">{element.label || element.type}</span>
       </div>
       
