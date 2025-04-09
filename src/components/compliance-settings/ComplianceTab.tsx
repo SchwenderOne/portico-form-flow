@@ -6,7 +6,7 @@ import {
   TabsTrigger, 
   TabsContent 
 } from "@/components/ui/tabs";
-import { useComplianceSettings } from "@/context/ComplianceContext";
+import { useCompliance } from "@/context/ComplianceContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import GDPRSection from "./GDPRSection";
@@ -18,11 +18,8 @@ import ComplianceChecklist from "./ComplianceChecklist";
 const ComplianceTab: React.FC = () => {
   const { 
     complianceSettings, 
-    updateGDPRSettings,
-    updateLegalLinks,
-    updateDataRetention,
     updateSettings
-  } = useComplianceSettings();
+  } = useCompliance();
   
   const [activeTab, setActiveTab] = useState("gdpr");
 
@@ -63,48 +60,27 @@ const ComplianceTab: React.FC = () => {
         </TabsList>
         
         <TabsContent value="gdpr" className="space-y-4">
-          <GDPRSection 
-            gdprEnabled={complianceSettings.gdprEnabled}
-            dataProcessingDisclosure={complianceSettings.dataProcessingDisclosure}
-            onGDPRChange={(value) => updateGDPRSettings({ gdprEnabled: value })}
-            onDataProcessingChange={(value) => 
-              updateGDPRSettings({ dataProcessingDisclosure: value })
-            }
-          />
+          <GDPRSection />
         </TabsContent>
         
         <TabsContent value="legal" className="space-y-4">
-          <LegalLinksSection 
-            privacyPolicyUrl={complianceSettings.privacyPolicyUrl || ""}
-            termsOfServiceUrl={complianceSettings.termsOfServiceUrl || ""}
-            onPrivacyPolicyChange={(value) => 
-              updateLegalLinks({ privacyPolicyUrl: value })
-            }
-            onTermsOfServiceChange={(value) => 
-              updateLegalLinks({ termsOfServiceUrl: value })
-            }
-          />
+          <LegalLinksSection />
         </TabsContent>
         
         <TabsContent value="retention" className="space-y-4">
-          <DataRetentionSection 
-            dataRetentionPeriod={complianceSettings.dataRetentionPeriod}
-            onDataRetentionChange={(value) => 
-              updateDataRetention({ dataRetentionPeriod: value })
-            }
-          />
+          <DataRetentionSection />
         </TabsContent>
         
         <TabsContent value="export" className="space-y-4">
           <DataExportSection 
-            anonymizeExports={complianceSettings.anonymizeExports || false}
+            anonymizeExports={complianceSettings.anonymizeExports}
             onAnonymizeExportsChange={handleAnonymizeExportsChange}
           />
         </TabsContent>
       </Tabs>
       
       <div className="mt-6 pt-4 border-t">
-        <ComplianceChecklist settings={complianceSettings} />
+        <ComplianceChecklist />
       </div>
     </div>
   );

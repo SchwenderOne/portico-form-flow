@@ -26,3 +26,5 @@ export interface ComplianceChecklistItem {
   status: "complete" | "incomplete" | "warning";
   settingKey: keyof ComplianceSettings | null;
 }
+
+export type ComplianceStatus = 'compliant' | 'warning' | 'non-compliant';

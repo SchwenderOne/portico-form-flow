@@ -17,11 +17,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { 
   FileText, 
-  FileCsv, 
   FileJson,
   Download,
   FileType,
-  ShieldCheck
+  ShieldCheck,
+  FileSpreadsheet
 } from "lucide-react";
 import { 
   exportToJSON, 
@@ -171,7 +171,7 @@ const ExportFormDropdown: React.FC<ExportFormDropdownProps> = ({
           className="flex items-center cursor-pointer"
           onClick={handleExportCSV}
         >
-          <FileCsv className="mr-2 h-4 w-4" />
+          <FileSpreadsheet className="mr-2 h-4 w-4" />
           <span>Export as CSV</span>
         </DropdownMenuItem>
         

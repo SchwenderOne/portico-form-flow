@@ -1,7 +1,7 @@
 
 import { FormElement } from "@/types/form";
 import { BrandSettings } from "@/types/brand";
-import { format } from "date-fns";
+import { format as formatDate } from "date-fns";
 
 // Mock form response data for demonstration purposes
 // In a real app, this would come from your database
@@ -148,7 +148,7 @@ export const exportToCSV = (
 
 // Helper function to generate a filename with current date
 export const generateExportFilename = (format: string, anonymized: boolean): string => {
-  const date = format(new Date(), "yyyy-MM-dd");
+  const date = formatDate(new Date(), "yyyy-MM-dd");
   const anonymizedPrefix = anonymized ? "anonymized-" : "";
   return `portico-form-${anonymizedPrefix}export-${date}.${format}`;
 };

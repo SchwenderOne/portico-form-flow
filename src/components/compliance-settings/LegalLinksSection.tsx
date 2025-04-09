@@ -8,11 +8,15 @@ import { Link, AlertCircle } from "lucide-react";
 import { useCompliance } from "@/context/ComplianceContext";
 
 const LegalLinksSection = () => {
-  const { complianceSettings, updateComplianceSetting } = useCompliance();
+  const { complianceSettings, updateLegalLinks } = useCompliance();
   const [sectionOpen, setSectionOpen] = useState(true);
   
-  const handleUrlChange = (key: 'termsAndConditionsUrl' | 'privacyPolicyUrl', value: string) => {
-    updateComplianceSetting(key, value);
+  const handleUrlChange = (key: 'termsOfServiceUrl' | 'privacyPolicyUrl', value: string) => {
+    if (key === 'privacyPolicyUrl') {
+      updateLegalLinks({ privacyPolicyUrl: value });
+    } else {
+      updateLegalLinks({ termsOfServiceUrl: value });
+    }
   };
   
   return (
@@ -49,8 +53,8 @@ const LegalLinksSection = () => {
             <Input
               id="terms-url"
               placeholder="https://example.com/terms"
-              value={complianceSettings.termsAndConditionsUrl}
-              onChange={(e) => handleUrlChange('termsAndConditionsUrl', e.target.value)}
+              value={complianceSettings.termsOfServiceUrl || ""}
+              onChange={(e) => handleUrlChange('termsOfServiceUrl', e.target.value)}
               className="h-8"
             />
           </div>
@@ -60,13 +64,13 @@ const LegalLinksSection = () => {
             <Input
               id="privacy-url"
               placeholder="https://example.com/privacy"
-              value={complianceSettings.privacyPolicyUrl}
+              value={complianceSettings.privacyPolicyUrl || ""}
               onChange={(e) => handleUrlChange('privacyPolicyUrl', e.target.value)}
               className="h-8"
             />
           </div>
           
-          {(!complianceSettings.termsAndConditionsUrl || !complianceSettings.privacyPolicyUrl) && (
+          {(!complianceSettings.termsOfServiceUrl || !complianceSettings.privacyPolicyUrl) && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-md p-2 flex items-start gap-2">
               <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
               <p className="text-xs text-yellow-800">

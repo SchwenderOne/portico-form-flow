@@ -8,7 +8,7 @@ export interface GDPRConsentFieldProps {
   onCheckedChange: (checked: boolean) => void;
   isEditing: boolean;
   privacyPolicyUrl?: string;
-  termsAndConditionsUrl?: string;
+  termsOfServiceUrl?: string;
 }
 
 const GDPRConsentField: React.FC<GDPRConsentFieldProps> = ({ 
@@ -17,7 +17,7 @@ const GDPRConsentField: React.FC<GDPRConsentFieldProps> = ({
   onCheckedChange, 
   isEditing,
   privacyPolicyUrl,
-  termsAndConditionsUrl
+  termsOfServiceUrl
 }) => {
   return (
     <div className="flex flex-col space-y-1 w-full">
@@ -49,11 +49,11 @@ const GDPRConsentField: React.FC<GDPRConsentFieldProps> = ({
               </a>
             </>
           )}
-          {termsAndConditionsUrl && privacyPolicyUrl && " and "}
-          {termsAndConditionsUrl && (
+          {termsOfServiceUrl && privacyPolicyUrl && " and "}
+          {termsOfServiceUrl && (
             <>
               <a 
-                href={termsAndConditionsUrl}
+                href={termsOfServiceUrl}
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
