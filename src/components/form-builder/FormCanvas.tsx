@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import FormElementsPanel from "./FormElementsPanel";
 import FormToolbar from "./FormToolbar";
@@ -124,7 +125,7 @@ const FormCanvasContent = () => {
             }}
           >
             {showSmartGuides && (
-              <SmartGuides guideLines={guideLines} distances={distances} />
+              <SmartGuides guides={guideLines} distances={distances} />
             )}
             
             {elements.map((element) => (

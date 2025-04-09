@@ -1,6 +1,6 @@
 
 import { FormElement } from "@/types/form";
-import { generateFieldFromPrompt } from "./ai-field-generator";
+import { generateFieldFromPrompt, generateFieldSuggestions } from "./ai-field-generator";
 import { generateFormWithOpenRouter } from "./openrouter-service";
 import { fallbackGenerateForm } from "./form-generators/mock-form-generator";
 
@@ -22,53 +22,6 @@ export const generateFormFromPrompt = async (prompt: string): Promise<FormElemen
     console.error("Error in form generation:", error);
     // Fallback to mock implementation in case of errors
     return fallbackGenerateForm(prompt);
-  }
-};
-
-// New function to generate field suggestions based on form context
-export const generateFieldSuggestions = async (
-  formTitle: string,
-  formDescription: string,
-  additionalContext: string,
-  existingElements: FormElement[]
-): Promise<FormElement[]> => {
-  try {
-    // Extract existing field names and types for context
-    const existingFieldInfo = existingElements
-      .filter(e => e.type !== 'header' && e.type !== 'paragraph')
-      .map(e => `${e.label || ''} (${e.type})`)
-      .join(', ');
-    
-    // Build a prompt for the AI
-    const prompt = `
-      Generate relevant form fields for a form with:
-      Title: "${formTitle}"
-      Description: "${formDescription}"
-      Additional context: "${additionalContext}"
-      
-      The form already has these fields: ${existingFieldInfo || 'none yet'}
-      
-      Suggest additional fields that would make this a more complete form.
-    `;
-    
-    // Try to use OpenRouter first
-    try {
-      const suggestions = await generateFormWithOpenRouter(prompt);
-      
-      if (suggestions && suggestions.length > 0) {
-        // Filter out duplicates based on label or similar fields
-        return filterDuplicateSuggestions(suggestions, existingElements);
-      }
-    } catch (error) {
-      console.error("Error using OpenRouter for suggestions:", error);
-    }
-    
-    // Fall back to mock suggestions if OpenRouter fails
-    const mockSuggestions = generateMockSuggestions(formTitle, formDescription, existingElements);
-    return filterDuplicateSuggestions(mockSuggestions, existingElements);
-  } catch (error) {
-    console.error("Error generating field suggestions:", error);
-    return [];
   }
 };
 

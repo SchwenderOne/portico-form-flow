@@ -64,9 +64,17 @@ export const registerFormMetadataSheetControls = (
   closeFormMetadataSheetFn = close;
 };
 
+export const openFormMetadataSheet = () => {
+  openFormMetadataSheetFn?.();
+};
+
+export const closeFormMetadataSheet = () => {
+  closeFormMetadataSheetFn?.();
+};
+
 export const useFormMetadataSheet = () => {
   return {
-    open: () => openFormMetadataSheetFn?.(),
-    close: () => closeFormMetadataSheetFn?.(),
+    open: openFormMetadataSheet,
+    close: closeFormMetadataSheet,
   };
 };
