@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from "react";
+import { FormElement } from "@/types/form";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
@@ -8,7 +9,12 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Wand2, InfoIcon } from "lucide-react";
 import { getSmartDefaultsStatus, toggleSmartDefaults } from "@/utils/smart-defaults";
 
-const SettingsTab = () => {
+interface SettingsTabProps {
+  element: FormElement;
+  onElementUpdate: (element: FormElement) => void;
+}
+
+const SettingsTab: React.FC<SettingsTabProps> = ({ element, onElementUpdate }) => {
   const [smartDefaultsOpen, setSmartDefaultsOpen] = useState(true);
   const [smartDefaultsEnabled, setSmartDefaultsEnabled] = useState(getSmartDefaultsStatus());
 
