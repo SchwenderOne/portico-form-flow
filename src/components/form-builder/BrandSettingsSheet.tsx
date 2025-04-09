@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Palette } from "lucide-react";
-import BrandSettingsTab from "./toolbars/tabs/BrandSettingsTab";
-import { BrandSettingsProvider, useBrandSettings } from "@/context/BrandSettingsContext";
+import BrandSettingsTab from "@/components/brand-settings/BrandSettingsTab";
+import { BrandSettingsProvider } from "@/context/BrandSettingsContext";
 import { toast } from "sonner";
 
 interface BrandSettingsSheetProps {
