@@ -82,7 +82,7 @@ const FormElement: React.FC<FormElementProps> = ({
       className={`absolute bg-white shadow-md rounded-md border border-dashed border-gray-300 transition-transform duration-200 ${selected ? 'border-blue-500' : ''} ${isBeingDragged ? 'opacity-50' : ''}`}
       onClick={handleSelect}
     >
-      <ElementDragHandle onDrag={handleDrag} onStop={handleStop} id={element.id} />
+      <ElementDragHandle onMouseDown={handleDrag} id={element.id} />
       <div className="p-4">
         {renderElement()}
       </div>

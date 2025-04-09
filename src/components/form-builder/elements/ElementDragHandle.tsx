@@ -4,13 +4,15 @@ import { Grip } from "lucide-react";
 
 interface ElementDragHandleProps {
   onMouseDown: (e: React.MouseEvent) => void;
+  id: string;
 }
 
-const ElementDragHandle: React.FC<ElementDragHandleProps> = ({ onMouseDown }) => {
+const ElementDragHandle: React.FC<ElementDragHandleProps> = ({ onMouseDown, id }) => {
   return (
     <div 
       className="form-element-handle absolute -top-7 left-1/2 transform -translate-x-1/2 bg-white p-1.5 rounded-t-md shadow-md border border-gray-200 cursor-move hover:bg-portico-purple/20 transition-colors group"
       onMouseDown={onMouseDown}
+      data-element-id={id}
     >
       <div className="relative flex items-center">
         <Grip className="h-4 w-4 text-portico-purple/80 group-hover:text-portico-purple" />

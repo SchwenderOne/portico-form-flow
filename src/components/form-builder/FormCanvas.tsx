@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import FormElement from "./elements/FormElement";
 import FormToolbar from "./FormToolbar";
@@ -12,7 +11,6 @@ import { FormCanvasProvider, useFormCanvas } from "./context/FormCanvasContext";
 import { CollaborationProvider, useCollaboration, EditorCursor } from "@/context/CollaborationContext";
 import { useFormMetadata } from "@/context/FormMetadataContext";
 
-// This component pulls data from context and renders the actual canvas
 const FormCanvasInner = () => {
   const {
     elements,
@@ -41,7 +39,6 @@ const FormCanvasInner = () => {
 
   const { collaborators, updateCursorPosition } = useCollaboration();
 
-  // Track mouse position for real-time cursor sharing
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       const canvas = document.querySelector('[data-canvas-container="true"]');
@@ -66,10 +63,13 @@ const FormCanvasInner = () => {
     };
   }, [updateCursorPosition]);
 
-  // Filter out current user for cursor display
   const otherCollaborators = collaborators.filter(
     c => c.id !== (window as any).supabase?.auth?.currentSession?.user?.id
   );
+
+  const handleElementSelectWrapper = (id: string) => {
+    handleElementSelect(id, false);
+  };
 
   return (
     <GroupingProvider value={{
@@ -117,22 +117,21 @@ const FormCanvasInner = () => {
                 />
               }
 
-              {/* Render all form elements */}
               {elements.map((element) => (
                 <FormElement
                   key={element.id}
                   element={element}
-                  isSelected={grouping.isElementSelected(element.id)}
-                  onSelect={handleElementSelect}
-                  onMove={handleElementMoveWithGuides}
+                  onSelect={handleElementSelectWrapper}
+                  onPositionChange={handleElementMoveWithGuides}
                   onDelete={handleDeleteElement}
                   onDuplicate={handleDuplicateElement}
-                  setIsDragging={setIsDragging}
-                  allElements={elements}
+                  onResize={(id, width, height) => {
+                    // Handle resize logic here if needed
+                  }}
+                  selected={grouping.isElementSelected(element.id)}
                 />
               ))}
 
-              {/* Render other collaborators' cursors */}
               {otherCollaborators.map(collaborator => (
                 <EditorCursor
                   key={collaborator.id}
@@ -166,7 +165,6 @@ const FormCanvasInner = () => {
   );
 };
 
-// The main FormCanvas component now wraps with CollaborationProvider
 const FormCanvasContent = () => {
   const { metadata } = useFormMetadata();
   
@@ -177,7 +175,6 @@ const FormCanvasContent = () => {
   );
 };
 
-// The main FormCanvas component now just provides the context
 const FormCanvas = () => {
   return (
     <FormCanvasProvider>
