@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import FormElement from "./elements/FormElement";
 import FormToolbar from "./FormToolbar";
 import FormTopToolbar from "./FormTopToolbar";
@@ -9,9 +9,11 @@ import SmartGuides from "./SmartGuides";
 import CanvasDropZone from "./canvas/CanvasDropZone";
 import AIAssistantModal from "./ai-assistant/AIAssistantModal";
 import { FormCanvasProvider, useFormCanvas } from "./context/FormCanvasContext";
+import { CollaborationProvider, useCollaboration, EditorCursor } from "@/context/CollaborationContext";
+import { useFormMetadata } from "@/context/FormMetadataContext";
 
 // This component pulls data from context and renders the actual canvas
-const FormCanvasContent = () => {
+const FormCanvasInner = () => {
   const {
     elements,
     handleElementSelect,
@@ -36,6 +38,38 @@ const FormCanvasContent = () => {
     distances,
     grouping
   } = useFormCanvas();
+
+  const { collaborators, updateCursorPosition } = useCollaboration();
+
+  // Track mouse position for real-time cursor sharing
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const canvas = document.querySelector('[data-canvas-container="true"]');
+      if (!canvas) return;
+      
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      updateCursorPosition(x, y);
+    };
+    
+    const canvasElement = document.querySelector('[data-canvas-container="true"]');
+    if (canvasElement) {
+      canvasElement.addEventListener('mousemove', handleMouseMove);
+    }
+    
+    return () => {
+      if (canvasElement) {
+        canvasElement.removeEventListener('mousemove', handleMouseMove);
+      }
+    };
+  }, [updateCursorPosition]);
+
+  // Filter out current user for cursor display
+  const otherCollaborators = collaborators.filter(
+    c => c.id !== (window as any).supabase?.auth?.currentSession?.user?.id
+  );
 
   return (
     <GroupingProvider value={{
@@ -74,6 +108,7 @@ const FormCanvasContent = () => {
               setIsDragOver={setIsDragOver}
               onClick={handleCanvasClick}
               existingElements={elements}
+              data-canvas-container="true"
             >
               {showSmartGuides &&
                 <SmartGuides
@@ -82,6 +117,7 @@ const FormCanvasContent = () => {
                 />
               }
 
+              {/* Render all form elements */}
               {elements.map((element) => (
                 <FormElement
                   key={element.id}
@@ -93,6 +129,14 @@ const FormCanvasContent = () => {
                   onDuplicate={handleDuplicateElement}
                   setIsDragging={setIsDragging}
                   allElements={elements}
+                />
+              ))}
+
+              {/* Render other collaborators' cursors */}
+              {otherCollaborators.map(collaborator => (
+                <EditorCursor
+                  key={collaborator.id}
+                  collaborator={collaborator}
                 />
               ))}
             </CanvasDropZone>
@@ -119,6 +163,17 @@ const FormCanvasContent = () => {
         />
       </div>
     </GroupingProvider>
+  );
+};
+
+// The main FormCanvas component now wraps with CollaborationProvider
+const FormCanvasContent = () => {
+  const { metadata } = useFormMetadata();
+  
+  return (
+    <CollaborationProvider formId={metadata.id}>
+      <FormCanvasInner />
+    </CollaborationProvider>
   );
 };
 

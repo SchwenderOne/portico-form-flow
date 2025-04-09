@@ -9,6 +9,8 @@ import ElementContent from "../ElementContent";
 import ElementToolbar from "../toolbars/ElementToolbar";
 import ElementDragHandle from "./ElementDragHandle";
 import { useElementEditor } from "@/hooks/useElementEditor";
+import { useCollaboration } from "@/context/CollaborationContext";
+import { Lock } from "lucide-react";
 
 interface FormElementProps {
   element: FormElementType;
@@ -35,6 +37,12 @@ const FormElement: React.FC<FormElementProps> = ({
   const [hovered, setHovered] = useState(false);
   const [isDraggingElement, setIsDraggingElement] = useState(false);
   const grouping = useGrouping();
+  const { 
+    isElementLocked, 
+    getElementEditor, 
+    setActiveElement, 
+    activeElement 
+  } = useCollaboration();
   
   const {
     isEditing,
@@ -62,8 +70,30 @@ const FormElement: React.FC<FormElementProps> = ({
     ? allElements.filter(el => el.groupId === element.groupId)
     : [];
 
+  // Check if element is locked by another user
+  const isLocked = isElementLocked(element.id);
+  const elementEditor = getElementEditor(element.id);
+
+  // Set active element when editing
+  React.useEffect(() => {
+    if (isEditing) {
+      setActiveElement(element.id);
+    } else if (activeElement === element.id) {
+      setActiveElement(null);
+    }
+  }, [isEditing, element.id, setActiveElement, activeElement]);
+
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
+    
+    // Don't allow dragging if element is locked by another user
+    if (isLocked) {
+      const editor = getElementEditor(element.id);
+      if (editor) {
+        toast.error(`This element is being edited by ${editor.displayName}`);
+      }
+      return;
+    }
     
     if (isEditing) return;
 
@@ -166,7 +196,8 @@ const FormElement: React.FC<FormElementProps> = ({
         isGroupSelected && !isSelected && "ring-1 ring-portico-purple-light",
         hovered && !isSelected && "shadow-lg",
         isDraggingElement && "opacity-90 shadow-xl scale-[1.01] z-20",
-        isEditing && "editing"
+        isEditing && "editing",
+        isLocked && "opacity-50"
       )}
       style={{
         left: element.position.x,
@@ -176,9 +207,13 @@ const FormElement: React.FC<FormElementProps> = ({
         zIndex: isSelected ? 10 : (isDraggingElement ? 20 : 1),
         transitionProperty: "transform, opacity, box-shadow",
         transitionDuration: "0.1s",
+        ...(elementEditor && !isLocked 
+            ? { boxShadow: `0 0 0 2px ${elementEditor.color}` } 
+            : {}
+        )
       }}
       onClick={handleElementClick}
-      onDoubleClick={canShowFloatingToolbar ? handleDoubleClick : undefined}
+      onDoubleClick={isLocked ? undefined : (canShowFloatingToolbar ? handleDoubleClick : undefined)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -188,13 +223,28 @@ const FormElement: React.FC<FormElementProps> = ({
         </div>
       )}
       
+      {isLocked && (
+        <div className="absolute top-0 right-0 p-1 bg-red-500 text-white rounded-bl-md z-30">
+          <Lock className="h-4 w-4" />
+        </div>
+      )}
+      
+      {elementEditor && !isLocked && (
+        <div 
+          className="absolute -top-6 right-2 text-xs px-2 py-1 rounded-t-md z-30"
+          style={{ backgroundColor: elementEditor.color, color: 'white' }}
+        >
+          {elementEditor.displayName}
+        </div>
+      )}
+      
       <ElementContent element={element} isEditing={isEditing} />
       
-      {(!isEditing && (hovered || isSelected)) && 
+      {(!isEditing && (hovered || isSelected) && !isLocked) && 
         <ElementDragHandle onMouseDown={handleMouseDown} />
       }
       
-      {isSelected && !isEditing && (
+      {isSelected && !isEditing && !isLocked && (
         <ElementToolbar 
           elementId={element.id}
           isGrouped={isGrouped}

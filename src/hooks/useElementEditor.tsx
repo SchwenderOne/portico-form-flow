@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { useCollaboration } from "@/context/CollaborationContext";
 
 export const useElementEditor = (elementId: string) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -9,6 +10,7 @@ export const useElementEditor = (elementId: string) => {
   const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
   const elementRef = useRef<HTMLDivElement>(null);
   const contentEditableRef = useRef<HTMLElement | null>(null);
+  const { isElementLocked, setActiveElement } = useCollaboration();
 
   // Handle click outside for editing mode
   useEffect(() => {
@@ -20,6 +22,7 @@ export const useElementEditor = (elementId: string) => {
       ) {
         saveChanges();
         setIsEditing(false);
+        setActiveElement(null);
       }
     };
 
@@ -27,7 +30,7 @@ export const useElementEditor = (elementId: string) => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isEditing]);
+  }, [isEditing, setActiveElement]);
 
   // Handle text selection within the element
   useEffect(() => {
@@ -64,7 +67,15 @@ export const useElementEditor = (elementId: string) => {
 
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Check if element is locked by another user
+    if (isElementLocked(elementId)) {
+      toast.error("This element is being edited by another user");
+      return;
+    }
+    
     setIsEditing(true);
+    setActiveElement(elementId);
     
     if (elementRef.current) {
       setElementRect(elementRef.current.getBoundingClientRect());

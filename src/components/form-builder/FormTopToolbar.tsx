@@ -1,196 +1,175 @@
 
 import React from "react";
-import {
-  Undo2,
-  Redo2,
-  Save,
-  Eye,
-  MoreHorizontal,
-  Share2,
-  FileText
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import AIAssistantButton from "./ai-assistant/AIAssistantButton";
+import { 
+  Copy, 
+  Trash, 
+  LucideToggleRight, 
+  Users, 
+  BrainCircuit, 
+  FileText,
+  ChevronsUpDown,
+  CheckSquare
+} from "lucide-react";
 import { FormElement } from "@/types/form";
-import { FormMetadataSheet } from "./FormMetadataSheet";
 import { useFormMetadata } from "@/context/FormMetadataContext";
-import ExportFormDropdown from "./ExportFormDropdown";
-import { saveFormState } from "@/services/forms-service";
+import { CollaboratorAvatars } from "@/context/CollaborationContext";
 import { toast } from "sonner";
-import { useAuth } from "@/context/AuthContext";
+
+// Used to show/hide the metadata sheet
+const formMetadataSheetControls = {
+  open: null as (() => void) | null,
+  close: null as (() => void) | null,
+};
+
+export const registerFormMetadataSheetControls = (
+  openFn: (() => void) | null,
+  closeFn: (() => void) | null
+) => {
+  formMetadataSheetControls.open = openFn;
+  formMetadataSheetControls.close = closeFn;
+};
 
 interface FormTopToolbarProps {
-  onPreview?: () => void;
-  onUndo?: () => void;
-  onRedo?: () => void;
-  canUndo?: boolean;
-  canRedo?: boolean;
-  // Add the missing props that FormCanvas is trying to pass
-  selectedElement?: FormElement | null;
-  selectedCount?: number;
-  onDuplicate?: (id: string) => void;
-  onDuplicateGroup?: (ids: string[]) => void;
-  onRequiredToggle?: (id: string, required: boolean) => void;
-  onGroup?: () => void;
-  onUngroup?: () => void;
-  onOpenAIModal?: () => void;
-  existingElements?: FormElement[];
+  selectedElement: FormElement | null;
+  selectedCount: number;
+  onDuplicate: (id: string) => void;
+  onDuplicateGroup: (ids: string[]) => void;
+  onRequiredToggle: (id: string, required: boolean) => void;
+  onGroup: () => void;
+  onUngroup: () => void;
+  onOpenAIModal: () => void;
+  existingElements: FormElement[];
 }
 
 const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
-  onPreview = () => {},
-  onUndo = () => {},
-  onRedo = () => {},
-  canUndo = false,
-  canRedo = false,
-  // Add defaults for new props
-  selectedElement = null,
-  selectedCount = 0,
-  onDuplicate = () => {},
-  onDuplicateGroup = () => {},
-  onRequiredToggle = () => {},
-  onGroup = () => {},
-  onUngroup = () => {},
-  onOpenAIModal = () => {},
-  existingElements = []
+  selectedElement,
+  selectedCount,
+  onDuplicate,
+  onDuplicateGroup,
+  onRequiredToggle,
+  onGroup,
+  onUngroup,
+  onOpenAIModal,
+  existingElements
 }) => {
-  const { metadata, saveMetadata, isLoading } = useFormMetadata();
-  const { user } = useAuth();
-  
-  const handleSaveForm = async () => {
-    if (!user) {
-      toast.error("You must be logged in to save forms");
-      return;
-    }
-    
-    try {
-      // First save metadata
-      await saveMetadata();
-      
-      // Then save form elements if we have any
-      if (existingElements.length > 0) {
-        await saveFormState(
-          metadata.id, 
-          metadata.name, 
-          metadata.description || '', 
-          existingElements
-        );
-      }
-      
-      toast.success("Form saved successfully");
-    } catch (error) {
-      console.error("Error saving form:", error);
+  const { metadata, saveMetadata } = useFormMetadata();
+
+  const handleOpenMetadataSheet = () => {
+    if (formMetadataSheetControls.open) {
+      formMetadataSheetControls.open();
     }
   };
-  
+
+  const handleSaveForm = async () => {
+    try {
+      await saveMetadata();
+      toast.success("Form metadata saved successfully");
+    } catch (error) {
+      console.error("Error saving form metadata:", error);
+      toast.error("Failed to save form metadata");
+    }
+  };
+
   return (
-    <div className="h-12 border-b flex items-center justify-between px-4 bg-background">
+    <div className="border-b bg-background p-2 flex justify-between items-center">
       <div className="flex items-center space-x-2">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onUndo}
-                disabled={!canUndo}
-                className="h-8 w-8"
-              >
-                <Undo2 className="h-4 w-4" />
-                <span className="sr-only">Undo</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Undo (Ctrl+Z)</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onRedo}
-                disabled={!canRedo}
-                className="h-8 w-8"
-              >
-                <Redo2 className="h-4 w-4" />
-                <span className="sr-only">Redo</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Redo (Ctrl+Y)</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        
-        <div className="flex items-center ml-4">
-          <span className="font-semibold text-lg mr-2">{metadata.name || "Untitled Form"}</span>
-          <Badge variant={metadata.status === 'draft' ? 'outline' : metadata.status === 'review' ? 'secondary' : 'default'}>
-            {metadata.status === 'draft' ? 'Draft' : metadata.status === 'review' ? 'In Review' : 'Published'}
-          </Badge>
-        </div>
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <FormMetadataSheet />
-        
-        <AIAssistantButton 
-          onAddElements={onOpenAIModal} 
-          existingElements={existingElements} 
-        />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleOpenMetadataSheet}
+          className="flex items-center"
+        >
+          <FileText className="h-4 w-4 mr-1" />
+          <span className="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
+            {metadata.name || "Untitled Form"}
+          </span>
+          <ChevronsUpDown className="h-4 w-4 ml-1" />
+        </Button>
 
         <Button
           variant="ghost"
           size="sm"
-          onClick={onPreview}
-          className="flex items-center space-x-1"
-        >
-          <Eye className="h-4 w-4 mr-1" />
-          Preview
-        </Button>
-
-        {/* Add the export dropdown here */}
-        <ExportFormDropdown formElements={existingElements} />
-
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center space-x-1"
-        >
-          <Share2 className="h-4 w-4 mr-1" />
-          Share
-        </Button>
-
-        <Button
-          variant="default"
-          size="sm"
-          className="bg-portico-purple hover:bg-portico-purple-dark flex items-center space-x-1"
           onClick={handleSaveForm}
-          disabled={isLoading}
         >
-          <Save className="h-4 w-4 mr-1" />
-          {isLoading ? "Saving..." : "Save"}
+          Save
         </Button>
+      </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreHorizontal className="h-4 w-4" />
-              <span className="sr-only">More</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>Import Form</DropdownMenuItem>
-            <DropdownMenuItem>Export Form</DropdownMenuItem>
-            <DropdownMenuItem>Form Settings</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <div className="flex items-center space-x-2">
+        {/* Show collaborators */}
+        <div className="mr-4">
+          <CollaboratorAvatars />
+        </div>
+
+        {selectedCount > 0 && (
+          <>
+            {selectedCount === 1 && selectedElement && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onRequiredToggle(selectedElement.id, !selectedElement.required)}
+                disabled={selectedElement.type === 'header' || selectedElement.type === 'paragraph'}
+              >
+                <CheckSquare className={`h-4 w-4 mr-1 ${selectedElement.required ? 'text-portico-purple' : ''}`} />
+                {selectedElement.required ? 'Required' : 'Optional'}
+              </Button>
+            )}
+
+            {selectedCount === 1 && selectedElement && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDuplicate(selectedElement.id)}
+              >
+                <Copy className="h-4 w-4 mr-1" />
+                Duplicate
+              </Button>
+            )}
+
+            {selectedCount > 1 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDuplicateGroup([])}
+              >
+                <Copy className="h-4 w-4 mr-1" />
+                Duplicate Selection
+              </Button>
+            )}
+
+            {selectedCount > 1 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onGroup}
+              >
+                <Users className="h-4 w-4 mr-1" />
+                Group
+              </Button>
+            )}
+
+            {selectedCount >= 1 && selectedElement?.groupId && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onUngroup}
+              >
+                <Users className="h-4 w-4 mr-1" />
+                Ungroup
+              </Button>
+            )}
+          </>
+        )}
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onOpenAIModal}
+        >
+          <BrainCircuit className="h-4 w-4 mr-1" />
+          AI Assist
+        </Button>
       </div>
     </div>
   );
