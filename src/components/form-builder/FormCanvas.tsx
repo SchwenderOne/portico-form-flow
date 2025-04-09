@@ -7,12 +7,13 @@ import FormTopToolbar from "./FormTopToolbar";
 import AIAssistantModal from "./ai-assistant/AIAssistantModal";
 import { useFormCanvas } from "./context/FormCanvasContext";
 import SmartGuides from "./SmartGuides";
-import { CollaboratorAvatars, EditorCursor, CollaborationProvider } from "@/context/CollaborationContext";
+import { CollaboratorAvatars, EditorCursor } from "@/context/CollaborationContext";
 import { useFormMetadata } from "@/context/FormMetadataContext";
 
 declare global {
   interface WindowEventMap {
     'add-elements': CustomEvent<{elements: FormElement[]}>;
+    'version-restore': CustomEvent<{elements: FormElement[]}>;
   }
 }
 
@@ -76,8 +77,17 @@ const FormCanvasContent = () => {
 
     document.addEventListener('add-elements', handleAddElementsEvent as EventListener);
     
+    // Add event listener for version restore events
+    const handleVersionRestoreEvent = (event: CustomEvent<{elements: FormElement[]}>) => {
+      const { elements } = event.detail;
+      handleAddAIElements(elements, true); // Replace existing elements
+    };
+    
+    document.addEventListener('version-restore', handleVersionRestoreEvent as EventListener);
+    
     return () => {
       document.removeEventListener('add-elements', handleAddElementsEvent as EventListener);
+      document.removeEventListener('version-restore', handleVersionRestoreEvent as EventListener);
     };
   }, [handleAddAIElements]);
 
@@ -194,11 +204,7 @@ const FormCanvasContent = () => {
 const FormCanvas = () => {
   const { metadata } = useFormMetadata();
   
-  return (
-    <CollaborationProvider formId={metadata?.id || 'new-form'}>
-      <FormCanvasContent />
-    </CollaborationProvider>
-  );
+  return <FormCanvasContent />;
 };
 
 export default FormCanvas;

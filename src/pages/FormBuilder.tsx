@@ -12,7 +12,7 @@ import { TeamProvider } from "@/context/TeamContext";
 import { FormCanvasProvider } from "@/components/form-builder/context/FormCanvasContext";
 import { CollaborationProvider } from "@/context/CollaborationContext";
 
-// Import the version history sheet and its controls - using ES Module imports
+// Import the version history sheet and its controls using ES Module imports
 import VersionHistorySheet, { 
   registerVersionHistoryControls 
 } from "@/components/form-builder/version-history/VersionHistorySheet";
@@ -54,33 +54,35 @@ const FormBuilder = () => {
         <FormMetadataProvider>
           <BrandSettingsProvider>
             <ComplianceProvider>
-              <FormCanvasProvider>
-                <div className="h-[calc(100vh-0px)] overflow-hidden bg-gray-100">
-                  <FormCanvas />
-                  
-                  <FormMetadataSheet 
-                    showTrigger={false} 
-                    open={metadataSheetOpen} 
-                    onOpenChange={setMetadataSheetOpen} 
-                  />
-                  
-                  <BrandSettingsSheet 
-                    open={brandSheetOpen}
-                    onOpenChange={setBrandSheetOpen}
-                  />
-                  
-                  <VersionHistorySheet 
-                    showTrigger={false}
-                    open={versionHistoryOpen}
-                    onOpenChange={setVersionHistoryOpen}
-                  />
-                  
-                  <TeamManagementSheet
-                    open={teamSheetOpen}
-                    onOpenChange={setTeamSheetOpen}
-                  />
-                </div>
-              </FormCanvasProvider>
+              <CollaborationProvider>
+                <FormCanvasProvider>
+                  <div className="h-[calc(100vh-0px)] overflow-hidden bg-gray-100">
+                    <FormCanvas />
+                    
+                    <FormMetadataSheet 
+                      showTrigger={false} 
+                      open={metadataSheetOpen} 
+                      onOpenChange={setMetadataSheetOpen} 
+                    />
+                    
+                    <BrandSettingsSheet 
+                      open={brandSheetOpen}
+                      onOpenChange={setBrandSheetOpen}
+                    />
+                    
+                    <VersionHistorySheet 
+                      showTrigger={false}
+                      open={versionHistoryOpen}
+                      onOpenChange={setVersionHistoryOpen}
+                    />
+                    
+                    <TeamManagementSheet
+                      open={teamSheetOpen}
+                      onOpenChange={setTeamSheetOpen}
+                    />
+                  </div>
+                </FormCanvasProvider>
+              </CollaborationProvider>
             </ComplianceProvider>
           </BrandSettingsProvider>
         </FormMetadataProvider>
