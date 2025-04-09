@@ -4,7 +4,7 @@ import FormCanvas from "@/components/form-builder/FormCanvas";
 import AppLayout from "@/components/layout/AppLayout";
 import { FormMetadataSheet, registerFormMetadataSheetControls } from "@/components/form-builder/FormMetadataSheet";
 import { FormMetadataProvider } from "@/context/FormMetadataContext";
-import { BrandSettingsSheet } from "@/components/form-builder/BrandSettingsSheet";
+import { BrandSettingsSheet, registerBrandSettingsSheetControls } from "@/components/form-builder/BrandSettingsSheet";
 import { BrandSettingsProvider } from "@/context/BrandSettingsContext";
 import { ComplianceProvider } from "@/context/ComplianceContext";
 import { TeamManagementSheet } from "@/components/team/TeamManagementSheet";
@@ -36,6 +36,18 @@ const FormBuilder = () => {
     
     return () => {
       registerFormMetadataSheetControls(null, null);
+    };
+  }, []);
+
+  // Register controls for brand settings sheet
+  useEffect(() => {
+    const openSheet = () => setBrandSheetOpen(true);
+    const closeSheet = () => setBrandSheetOpen(false);
+    
+    registerBrandSettingsSheetControls(openSheet, closeSheet);
+    
+    return () => {
+      registerBrandSettingsSheetControls(null, null);
     };
   }, []);
 
