@@ -11,7 +11,8 @@ export const createForm = async (title: string, description: string = "") => {
       .insert([
         { 
           title, 
-          description
+          description,
+          created_by: supabase.auth.getUser().then(res => res.data.user?.id) || ''
         }
       ])
       .select()
@@ -148,12 +149,20 @@ export const deleteFormField = async (fieldId: string) => {
 // Form versions operations
 export const createFormVersion = async (formId: string, versionLabel: string, snapshot: any) => {
   try {
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData.user?.id;
+
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
     const { data, error } = await supabase
       .from('form_versions')
       .insert([
         { 
           form_id: formId,
           version_label: versionLabel,
+          created_by: userId,
           snapshot
         }
       ])

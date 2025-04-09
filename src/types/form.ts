@@ -1,5 +1,6 @@
 
 import { Validation } from "./validation";
+import { Database } from "@/integrations/supabase/types";
 
 // Base form element interface
 export interface FormElement {
@@ -70,40 +71,15 @@ export interface FormMetadata {
 }
 
 // Supabase database types
-export interface DatabaseForm {
-  id: string;
-  title: string;
-  description: string | null;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
-  status: 'draft' | 'published' | 'archived';
-}
 
-export interface DatabaseFormField {
-  id: string;
-  form_id: string;
-  label: string;
-  type: string;
-  order: number;
-  settings: any;
-  created_at: string;
-  updated_at: string;
-}
+// Forms table type
+export type DatabaseForm = Database['public']['Tables']['forms']['Row'];
 
-export interface DatabaseFormResponse {
-  id: string;
-  form_id: string;
-  user_id: string | null;
-  submitted_at: string;
-  response_data: any;
-}
+// Form fields table type
+export type DatabaseFormField = Database['public']['Tables']['form_fields']['Row'];
 
-export interface DatabaseFormVersion {
-  id: string;
-  form_id: string;
-  version_label: string;
-  created_by: string;
-  created_at: string;
-  snapshot: any;
-}
+// Form responses table type
+export type DatabaseFormResponse = Database['public']['Tables']['form_responses']['Row'];
+
+// Form versions table type
+export type DatabaseFormVersion = Database['public']['Tables']['form_versions']['Row'];

@@ -102,6 +102,13 @@ export const FormMetadataProvider: React.FC<{ children: React.ReactNode }> = ({ 
         if (error) throw error;
       } else {
         // Create new form
+        const { data: userData } = await supabase.auth.getUser();
+        const userId = userData.user?.id;
+        
+        if (!userId) {
+          throw new Error("User not authenticated");
+        }
+        
         const { error } = await supabase
           .from('forms')
           .insert({
@@ -109,7 +116,7 @@ export const FormMetadataProvider: React.FC<{ children: React.ReactNode }> = ({ 
             title: metadata.name,
             description: metadata.description,
             status,
-            created_by: user.id
+            created_by: userId
           });
 
         if (error) throw error;
