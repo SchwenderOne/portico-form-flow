@@ -10,9 +10,10 @@ import { FormElement } from "@/types/form";
 
 interface AIAssistTabProps {
   onAddElements?: (elements: FormElement[]) => void;
+  existingElements?: FormElement[]; // Added this prop to the interface
 }
 
-const AIAssistTab: React.FC<AIAssistTabProps> = ({ onAddElements }) => {
+const AIAssistTab: React.FC<AIAssistTabProps> = ({ onAddElements, existingElements = [] }) => {
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
