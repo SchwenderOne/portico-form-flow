@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import ExportFormDropdown from "./ExportFormDropdown";
@@ -12,7 +13,8 @@ import {
   ToggleLeft, 
   Undo, 
   Redo,
-  Wand2
+  Wand2,
+  LightbulbIcon
 } from "lucide-react";
 import { FormElement } from "@/types/form";
 import { FormMetadataSheet, useFormMetadataSheet } from "./FormMetadataSheet";
@@ -22,6 +24,7 @@ import { useFormMetadata } from "@/context/FormMetadataContext";
 import { saveFormState } from "@/services/forms-service";
 import { openVersionHistory } from "./version-history/VersionHistorySheet";
 import { useAutoSave, AutoSaveEvent } from "./hooks/useAutoSave";
+import SuggestFieldsModal from "./ai-assistant/SuggestFieldsModal";
 
 interface FormTopToolbarProps {
   selectedElement: FormElement | null;
@@ -51,6 +54,7 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
   const { metadata, saveMetadata } = useFormMetadata();
   const { queueAutoSaveEvent } = useAutoSave({ elements: existingElements });
   const [isSaving, setIsSaving] = React.useState(false);
+  const [isSuggestModalOpen, setIsSuggestModalOpen] = React.useState(false);
 
   const undoOperation = () => toast.info("Undo functionality will be available soon");
   const redoOperation = () => toast.info("Redo functionality will be available soon");
@@ -89,6 +93,18 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
     } else {
       openVersionHistory();
     }
+  };
+
+  const handleAddElements = (elements: FormElement[]) => {
+    // We need to dispatch an event that FormCanvas will listen for
+    const addElementsEvent = new CustomEvent('add-elements', {
+      detail: { elements }
+    });
+    document.dispatchEvent(addElementsEvent);
+  };
+
+  const handleOpenSuggestModal = () => {
+    setIsSuggestModalOpen(true);
   };
 
   return (
@@ -270,6 +286,22 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8"
+                onClick={handleOpenSuggestModal}
+              >
+                <LightbulbIcon className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Suggest Fields</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
                 onClick={onOpenAIModal}
               >
                 <Wand2 className="h-4 w-4" />
@@ -283,6 +315,17 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
       </div>
       
       <FormMetadataSheet showTrigger={false} />
+      
+      <SuggestFieldsModal
+        isOpen={isSuggestModalOpen}
+        onClose={() => setIsSuggestModalOpen(false)}
+        onAddElements={handleAddElements}
+        existingElements={existingElements}
+        formMetadata={{
+          name: metadata.name,
+          description: metadata.description || ''
+        }}
+      />
     </div>
   );
 };

@@ -1,255 +1,148 @@
-
-import React, { useEffect } from "react";
-import FormElement from "./elements/FormElement";
-import FormToolbar from "./FormToolbar";
-import FormTopToolbar from "./FormTopToolbar";
+import React, { useEffect, useState } from "react";
 import FormElementsPanel from "./FormElementsPanel";
-import { GroupingProvider } from "./GroupingContext";
-import SmartGuides from "./SmartGuides";
-import CanvasDropZone from "./canvas/CanvasDropZone";
+import FormToolbar from "./FormToolbar";
+import { FormElement } from "@/types/form";
+import FormTopToolbar from "./FormTopToolbar";
 import AIAssistantModal from "./ai-assistant/AIAssistantModal";
 import { FormCanvasProvider, useFormCanvas } from "./context/FormCanvasContext";
-import { CollaborationProvider, useCollaboration, EditorCursor } from "@/context/CollaborationContext";
-import { useFormMetadata } from "@/context/FormMetadataContext";
-import VersionHistorySheet, { registerVersionHistoryControls } from "./version-history/VersionHistorySheet";
-import { useAutoSave, AutoSaveEvent } from "./hooks/useAutoSave";
-import { useState } from "react";
 
-const FormCanvasInner = () => {
+// Add this line to keep TypeScript happy about the CustomEvent
+declare global {
+  interface WindowEventMap {
+    'add-elements': CustomEvent<{elements: FormElement[]}>;
+  }
+}
+
+const FormCanvasContent = () => {
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+  
   const {
     elements,
+    selectedElements,
     handleElementSelect,
     handleElementMoveWithGuides,
     handleElementDrop,
+    handleAddAIElements,
     handleDeleteElement,
     handleDuplicateElement,
+    handleDuplicateGroup: duplicateGroup,
     handleRequiredToggle,
-    updateElement,
-    handleDuplicateGroup,
-    handleAddAIElements,
-    handleOpenAIModal,
-    handleKeyDown,
     handleCanvasClick,
-    isAIModalOpen,
-    setIsAIModalOpen,
-    isDragOver,
-    setIsDragOver,
-    setIsDragging,
-    showSmartGuides,
-    guideLines,
-    distances,
-    grouping
+    handleKeyDown,
+    updateElement,
+    grouping: {
+      groupElements,
+      ungroupElements
+    }
   } = useFormCanvas();
 
-  const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
-  const { collaborators, updateCursorPosition } = useCollaboration();
-  const { queueAutoSaveEvent } = useAutoSave({ elements });
+  // Get the first selected element for properties panel
+  const selectedElement = selectedElements.length === 1
+    ? elements.find(el => el.id === selectedElements[0])
+    : null;
+  
+  const handleOpenAIModal = () => {
+    setIsAIModalOpen(true);
+  };
+  
+  const handleCloseAIModal = () => {
+    setIsAIModalOpen(false);
+  };
 
-  // Register controls for version history
-  React.useEffect(() => {
-    const openSheet = () => setVersionHistoryOpen(true);
-    const closeSheet = () => setVersionHistoryOpen(false);
-    
-    registerVersionHistoryControls(openSheet, closeSheet);
-    
-    return () => {
-      registerVersionHistoryControls(null, null);
-    };
-  }, []);
-
-  // Auto-save on group operations
-  React.useEffect(() => {
-    const handleGroupChange = () => {
-      queueAutoSaveEvent(AutoSaveEvent.GROUP_OPERATION);
-    };
-    
-    grouping.groupElements = (...args) => {
-      const result = grouping.groupElements(...args);
-      handleGroupChange();
-      return result;
-    };
-    
-    grouping.ungroupElements = (...args) => {
-      const result = grouping.ungroupElements(...args);
-      handleGroupChange();
-      return result;
-    };
-  }, [grouping, queueAutoSaveEvent]);
-
+  // Listen for the add-elements event
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const canvas = document.querySelector('[data-canvas-container="true"]');
-      if (!canvas) return;
-      
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      
-      updateCursorPosition(x, y);
+    const handleAddElementsEvent = (event: CustomEvent<{elements: FormElement[]}>) => {
+      const { elements } = event.detail;
+      handleAddAIElements(elements);
     };
-    
-    const canvasElement = document.querySelector('[data-canvas-container="true"]');
-    if (canvasElement) {
-      canvasElement.addEventListener('mousemove', handleMouseMove);
-    }
+
+    document.addEventListener('add-elements', handleAddElementsEvent as EventListener);
     
     return () => {
-      if (canvasElement) {
-        canvasElement.removeEventListener('mousemove', handleMouseMove);
-      }
+      document.removeEventListener('add-elements', handleAddElementsEvent as EventListener);
     };
-  }, [updateCursorPosition]);
-
-  const otherCollaborators = collaborators.filter(
-    c => c.id !== (window as any).supabase?.auth?.currentSession?.user?.id
-  );
-
-  const handleElementSelectWrapper = (id: string) => {
-    handleElementSelect(id, false);
-  };
-
-  // Adapter function to convert between the two different parameter styles
-  const handlePositionChange = (id: string, x: number, y: number) => {
-    handleElementMoveWithGuides(id, { x, y });
-    // Queue auto-save after significant position changes
-    queueAutoSaveEvent(AutoSaveEvent.LAYOUT_CHANGE);
-  };
-
-  // Enhanced element drop handler with auto-save
-  const handleElementDropWithAutoSave = (...args: Parameters<typeof handleElementDrop>) => {
-    const result = handleElementDrop(...args);
-    queueAutoSaveEvent(AutoSaveEvent.FIELD_ADDITION);
-    return result;
-  };
-
-  // Enhanced delete handler with auto-save
-  const handleDeleteElementWithAutoSave = (id: string) => {
-    handleDeleteElement(id);
-    queueAutoSaveEvent(AutoSaveEvent.FIELD_DELETION);
-  };
-
-  // Create adapter functions for the functions with mismatched parameters
-  const handleDuplicateGroupAdapter = () => {
-    if (grouping.selectedElements.length > 0) {
-      handleDuplicateGroup(grouping.selectedElements);
-    }
-  };
-
-  const handleRequiredToggleAdapter = (id: string) => {
-    const element = elements.find(el => el.id === id);
-    if (element) {
-      handleRequiredToggle(id, !element.required);
-    }
-  };
+  }, [handleAddAIElements]);
 
   return (
-    <GroupingProvider value={{
-      selectedElements: grouping.selectedElements,
-      groupElements: grouping.groupElements,
-      ungroupElements: grouping.ungroupElements,
-      isElementSelected: grouping.isElementSelected,
-      selectElements: grouping.selectElements,
-      clearSelection: grouping.clearSelection
-    }}>
-      <div
-        className="flex flex-col h-full"
-        onKeyDown={handleKeyDown}
-        tabIndex={0}
-      >
-        <FormTopToolbar
-          selectedElement={grouping.selectedElements.length === 1
-            ? elements.find(el => el.id === grouping.selectedElements[0]) || null
-            : null
-          }
-          selectedCount={grouping.selectedElements.length}
-          onDuplicate={handleDuplicateElement}
-          onDuplicateGroup={handleDuplicateGroupAdapter}
-          onRequiredToggle={handleRequiredToggleAdapter}
-          onGroup={grouping.groupElements}
-          onUngroup={grouping.ungroupElements}
-          onOpenAIModal={handleOpenAIModal}
-          existingElements={elements}
-          onOpenVersionHistory={() => setVersionHistoryOpen(true)}
-        />
-        <div className="flex-1 flex">
-          <FormElementsPanel onElementDrop={handleElementDropWithAutoSave} />
-          <div className="flex-1 relative overflow-auto">
-            <CanvasDropZone
-              onDrop={handleElementDropWithAutoSave}
-              isDragOver={isDragOver}
-              setIsDragOver={setIsDragOver}
-              onClick={handleCanvasClick}
-              existingElements={elements}
-              data-canvas-container="true"
-            >
-              {showSmartGuides &&
-                <SmartGuides
-                  guides={guideLines}
-                  distances={distances}
-                />
-              }
-
-              {elements.map((element) => (
-                <FormElement
-                  key={element.id}
-                  element={element}
-                  onSelect={handleElementSelectWrapper}
-                  onPositionChange={handlePositionChange}
-                  onDelete={handleDeleteElementWithAutoSave}
-                  onDuplicate={handleDuplicateElement}
-                  onResize={(id, width, height) => {
-                    // Handle resize logic here if needed
-                  }}
-                  selected={grouping.isElementSelected(element.id)}
-                />
-              ))}
-
-              {otherCollaborators.map(collaborator => (
-                <EditorCursor
-                  key={collaborator.id}
-                  collaborator={collaborator}
-                />
-              ))}
-            </CanvasDropZone>
+    <div 
+      className="flex flex-col h-full"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+    >
+      <FormTopToolbar
+        selectedElement={selectedElement}
+        selectedCount={selectedElements.length}
+        onDuplicate={handleDuplicateElement}
+        onDuplicateGroup={duplicateGroup}
+        onRequiredToggle={handleRequiredToggle}
+        onGroup={groupElements}
+        onUngroup={ungroupElements}
+        onOpenAIModal={handleOpenAIModal}
+        existingElements={elements}
+      />
+      
+      <div className="flex flex-1 overflow-hidden">
+        <FormElementsPanel onElementDrop={handleElementDrop} />
+        
+        <div className="flex-1 overflow-auto bg-gray-100" onClick={handleCanvasClick}>
+          <div 
+            className="min-h-full w-full relative p-6" 
+            style={{ minHeight: '1200px' }}
+          >
+            {elements.map((element) => (
+              <div
+                key={element.id}
+                style={{
+                  position: 'absolute',
+                  left: `${element.position.x}px`,
+                  top: `${element.position.y}px`,
+                  width: `${element.size.width}px`,
+                  height: `${element.size.height}px`,
+                }}
+                className={`element-container ${
+                  selectedElements.includes(element.id) ? 'selected-element' : ''
+                }`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleElementSelect(element.id, e.shiftKey);
+                }}
+              >
+                <div 
+                  className={`relative w-full h-full ${
+                    selectedElements.includes(element.id) 
+                      ? 'outline outline-2 outline-blue-500' 
+                      : ''
+                  }`}
+                >
+                  {/* Element content would go here */}
+                  <div className="p-2">
+                    <div className="font-bold">{element.type}</div>
+                    {element.label && <div>{element.label}</div>}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-        <FormToolbar
-          selectedElement={grouping.selectedElements.length === 1
-            ? elements.find(el => el.id === grouping.selectedElements[0]) || null
-            : null
-          }
-          selectedCount={grouping.selectedElements.length}
-          onUpdate={updateElement}
-          onGroup={grouping.groupElements}
-          onUngroup={grouping.ungroupElements}
-          onAddElements={handleAddAIElements}
-          existingElements={elements}
-        />
-
-        <AIAssistantModal
-          isOpen={isAIModalOpen}
-          onClose={() => setIsAIModalOpen(false)}
-          onAddElements={handleAddAIElements}
-          existingElements={elements}
-        />
-
-        <VersionHistorySheet
-          showTrigger={false}
-          open={versionHistoryOpen}
-          onOpenChange={setVersionHistoryOpen}
-        />
       </div>
-    </GroupingProvider>
-  );
-};
-
-const FormCanvasContent = () => {
-  const { metadata } = useFormMetadata();
-  
-  return (
-    <CollaborationProvider formId={metadata.id}>
-      <FormCanvasInner />
-    </CollaborationProvider>
+      
+      <FormToolbar
+        selectedElement={selectedElement}
+        selectedCount={selectedElements.length}
+        onUpdate={updateElement}
+        onGroup={groupElements}
+        onUngroup={ungroupElements}
+        onAddElements={handleAddAIElements}
+        existingElements={elements}
+      />
+      
+      <AIAssistantModal
+        isOpen={isAIModalOpen}
+        onClose={handleCloseAIModal}
+        onAddElements={handleAddAIElements}
+        existingElements={elements}
+      />
+    </div>
   );
 };
 
