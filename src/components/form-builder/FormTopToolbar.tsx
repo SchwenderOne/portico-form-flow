@@ -18,6 +18,9 @@ import { FormElement } from "@/types/form";
 import { FormMetadataSheet } from "./FormMetadataSheet";
 import { useFormMetadata } from "@/context/FormMetadataContext";
 import ExportFormDropdown from "./ExportFormDropdown";
+import { saveFormState } from "@/services/forms-service";
+import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 
 interface FormTopToolbarProps {
   onPreview?: () => void;
@@ -54,7 +57,34 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
   onOpenAIModal = () => {},
   existingElements = []
 }) => {
-  const { metadata } = useFormMetadata();
+  const { metadata, saveMetadata, isLoading } = useFormMetadata();
+  const { user } = useAuth();
+  
+  const handleSaveForm = async () => {
+    if (!user) {
+      toast.error("You must be logged in to save forms");
+      return;
+    }
+    
+    try {
+      // First save metadata
+      await saveMetadata();
+      
+      // Then save form elements if we have any
+      if (existingElements.length > 0) {
+        await saveFormState(
+          metadata.id, 
+          metadata.name, 
+          metadata.description || '', 
+          existingElements
+        );
+      }
+      
+      toast.success("Form saved successfully");
+    } catch (error) {
+      console.error("Error saving form:", error);
+    }
+  };
   
   return (
     <div className="h-12 border-b flex items-center justify-between px-4 bg-background">
@@ -141,9 +171,11 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
           variant="default"
           size="sm"
           className="bg-portico-purple hover:bg-portico-purple-dark flex items-center space-x-1"
+          onClick={handleSaveForm}
+          disabled={isLoading}
         >
           <Save className="h-4 w-4 mr-1" />
-          Save
+          {isLoading ? "Saving..." : "Save"}
         </Button>
 
         <DropdownMenu>

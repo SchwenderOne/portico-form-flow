@@ -68,3 +68,42 @@ export interface FormMetadata {
   tags: string[];
   createdAt: string;
 }
+
+// Supabase database types
+export interface DatabaseForm {
+  id: string;
+  title: string;
+  description: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  status: 'draft' | 'published' | 'archived';
+}
+
+export interface DatabaseFormField {
+  id: string;
+  form_id: string;
+  label: string;
+  type: string;
+  order: number;
+  settings: any;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DatabaseFormResponse {
+  id: string;
+  form_id: string;
+  user_id: string | null;
+  submitted_at: string;
+  response_data: any;
+}
+
+export interface DatabaseFormVersion {
+  id: string;
+  form_id: string;
+  version_label: string;
+  created_by: string;
+  created_at: string;
+  snapshot: any;
+}
