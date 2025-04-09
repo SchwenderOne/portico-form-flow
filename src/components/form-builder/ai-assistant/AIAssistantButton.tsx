@@ -8,9 +8,10 @@ import { FormElement } from "@/types/form";
 
 interface AIAssistantButtonProps {
   onAddElements: (elements: FormElement[]) => void;
+  existingElements: FormElement[]; // Add this prop
 }
 
-const AIAssistantButton: React.FC<AIAssistantButtonProps> = ({ onAddElements }) => {
+const AIAssistantButton: React.FC<AIAssistantButtonProps> = ({ onAddElements, existingElements }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => {
@@ -42,6 +43,7 @@ const AIAssistantButton: React.FC<AIAssistantButtonProps> = ({ onAddElements }) 
         isOpen={isModalOpen} 
         onClose={handleCloseModal} 
         onAddElements={onAddElements}
+        existingElements={existingElements}
       />
     </>
   );

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { 
   Copy, 
@@ -29,6 +28,7 @@ interface FormTopToolbarProps {
   onGroup: () => void;
   onUngroup: () => void;
   onOpenAIModal: () => void;
+  existingElements?: FormElement[];
 }
 
 const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
@@ -39,7 +39,8 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
   onRequiredToggle,
   onGroup,
   onUngroup,
-  onOpenAIModal
+  onOpenAIModal,
+  existingElements
 }) => {
   const isFieldSelected = selectedElement && selectedElement.type !== 'header' && selectedElement.type !== 'paragraph';
   const isTextOrHeader = selectedElement && (selectedElement.type === 'text' || selectedElement.type === 'header');

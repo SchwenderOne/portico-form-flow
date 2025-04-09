@@ -203,6 +203,7 @@ const FormCanvas = () => {
           onGroup={grouping.groupElements}
           onUngroup={grouping.ungroupElements}
           onOpenAIModal={handleOpenAIModal}
+          existingElements={elements} // Add this prop if FormTopToolbar uses AIAssistantButton
         />
         <div className="flex-1 flex">
           <FormElementsPanel onElementDrop={handleElementDrop} />
@@ -247,6 +248,7 @@ const FormCanvas = () => {
           onGroup={grouping.groupElements}
           onUngroup={grouping.ungroupElements}
           onAddElements={handleAddAIElements}
+          existingElements={elements} // Add this prop to pass to AIAssistantButton
         />
         
         <AIAssistantModal
