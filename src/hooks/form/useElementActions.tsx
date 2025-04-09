@@ -1,7 +1,9 @@
+
 import { useCallback } from "react";
 import { FormElement } from "@/types/form";
 import { useToast } from "@/hooks/use-toast";
 import { findValidPosition, createNewElement } from "@/utils/element-utils";
+import { toast } from "sonner";
 
 export const useElementActions = (
   elements: FormElement[],
@@ -9,7 +11,7 @@ export const useElementActions = (
   selectedElements: string[],
   setSelectedElements: React.Dispatch<React.SetStateAction<string[]>>
 ) => {
-  const { toast } = useToast();
+  const { toast: useToastHook } = useToast();
 
   const updateElement = useCallback((updatedElement: FormElement) => {
     setElements(elements.map(el => 
@@ -26,6 +28,7 @@ export const useElementActions = (
       if (selectedElements.includes(id)) {
         const selectedElement = elements.find(e => e.id === id);
         if (selectedElement && el.groupId === selectedElement.groupId && el.groupId !== null) {
+          // Move all elements in the same group
           return { ...el, position };
         }
       }
@@ -46,11 +49,10 @@ export const useElementActions = (
     setElements(prev => [...prev, newElement]);
     setSelectedElements([newElement.id]);
     
-    toast({
-      title: "Element Added",
-      description: `Added a new ${type} element to your form.`,
+    toast.success(`Added a new ${type} element to your form`, {
+      duration: 2000,
     });
-  }, [elements, setElements, setSelectedElements, toast]);
+  }, [elements, setElements, setSelectedElements]);
 
   const handleDeleteElement = useCallback((id: string) => {
     const element = elements.find(el => el.id === id);
@@ -59,25 +61,33 @@ export const useElementActions = (
       if (groupElements.length > 1 && window.confirm("Delete all elements in this group?")) {
         setElements(elements.filter(el => el.groupId !== element.groupId));
         setSelectedElements([]);
+        toast.success("Group deleted", { duration: 2000 });
       } else {
         setElements(elements.filter(el => el.id !== id));
         setSelectedElements(selectedElements.filter(elementId => elementId !== id));
+        toast.success("Element deleted", { duration: 2000 });
       }
     } else {
       setElements(elements.filter(el => el.id !== id));
       setSelectedElements(selectedElements.filter(elementId => elementId !== id));
+      toast.success("Element deleted", { duration: 2000 });
     }
+  }, [elements, selectedElements, setElements, setSelectedElements]);
+
+  const alignElement = useCallback((id: string, alignment: 'left' | 'center' | 'right') => {
+    const element = elements.find(el => el.id === id);
+    if (!element) return;
     
-    toast({
-      title: "Element Deleted",
-      description: "The element has been removed from your form.",
-    });
-  }, [elements, selectedElements, setElements, setSelectedElements, toast]);
+    // For now, just show a toast. In a full implementation,
+    // we would adjust the element's position based on the alignment
+    toast.info(`${alignment} alignment will be available soon`);
+  }, [elements]);
 
   return {
     updateElement,
     handleElementMove,
     handleElementDrop,
-    handleDeleteElement
+    handleDeleteElement,
+    alignElement
   };
 };

@@ -84,12 +84,13 @@
 .grid-background {
   background-size: 25px 25px;
   background-image: 
-    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(155, 135, 245, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(155, 135, 245, 0.1) 1px, transparent 1px);
 }
 
 .element-container {
   transition: all 0.2s ease-in-out;
+  cursor: move;
 }
 
 .element-container.selected-element {
@@ -179,4 +180,52 @@
 .element-container:hover .element-toolbar,
 .element-container.selected-element .element-toolbar {
   opacity: 1;
+}
+
+/* Text formatting toolbar */
+.text-formatting-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  position: absolute;
+  transition: all 0.2s ease;
+}
+
+.format-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #555;
+}
+
+.format-button:hover {
+  background-color: #f1f5f9;
+  color: #9b87f5;
+}
+
+.format-button.active {
+  background-color: #9b87f5;
+  color: white;
+}
+
+/* Content editable styles */
+[contenteditable="true"] {
+  outline: none;
+  padding: 4px;
+  border-radius: 4px;
+  min-height: 24px;
+}
+
+[contenteditable="true"]:focus {
+  background-color: rgba(155, 135, 245, 0.05);
+  border: 1px dashed rgba(155, 135, 245, 0.3);
 }

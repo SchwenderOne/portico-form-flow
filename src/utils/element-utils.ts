@@ -1,133 +1,113 @@
-import { FormElement } from "@/types/form";
-import { 
-  getSmartLabel, 
-  getSmartPlaceholder, 
-  getSmartValidation, 
-  getSmartOptions, 
-  notifySmartDefaults 
-} from "./smart-defaults";
 
-/**
- * Finds a valid position for a new element that doesn't overlap with existing elements
- */
-export const findValidPosition = (
-  x: number, 
-  y: number, 
-  elementType: string,
-  existingElements: FormElement[]
-): { x: number, y: number } => {
-  // Default dimensions based on element type
-  const width = 500;
-  const height = elementType === 'header' || elementType === 'paragraph' ? 60 : 
-               elementType === 'checkbox' ? 50 : 
-               elementType === 'file' ? 120 : 80;
-  
-  // Check if the position would cause an overlap
-  const wouldOverlap = existingElements.some(element => {
-    const elemRight = element.position.x + element.size.width;
-    const elemBottom = element.position.y + element.size.height;
-    
-    const newElemRight = x + width;
-    const newElemBottom = y + height;
-    
-    // Check if rectangles overlap
-    return !(
-      x >= elemRight || // New element is to the right of existing element
-      newElemRight <= element.position.x || // New element is to the left of existing element
-      y >= elemBottom || // New element is below existing element
-      newElemBottom <= element.position.y // New element is above existing element
-    );
-  });
-  
-  if (!wouldOverlap) {
-    return { x, y }; // Original position is valid
+import { v4 as uuidv4 } from 'uuid';
+import { FormElement } from '@/types/form';
+
+// Get default size for element type
+export const getDefaultSize = (type: string) => {
+  switch (type) {
+    case 'header':
+      return { width: 500, height: 60 };
+    case 'paragraph':
+      return { width: 500, height: 100 };
+    case 'text':
+    case 'email':
+    case 'number':
+    case 'select':
+      return { width: 500, height: 80 };
+    case 'textarea':
+      return { width: 500, height: 120 };
+    case 'checkbox':
+    case 'radio':
+      return { width: 500, height: 50 };
+    case 'file':
+      return { width: 500, height: 100 };
+    case 'date':
+      return { width: 500, height: 80 };
+    default:
+      return { width: 500, height: 80 };
   }
+};
+
+// Get default content/label for element type
+export const getDefaultContent = (type: string) => {
+  switch (type) {
+    case 'header':
+      return 'Header Text';
+    case 'paragraph':
+      return 'This is a paragraph of text. You can edit this to add your content.';
+    case 'text':
+      return 'Text Field';
+    case 'email':
+      return 'Email Address';
+    case 'number':
+      return 'Number Field';
+    case 'textarea':
+      return 'Text Area';
+    case 'checkbox':
+      return 'Checkbox Option';
+    case 'radio':
+      return 'Radio Options';
+    case 'select':
+      return 'Dropdown';
+    case 'file':
+      return 'File Upload';
+    case 'date':
+      return 'Date Picker';
+    default:
+      return 'New Element';
+  }
+};
+
+// Find a valid position to place element without overlapping
+export const findValidPosition = (x: number, y: number, type: string, elements: FormElement[]) => {
+  // Snap to grid - 25px
+  const snappedX = Math.round(x / 25) * 25;
+  const snappedY = Math.round(y / 25) * 25;
   
-  // Try to find a vertical position below all existing elements
-  const lowestElement = existingElements.reduce((lowest, current) => {
-    const currentBottom = current.position.y + current.size.height;
-    return currentBottom > lowest ? currentBottom : lowest;
-  }, 0);
+  // Ensure it's not too close to the edge
+  const validX = Math.max(50, snappedX);
+  const validY = Math.max(50, snappedY);
   
-  // Find the most common x alignment among existing elements
-  const xPositions = existingElements.map(el => el.position.x);
-  const mostCommonX = xPositions.length > 0 ? 
-    xPositions.sort((a, b) => 
-      xPositions.filter(v => v === a).length - xPositions.filter(v => v === b).length
-    ).pop() : 
-    x;
+  return { x: validX, y: validY };
+};
+
+// Create a new element of the specified type
+export const createNewElement = (type: string, position: { x: number, y: number }, existingElements: FormElement[]): FormElement => {
+  const id = uuidv4();
+  const size = getDefaultSize(type);
+  const content = type === 'header' || type === 'paragraph' ? getDefaultContent(type) : undefined;
+  const label = type !== 'header' && type !== 'paragraph' ? getDefaultContent(type) : undefined;
   
-  // Add spacing and return the new position
-  return { 
-    x: mostCommonX || x, 
-    y: lowestElement + 25 // Add 25px spacing
+  // Create appropriate defaults based on element type
+  return {
+    id,
+    type,
+    position,
+    size,
+    content,
+    label,
+    placeholder: type !== 'header' && type !== 'paragraph' ? `Enter ${label?.toLowerCase()}` : undefined,
+    required: false,
+    disabled: false,
+    groupId: null,
+    helpText: type !== 'header' && type !== 'paragraph' ? 'Help text for this field' : undefined,
   };
 };
 
-/**
- * Creates a new element with default properties based on element type
- */
-export const createNewElement = (
-  type: string,
-  position: { x: number, y: number },
-  existingElements: FormElement[] = []
-): FormElement => {
-  // Get smart defaults based on field type and context
-  const smartLabel = getSmartLabel(type, existingElements, position);
-  const smartPlaceholder = getSmartPlaceholder(type);
-  const smartValidation = getSmartValidation(type);
-  const smartOptions = getSmartOptions(type);
-  
-  // Notify user about smart defaults being applied
-  notifySmartDefaults(type);
-  
-  const newElement: FormElement = {
-    id: `${type}-${Date.now()}`,
-    type,
-    position,
-    size: { 
-      width: 500, 
-      height: type === 'header' || type === 'paragraph' ? 60 : 
-              type === 'checkbox' || type === 'radio' ? 100 : 
-              type === 'file' ? 120 : 80 
+// Clone an element
+export const cloneElement = (element: FormElement, offsetX = 25, offsetY = 25): FormElement => {
+  return {
+    ...element,
+    id: uuidv4(),
+    position: {
+      x: element.position.x + offsetX,
+      y: element.position.y + offsetY
     },
-    label: smartLabel,
-    placeholder: smartPlaceholder,
-    required: false,
-    groupId: null,
-    validation: smartValidation
+    groupId: null // Remove group association when duplicating
   };
+};
 
-  // Add specific properties based on element type
-  if (type === 'header') {
-    (newElement as any).content = 'New Form Header';
-  } else if (type === 'paragraph') {
-    (newElement as any).content = 'Add your paragraph text here...';
-  } else if (type === 'checkbox' || type === 'radio') {
-    (newElement as any).options = smartOptions || ['Option 1', 'Option 2', 'Option 3'];
-  } else if (type === 'select') {
-    (newElement as any).options = smartOptions || ['Select an option', 'Option 1', 'Option 2', 'Option 3'];
-  } else if (type === 'date') {
-    (newElement as any).value = null;
-  } else if (type === 'file') {
-    (newElement as any).accept = '.pdf,.png';
-    (newElement as any).maxSize = 5;
-  } else if (type === 'email') {
-    newElement.label = 'Email Address';
-    newElement.placeholder = 'example@domain.com';
-    newElement.validation = { 
-      type: 'email',
-      message: 'Please enter a valid email address'
-    };
-  } else if (type === 'number') {
-    newElement.label = 'Number';
-    newElement.placeholder = 'Enter a number';
-    newElement.validation = {
-      type: 'number',
-      min: 0,
-      max: 100
-    };
-  }
-
-  return newElement;
+// Generate a group ID for multiple elements
+export const generateGroupId = (): string => {
+  return `group-${uuidv4().slice(0, 8)}`;
 };

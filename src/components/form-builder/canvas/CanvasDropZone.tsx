@@ -1,135 +1,90 @@
 
-import React, { useRef, useState } from "react";
-import { cn } from "@/lib/utils";
-import DragPreview from "../DragPreview";
+import React, { ReactNode } from "react";
 import { FormElement } from "@/types/form";
-import { findValidPosition } from "@/utils/element-utils";
 
 interface CanvasDropZoneProps {
   onDrop: (type: string, position: { x: number, y: number }) => void;
   isDragOver: boolean;
-  setIsDragOver: (isDragOver: boolean) => void;
-  children: React.ReactNode;
-  onClick?: React.MouseEventHandler<HTMLDivElement>;
-  existingElements?: FormElement[]; // Added to check for overlaps
+  setIsDragOver: React.Dispatch<React.SetStateAction<boolean>>;
+  onClick: (e: React.MouseEvent) => void;
+  children: ReactNode;
+  existingElements: FormElement[];
 }
 
-const CanvasDropZone: React.FC<CanvasDropZoneProps> = ({ 
-  onDrop, 
-  isDragOver, 
-  setIsDragOver, 
-  children,
+const CanvasDropZone: React.FC<CanvasDropZoneProps> = ({
+  onDrop,
+  isDragOver,
+  setIsDragOver,
   onClick,
-  existingElements = []
+  children,
+  existingElements
 }) => {
-  const canvasRef = useRef<HTMLDivElement>(null);
-  const [previewPosition, setPreviewPosition] = useState<{ x: number, y: number } | null>(null);
-  const [draggedElementType, setDraggedElementType] = useState<string | null>(null);
-  const [isValidDropPosition, setIsValidDropPosition] = useState(true);
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    setPreviewPosition(null);
-    setDraggedElementType(null);
-    
-    const elementType = e.dataTransfer.getData("elementType");
-    console.log("Drop event detected with element type:", elementType);
-    
-    if (!elementType || !canvasRef.current) {
-      console.log("Missing element type or canvas ref");
-      return;
-    }
-    
-    const canvasRect = canvasRef.current.getBoundingClientRect();
-    let x = Math.round((e.clientX - canvasRect.left) / 25) * 25;
-    let y = Math.round((e.clientY - canvasRect.top) / 25) * 25;
-    
-    // Find a valid position that doesn't overlap
-    const validPosition = findValidPosition(x, y, elementType, existingElements);
-    
-    console.log("Calculated position:", validPosition);
-    onDrop(elementType, validPosition);
-  };
-
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    if (!isDragOver) setIsDragOver(true);
-    e.dataTransfer.dropEffect = "copy";
-    
-    // Update preview position for the element
-    if (canvasRef.current) {
-      const elementType = e.dataTransfer.getData("elementType") || draggedElementType;
-      if (elementType) {
-        const canvasRect = canvasRef.current.getBoundingClientRect();
-        const x = Math.round((e.clientX - canvasRect.left) / 25) * 25;
-        const y = Math.round((e.clientY - canvasRect.top) / 25) * 25;
-        
-        // Check if this would be a valid drop position
-        const validPosition = findValidPosition(x, y, elementType, existingElements);
-        setIsValidDropPosition(validPosition.x === x && validPosition.y === y);
-        
-        setPreviewPosition(validPosition);
-        
-        // Store the element type if we haven't already
-        if (!draggedElementType) {
-          setDraggedElementType(elementType);
-        }
-      }
+    if (!isDragOver) {
+      setIsDragOver(true);
     }
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragOver(false);
-    setPreviewPosition(null);
+    // Only set isDragOver to false if we're leaving the dropzone
+    // Not just moving between child elements
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setIsDragOver(false);
+    }
   };
 
-  const handleDragEnter = (e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    // Capture the element type on first entry
+    setIsDragOver(false);
+    
+    // Get position relative to the canvas
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.round((e.clientX - rect.left) / 25) * 25;  // Snap to grid
+    const y = Math.round((e.clientY - rect.top) / 25) * 25;   // Snap to grid
+    
+    console.log("Drop event detected with element type:", e.dataTransfer.getData("elementType"));
+    
+    // Calculate a valid position that avoids overlaps
+    const calculatedPosition = {
+      x: Math.max(0, x),
+      y: Math.max(0, y)
+    };
+    
+    console.log("Calculated position:", calculatedPosition);
+    
+    // Check if we're dropping an existing element (for repositioning)
+    const elementId = e.dataTransfer.getData("elementId");
+    if (elementId) {
+      // This would be handled by a reposition function
+      console.log("Repositioning element:", elementId);
+      return;
+    }
+    
+    // Handle new element drop
     const elementType = e.dataTransfer.getData("elementType");
     if (elementType) {
-      setDraggedElementType(elementType);
+      onDrop(elementType, calculatedPosition);
     }
   };
 
   return (
-    <div 
-      ref={canvasRef}
-      className={cn(
-        "form-canvas min-h-full w-full p-4 relative bg-white",
-        "grid-background", // Added class for enhanced grid
-        isDragOver && "bg-portico-purple/5 outline-dashed outline-2 outline-portico-purple/30"
-      )}
+    <div
+      className={`flex-1 relative overflow-auto grid-background ${
+        isDragOver ? "dragging-over" : ""
+      }`}
+      style={{ 
+        height: "100%", 
+        minHeight: "500px",
+        minWidth: "500px"
+      }}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
-      onDragEnter={handleDragEnter}
       onDrop={handleDrop}
       onClick={onClick}
     >
       {children}
-      
-      {/* Show enhanced drag preview when dragging over the canvas */}
-      {previewPosition && draggedElementType && (
-        <DragPreview 
-          elementType={draggedElementType} 
-          position={previewPosition} 
-        />
-      )}
-      
-      {/* Optionally, show a visual indicator if position is invalid */}
-      {previewPosition && !isValidDropPosition && (
-        <div 
-          className="absolute bg-red-500/20 border-2 border-red-500/50 rounded-md z-30 pointer-events-none"
-          style={{
-            left: previewPosition.x,
-            top: previewPosition.y,
-            width: 500,
-            height: 80,
-          }}
-        />
-      )}
     </div>
   );
 };

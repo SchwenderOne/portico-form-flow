@@ -11,6 +11,9 @@ import { CollaboratorAvatars, EditorCursor } from "@/context/CollaborationContex
 import { useFormMetadata } from "@/context/FormMetadataContext";
 import CanvasDropZone from "./canvas/CanvasDropZone";
 import { toast } from "sonner";
+import ElementContent from "./ElementContent";
+import FloatingToolbar from "./canvas/FloatingToolbar";
+import ContentEditableElement from "./ContentEditableElement";
 
 declare global {
   interface WindowEventMap {
@@ -22,6 +25,7 @@ declare global {
 const FormCanvasContent = () => {
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const { metadata } = useFormMetadata();
+  const [hoveredElement, setHoveredElement] = useState<string | null>(null);
   
   const {
     elements,
@@ -72,6 +76,16 @@ const FormCanvasContent = () => {
     if (element) {
       handleRequiredToggle(id, !element.required);
       toast.success(`Field set to ${!element.required ? 'required' : 'optional'}`);
+    }
+  };
+
+  const handleElementContentChange = (id: string, content: string) => {
+    const element = elements.find(el => el.id === id);
+    if (element) {
+      updateElement({
+        ...element,
+        content
+      });
     }
   };
 
@@ -155,6 +169,8 @@ const FormCanvasContent = () => {
                 e.stopPropagation();
                 handleElementSelect(element.id, e.shiftKey);
               }}
+              onMouseEnter={() => setHoveredElement(element.id)}
+              onMouseLeave={() => setHoveredElement(null)}
             >
               <div 
                 className={`relative w-full h-full rounded-md border ${
@@ -164,20 +180,41 @@ const FormCanvasContent = () => {
                 } ${
                   element.groupId ? 'bg-white/95' : 'bg-white'
                 }`}
+                draggable="true"
+                onDragStart={(e) => {
+                  e.dataTransfer.setData("elementId", element.id);
+                }}
               >
-                <div className="p-3 h-full">
-                  <div className="flex flex-col h-full">
-                    <div className="font-medium text-sm mb-1">{element.type.charAt(0).toUpperCase() + element.type.slice(1)}</div>
-                    {element.label && <div className="text-sm text-gray-700">{element.label}</div>}
-                    {element.content && <div className="mt-1 text-xs text-gray-600">{element.content}</div>}
-                    {element.required && (
-                      <div className="absolute top-1 right-1 bg-red-100 text-red-600 text-xs px-1 rounded">Required</div>
-                    )}
-                    {element.groupId && (
-                      <div className="absolute bottom-1 left-1 bg-blue-100 text-blue-600 text-xs px-1 rounded">Grouped</div>
-                    )}
-                  </div>
+                <div className="p-3 h-full overflow-auto">
+                  {element.type === 'header' || element.type === 'paragraph' ? (
+                    <ContentEditableElement 
+                      element={element}
+                      content={element.content || ''}
+                      onContentChange={(content) => handleElementContentChange(element.id, content)}
+                      className={element.type === 'header' ? 'text-lg font-bold' : 'text-sm'}
+                    />
+                  ) : (
+                    <ElementContent element={element} isEditing={selectedElements.includes(element.id)} />
+                  )}
                 </div>
+                
+                {/* Show floating toolbar when the element is hovered or selected */}
+                {(hoveredElement === element.id || selectedElements.includes(element.id)) && (
+                  <FloatingToolbar 
+                    element={element}
+                    visible={true}
+                    position={{ 
+                      x: element.size.width / 2, 
+                      y: 0 
+                    }}
+                    onDelete={handleDeleteElement}
+                    onDuplicate={handleDuplicateElement}
+                    onAlign={(id, alignment) => {
+                      // Handle alignment in a future implementation
+                      toast.info(`Align ${alignment} will be available soon`);
+                    }}
+                  />
+                )}
               </div>
             </div>
           ))}
