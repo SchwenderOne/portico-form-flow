@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { FormElement } from "@/types/form";
 import { useFormElements } from "@/hooks/use-form-elements";
@@ -30,8 +29,8 @@ type FormCanvasContextType = {
   updateElement: (element: FormElement) => void;
   addElement: (element: FormElement) => void;
   showSmartGuides: boolean;
-  guideLines: { orientation: 'horizontal' | 'vertical', position: number }[];
-  distances: { elementId: string, distance: number, orientation: 'horizontal' | 'vertical' }[];
+  guideLines: { horizontal: number[]; vertical: number[] };
+  distances: { horizontal: { position: number; distance: number }[]; vertical: { position: number; distance: number }[] };
   grouping: {
     selectedElements: string[];
     groupElements: () => void;
@@ -136,16 +135,14 @@ export const FormCanvasProvider: React.FC<{
     if (!elements || elements.length === 0) return;
     
     if (replaceExisting) {
-      // Replace all existing elements with the new ones
       setElements(elements.map((element, index) => ({
         ...element,
         position: {
-          x: 100, // Standard left alignment
-          y: 50 + (index > 0 ? index * 100 : 0) // Proper vertical spacing
+          x: 100,
+          y: 50 + (index > 0 ? index * 100 : 0)
         }
       })));
       
-      // Select the first element in the new form
       if (elements.length > 0) {
         handleElementSelect(elements[0].id, false);
       }
@@ -154,7 +151,6 @@ export const FormCanvasProvider: React.FC<{
       return;
     }
     
-    // Find the lowest position of existing elements to place new elements below
     const lowestElementBottom = Math.max(
       ...elements.map(el => el.position.y + el.size.height),
       50
@@ -162,31 +158,26 @@ export const FormCanvasProvider: React.FC<{
     
     let currentY = lowestElementBottom + 30;
     
-    // Calculate proper alignment with grid
     currentY = Math.round(currentY / 25) * 25;
     
-    // Add each element with proper spacing and alignment
     elements.forEach((element, index) => {
       const adjustedElement = {
         ...element,
         position: {
-          x: 100, // Standard left alignment
+          x: 100,
           y: currentY
         }
       };
       
       addElement(adjustedElement);
       
-      // Calculate next element position based on current element height
       const elementHeight = element.size.height || 80;
-      const spacing = 20; // Default spacing between elements
+      const spacing = 20;
       currentY += elementHeight + spacing;
       
-      // Ensure alignment to grid
       currentY = Math.round(currentY / 25) * 25;
     });
     
-    // Select the last added element
     if (elements.length > 0) {
       const lastElement = elements[elements.length - 1];
       handleElementSelect(lastElement.id, false);
@@ -205,7 +196,6 @@ export const FormCanvasProvider: React.FC<{
     }
   };
 
-  // Create the context value
   const contextValue: FormCanvasContextType = {
     elements,
     selectedElements,
@@ -242,7 +232,6 @@ export const FormCanvasProvider: React.FC<{
   );
 };
 
-// Custom hook to use the form canvas context
 export const useFormCanvas = () => {
   const context = useContext(FormCanvasContext);
   if (context === undefined) {

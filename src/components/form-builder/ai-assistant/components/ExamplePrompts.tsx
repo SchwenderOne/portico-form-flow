@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Lightbulb, FileText, List, Star } from "lucide-react";
+import { Sparkles, Lightbulb, FileText, List, Star, ClipboardList } from "lucide-react";
 
 interface ExamplePromptsProps {
   onSelectExample: (example: string) => void;

@@ -8,12 +8,12 @@ import { FormElement } from "@/types/form";
 
 interface AIAssistTabProps {
   onAddElements?: (elements: FormElement[]) => void;
-  existingElements?: FormElement[]; // Add this property to the interface
+  existingElements?: FormElement[];
 }
 
 const AIAssistTab: React.FC<AIAssistTabProps> = ({ 
   onAddElements,
-  existingElements = [] // Provide a default value
+  existingElements = []
 }) => {
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
