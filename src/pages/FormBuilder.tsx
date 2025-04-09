@@ -11,6 +11,7 @@ import { TeamManagementSheet } from "@/components/team/TeamManagementSheet";
 import { TeamProvider } from "@/context/TeamContext";
 import { FormCanvasProvider } from "@/components/form-builder/context/FormCanvasContext";
 import { CollaborationProvider } from "@/context/CollaborationContext";
+import ErrorBoundary from "@/components/common/ErrorBoundary";
 
 // Import the version history sheet and its controls using ES Module imports
 import VersionHistorySheet, { 
@@ -52,45 +53,47 @@ const FormBuilder = () => {
   }, []);
 
   return (
-    <AppLayout hideHeader={true}>
-      <TeamProvider>
-        <FormMetadataProvider>
-          <BrandSettingsProvider>
-            <ComplianceProvider>
-              <CollaborationProvider formId={formId}>
-                <FormCanvasProvider>
-                  <div className="h-[calc(100vh-0px)] overflow-hidden bg-gray-100">
-                    <FormCanvas />
-                    
-                    <FormMetadataSheet 
-                      showTrigger={false} 
-                      open={metadataSheetOpen} 
-                      onOpenChange={setMetadataSheetOpen} 
-                    />
-                    
-                    <BrandSettingsSheet 
-                      open={brandSheetOpen}
-                      onOpenChange={setBrandSheetOpen}
-                    />
-                    
-                    <VersionHistorySheet 
-                      showTrigger={false}
-                      open={versionHistoryOpen}
-                      onOpenChange={setVersionHistoryOpen}
-                    />
-                    
-                    <TeamManagementSheet
-                      open={teamSheetOpen}
-                      onOpenChange={setTeamSheetOpen}
-                    />
-                  </div>
-                </FormCanvasProvider>
-              </CollaborationProvider>
-            </ComplianceProvider>
-          </BrandSettingsProvider>
-        </FormMetadataProvider>
-      </TeamProvider>
-    </AppLayout>
+    <ErrorBoundary>
+      <AppLayout hideHeader={true}>
+        <TeamProvider>
+          <FormMetadataProvider>
+            <BrandSettingsProvider>
+              <ComplianceProvider>
+                <CollaborationProvider formId={formId}>
+                  <FormCanvasProvider>
+                    <div className="h-[calc(100vh-0px)] overflow-hidden bg-gray-100">
+                      <FormCanvas />
+                      
+                      <FormMetadataSheet 
+                        showTrigger={false} 
+                        open={metadataSheetOpen} 
+                        onOpenChange={setMetadataSheetOpen} 
+                      />
+                      
+                      <BrandSettingsSheet 
+                        open={brandSheetOpen}
+                        onOpenChange={setBrandSheetOpen}
+                      />
+                      
+                      <VersionHistorySheet 
+                        showTrigger={false}
+                        open={versionHistoryOpen}
+                        onOpenChange={setVersionHistoryOpen}
+                      />
+                      
+                      <TeamManagementSheet
+                        open={teamSheetOpen}
+                        onOpenChange={setTeamSheetOpen}
+                      />
+                    </div>
+                  </FormCanvasProvider>
+                </CollaborationProvider>
+              </ComplianceProvider>
+            </BrandSettingsProvider>
+          </FormMetadataProvider>
+        </TeamProvider>
+      </AppLayout>
+    </ErrorBoundary>
   );
 };
 

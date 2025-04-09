@@ -20,6 +20,7 @@ import Analytics from "./pages/Analytics";
 import Automations from "./pages/Automations";
 import Auth from "./pages/Auth";
 import RequireAuth from "./components/auth/RequireAuth";
+import ErrorBoundary from "@/components/common/ErrorBoundary";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient({
@@ -32,45 +33,47 @@ const queryClient = new QueryClient({
 });
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <BrandSettingsProvider>
-          <TeamProvider>
-            <ComplianceProvider>
-              <FormMetadataProvider>
-                {/* Apply brand settings globally */}
-                <BrandSettingsApplier />
-                
-                <Toaster />
-                <Sonner />
-                
-                <BrowserRouter>
-                  <Routes>
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
-                    <Route path="/templates" element={<RequireAuth><Templates /></RequireAuth>} />
-                    <Route path="/distribute" element={<RequireAuth><NotFound /></RequireAuth>} />
-                    <Route path="/analytics" element={<RequireAuth><Analytics /></RequireAuth>} />
-                    <Route path="/automations" element={<RequireAuth><Automations /></RequireAuth>} />
-                    <Route path="/branding" element={<RequireAuth><Index /></RequireAuth>} /> {/* Redirects to Index but will open Brand Settings panel */}
-                    <Route path="/team" element={<RequireAuth><Index /></RequireAuth>} /> {/* Redirects to Index but will open Team Management panel */}
-                    <Route path="/history" element={<RequireAuth><NotFound /></RequireAuth>} />
-                    <Route path="/compliance" element={<RequireAuth><Compliance /></RequireAuth>} />
-                    <Route path="/metadata" element={<RequireAuth><FormMetadata /></RequireAuth>} />
-                    <Route path="/settings" element={<RequireAuth><NotFound /></RequireAuth>} />
-                    <Route path="/form-builder" element={<RequireAuth><FormBuilder /></RequireAuth>} />
-                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </BrowserRouter>
-              </FormMetadataProvider>
-            </ComplianceProvider>
-          </TeamProvider>
-        </BrandSettingsProvider>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <BrandSettingsProvider>
+            <TeamProvider>
+              <ComplianceProvider>
+                <FormMetadataProvider>
+                  {/* Apply brand settings globally */}
+                  <BrandSettingsApplier />
+                  
+                  <Toaster />
+                  <Sonner />
+                  
+                  <BrowserRouter>
+                    <Routes>
+                      <Route path="/auth" element={<Auth />} />
+                      <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
+                      <Route path="/templates" element={<RequireAuth><Templates /></RequireAuth>} />
+                      <Route path="/distribute" element={<RequireAuth><NotFound /></RequireAuth>} />
+                      <Route path="/analytics" element={<RequireAuth><Analytics /></RequireAuth>} />
+                      <Route path="/automations" element={<RequireAuth><Automations /></RequireAuth>} />
+                      <Route path="/branding" element={<RequireAuth><Index /></RequireAuth>} /> {/* Redirects to Index but will open Brand Settings panel */}
+                      <Route path="/team" element={<RequireAuth><Index /></RequireAuth>} /> {/* Redirects to Index but will open Team Management panel */}
+                      <Route path="/history" element={<RequireAuth><NotFound /></RequireAuth>} />
+                      <Route path="/compliance" element={<RequireAuth><Compliance /></RequireAuth>} />
+                      <Route path="/metadata" element={<RequireAuth><FormMetadata /></RequireAuth>} />
+                      <Route path="/settings" element={<RequireAuth><NotFound /></RequireAuth>} />
+                      <Route path="/form-builder" element={<RequireAuth><FormBuilder /></RequireAuth>} />
+                      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </BrowserRouter>
+                </FormMetadataProvider>
+              </ComplianceProvider>
+            </TeamProvider>
+          </BrandSettingsProvider>
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
