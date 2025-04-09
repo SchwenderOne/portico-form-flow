@@ -1,5 +1,5 @@
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import DragPreview from "../DragPreview";
 import { FormElement } from "@/types/form";
