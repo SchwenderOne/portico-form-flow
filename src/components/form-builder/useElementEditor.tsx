@@ -40,7 +40,9 @@ export const useElementEditor = (elementId: string) => {
         contentEditableRef.current = contentElement as HTMLElement;
         // Focus and position cursor at end of text
         setTimeout(() => {
-          contentElement.focus();
+          // Ensure contentElement is an HTMLElement before calling focus()
+          const htmlElement = contentElement as HTMLElement;
+          htmlElement.focus();
           const range = document.createRange();
           range.selectNodeContents(contentElement);
           range.collapse(false);
