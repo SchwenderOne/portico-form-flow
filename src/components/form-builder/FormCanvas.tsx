@@ -256,6 +256,28 @@ const FormCanvas = () => {
     });
   };
 
+  // Handle the drop event on the canvas
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    
+    const elementType = e.dataTransfer.getData("elementType");
+    if (!elementType || !canvasRef.current) return;
+    
+    const canvasRect = canvasRef.current.getBoundingClientRect();
+    // Calculate position relative to the canvas and snap to grid
+    const x = Math.round((e.clientX - canvasRect.left) / 25) * 25;
+    const y = Math.round((e.clientY - canvasRect.top) / 25) * 25;
+    
+    handleElementDrop(elementType, { x, y });
+  };
+
+  // Handle dragover to allow dropping
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    // Change the cursor to indicate droppable area
+    e.dataTransfer.dropEffect = "copy";
+  };
+
   // Clear smart guides when dragging stops
   useEffect(() => {
     if (!isDragging) {
@@ -277,9 +299,11 @@ const FormCanvas = () => {
             <div 
               ref={canvasRef}
               className={cn(
-                "form-canvas min-h-full w-full p-4 relative",
+                "form-canvas min-h-full w-full p-4 relative bg-white",
                 isDragging && "cursor-grabbing"
               )}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
             >
               {showSmartGuides && <SmartGuides guides={guideLines} />}
               

@@ -65,16 +65,19 @@ const FormElementsPanel: React.FC<FormElementsPanelProps> = ({ onElementDrop }) 
 
   const handleDragStart = (e: React.DragEvent, type: string) => {
     e.dataTransfer.setData("elementType", type);
-  };
-
-  const handleDrop = (e: React.DragEvent, type: string) => {
-    const targetCanvas = (e.target as HTMLElement).closest(".form-canvas");
-    if (targetCanvas) {
-      const canvasRect = targetCanvas.getBoundingClientRect();
-      const x = Math.round((e.clientX - canvasRect.left) / 25) * 25;
-      const y = Math.round((e.clientY - canvasRect.top) / 25) * 25;
-      onElementDrop(type, { x, y });
-    }
+    // Add a drag image for better visual feedback
+    const dragImage = document.createElement('div');
+    dragImage.style.width = '100px';
+    dragImage.style.height = '30px';
+    dragImage.style.backgroundColor = 'rgba(155, 135, 245, 0.2)';
+    dragImage.style.borderRadius = '4px';
+    dragImage.style.border = '1px dashed #9b87f5';
+    dragImage.style.display = 'none';
+    document.body.appendChild(dragImage);
+    e.dataTransfer.setDragImage(dragImage, 50, 15);
+    setTimeout(() => {
+      document.body.removeChild(dragImage);
+    }, 0);
   };
 
   // Filter elements based on search term
@@ -98,7 +101,6 @@ const FormElementsPanel: React.FC<FormElementsPanelProps> = ({ onElementDrop }) 
             )}
             draggable
             onDragStart={(e) => handleDragStart(e, element.type)}
-            onDragEnd={(e) => handleDrop(e, element.type)}
           >
             <GripVertical className="h-3 w-3 absolute top-1 left-1 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
             <element.icon className="h-5 w-5 text-portico-purple mb-1" />

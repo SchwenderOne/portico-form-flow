@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Templates from "./pages/Templates";
 import NotFound from "./pages/NotFound";
+import FormBuilder from "./pages/FormBuilder";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/history" element={<NotFound />} />
           <Route path="/compliance" element={<NotFound />} />
           <Route path="/settings" element={<NotFound />} />
+          <Route path="/form-builder" element={<FormBuilder />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

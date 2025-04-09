@@ -6,7 +6,7 @@ import AppLayout from "@/components/layout/AppLayout";
 const FormBuilder = () => {
   return (
     <AppLayout>
-      <div className="h-[calc(100vh-64px)] overflow-hidden">
+      <div className="h-[calc(100vh-64px)] overflow-hidden bg-gray-100">
         <FormCanvas />
       </div>
     </AppLayout>
