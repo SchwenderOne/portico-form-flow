@@ -52,7 +52,7 @@ export interface FormSettings {
   thankYouMessage?: string;
   gdprConsent?: boolean;
   privacyPolicyUrl?: string;
-  termsAndConditionsUrl?: string;
+  termsOfServiceUrl?: string;
   dataAnonymization?: boolean;
   dataRetentionPeriod?: number;
 }

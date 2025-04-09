@@ -74,7 +74,7 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
             onCheckedChange={setGdprConsentValue}
             isEditing={isEditing}
             privacyPolicyUrl={complianceSettings.privacyPolicyUrl}
-            termsAndConditionsUrl={complianceSettings.termsAndConditionsUrl}
+            termsOfServiceUrl={complianceSettings.termsOfServiceUrl}
           />
         );
       case 'radio':
