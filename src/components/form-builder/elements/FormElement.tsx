@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { FormElement as FormElementType } from "@/types/form";
 import { cn } from "@/lib/utils";
@@ -207,7 +206,7 @@ const FormElement: React.FC<FormElementProps> = ({
         />
       )}
       
-      {isEditing && elementRect && (
+      {isEditing && !isTextSelected && elementRect && (
         <FloatingToolbar
           elementId={element.id}
           elementRect={elementRect}
@@ -221,11 +220,14 @@ const FormElement: React.FC<FormElementProps> = ({
       
       {isEditing && isTextSelected && selectionRect && (
         <TextSelectionToolbar
+          elementId={element.id}
           selectionRect={selectionRect}
           onBold={handleBold}
           onItalic={handleItalic}
           onUnderline={handleUnderline}
           onLink={handleLink}
+          onDuplicate={onDuplicate}
+          onDelete={onDelete}
           selectedText={getSelectedText()}
         />
       )}

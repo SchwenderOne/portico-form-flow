@@ -1,6 +1,6 @@
 
 import React, { useRef, useEffect, useState } from "react";
-import { Bold, Italic, Link, Underline } from "lucide-react";
+import { Bold, Italic, Link, Underline, Copy, Trash2 } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -16,19 +16,25 @@ import { Button } from "@/components/ui/button";
 
 interface TextSelectionToolbarProps {
   selectionRect: DOMRect;
+  elementId: string;
   onBold: () => void;
   onItalic: () => void;
   onUnderline: () => void;
   onLink: (url?: string) => void;
+  onDuplicate: (id: string) => void;
+  onDelete: (id: string) => void;
   selectedText: string;
 }
 
 const TextSelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
   selectionRect,
+  elementId,
   onBold,
   onItalic,
   onUnderline,
   onLink,
+  onDuplicate,
+  onDelete,
   selectedText
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -162,6 +168,38 @@ const TextSelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
             </form>
           </PopoverContent>
         </Popover>
+
+        <div className="w-px h-4 bg-border mx-0.5" />
+        
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button 
+              className="p-1.5 rounded-md hover:bg-portico-gray-soft text-portico-gray-dark hover:text-portico-purple transition-colors"
+              onClick={() => onDuplicate(elementId)}
+              aria-label="Duplicate"
+            >
+              <Copy size={16} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-xs">Duplicate</p>
+          </TooltipContent>
+        </Tooltip>
+        
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button 
+              className="p-1.5 rounded-md hover:bg-portico-gray-soft text-portico-gray-dark hover:text-destructive transition-colors"
+              onClick={() => onDelete(elementId)}
+              aria-label="Delete"
+            >
+              <Trash2 size={16} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-xs">Delete</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </TooltipProvider>
   );
