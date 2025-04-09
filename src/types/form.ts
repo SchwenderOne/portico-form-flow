@@ -56,3 +56,15 @@ export interface FormSettings {
   dataAnonymization?: boolean;
   dataRetentionPeriod?: number;
 }
+
+export interface FormMetadata {
+  id: string;
+  name: string;
+  description: string;
+  status: 'draft' | 'review' | 'published';
+  responsiblePerson: string;
+  lastEditedBy: string;
+  lastEditDate: string;
+  tags: string[];
+  createdAt: string;
+}

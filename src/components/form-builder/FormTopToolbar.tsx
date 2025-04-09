@@ -6,13 +6,17 @@ import {
   Save,
   Eye,
   MoreHorizontal,
-  Share2
+  Share2,
+  FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import AIAssistantButton from "./ai-assistant/AIAssistantButton";
 import { FormElement } from "@/types/form";
+import { FormMetadataSheet } from "./FormMetadataSheet";
+import { useFormMetadata } from "@/context/FormMetadataContext";
 
 interface FormTopToolbarProps {
   onPreview?: () => void;
@@ -49,6 +53,8 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
   onOpenAIModal = () => {},
   existingElements = []
 }) => {
+  const { metadata } = useFormMetadata();
+  
   return (
     <div className="h-12 border-b flex items-center justify-between px-4 bg-background">
       <div className="flex items-center space-x-2">
@@ -91,9 +97,18 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
+        
+        <div className="flex items-center ml-4">
+          <span className="font-semibold text-lg mr-2">{metadata.name || "Untitled Form"}</span>
+          <Badge variant={metadata.status === 'draft' ? 'outline' : metadata.status === 'review' ? 'secondary' : 'default'}>
+            {metadata.status === 'draft' ? 'Draft' : metadata.status === 'review' ? 'In Review' : 'Published'}
+          </Badge>
+        </div>
       </div>
 
       <div className="flex items-center space-x-2">
+        <FormMetadataSheet />
+        
         <AIAssistantButton 
           onAddElements={onOpenAIModal} 
           existingElements={existingElements} 
