@@ -1,8 +1,11 @@
 
 import { FormElement } from "@/types/form";
-import { generateFieldFromPrompt, generateFieldSuggestions } from "./ai-field-generator";
+import { generateFieldSuggestions as generateFieldSuggestionsFromGenerator, generateFieldFromPrompt } from "./ai-field-generator";
 import { generateFormWithOpenRouter } from "./openrouter-service";
 import { fallbackGenerateForm } from "./form-generators/mock-form-generator";
+
+// Export the field suggestions generator
+export { generateFieldSuggestions } from "./ai-field-generator";
 
 // This function now uses the OpenRouter API to generate forms
 export const generateFormFromPrompt = async (prompt: string): Promise<FormElement[]> => {

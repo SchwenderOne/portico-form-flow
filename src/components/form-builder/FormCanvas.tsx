@@ -125,7 +125,10 @@ const FormCanvasContent = () => {
             }}
           >
             {showSmartGuides && (
-              <SmartGuides guides={guideLines} distances={distances} />
+              <SmartGuides 
+                guides={guideLines} 
+                distances={distances} 
+              />
             )}
             
             {elements.map((element) => (
