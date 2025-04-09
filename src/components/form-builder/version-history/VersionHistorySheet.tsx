@@ -4,7 +4,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFormMetadata } from "@/context/FormMetadataContext";
-import { useFormCanvas } from "@/components/form-builder/context/FormCanvasContext";
 import { FormElement, DatabaseFormVersion } from "@/types/form";
 import { getFormVersions, createFormVersion } from "@/services/forms-service";
 import VersionsList from "./VersionsList";
@@ -59,20 +58,24 @@ const VersionHistorySheet: React.FC<VersionHistorySheetProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [versionLabel, setVersionLabel] = useState<string>("");
+  const [formCanvasElements, setFormCanvasElements] = useState<FormElement[]>([]);
   
   const { metadata } = useFormMetadata();
   const { user } = useAuth();
   
-  // Safely use the form canvas context with a fallback
-  let formCanvasContext = { elements: [] as FormElement[] };
+  // Safely try to access the form canvas context
+  let canAccessFormCanvas = false;
   try {
-    formCanvasContext = useFormCanvas();
+    // Only import useFormCanvas dynamically within the try block
+    const { useFormCanvas } = require('../context/FormCanvasContext');
+    // If we have access to useFormCanvas, get the elements
+    const { elements } = useFormCanvas();
+    setFormCanvasElements(elements);
+    canAccessFormCanvas = true;
   } catch (error) {
     // If useFormCanvas fails, continue with empty elements array
     console.log("VersionHistorySheet: FormCanvasProvider not available");
   }
-  
-  const { elements } = formCanvasContext;
 
   // Fetch versions when component mounts or form ID changes
   useEffect(() => {
@@ -98,13 +101,18 @@ const VersionHistorySheet: React.FC<VersionHistorySheetProps> = ({
     try {
       setIsSaving(true);
       
+      if (!canAccessFormCanvas || formCanvasElements.length === 0) {
+        toast.error("Cannot save version outside the form editor");
+        return;
+      }
+      
       // Generate default version label if none provided
       const label = versionLabel.trim() || 
         `Version ${versions.length + 1} - ${format(new Date(), "MMM d, yyyy h:mm a")}`;
       
       // Create snapshot of current form state
       const snapshot = {
-        elements,
+        elements: formCanvasElements,
         metadata: {
           title: metadata.name,
           description: metadata.description,
@@ -130,6 +138,12 @@ const VersionHistorySheet: React.FC<VersionHistorySheetProps> = ({
 
   const handleRestoreVersion = (version: DatabaseFormVersion) => {
     try {
+      // Check if we're in the form editor
+      if (!canAccessFormCanvas) {
+        toast.error("Cannot restore version outside the form editor");
+        return;
+      }
+      
       // Convert snapshot to the expected format first
       const snapshotRaw = version.snapshot as Record<string, any>;
       
@@ -164,7 +178,7 @@ const VersionHistorySheet: React.FC<VersionHistorySheetProps> = ({
   };
 
   // Determine if we're in a context where we can save versions (requires FormCanvasProvider)
-  const canSaveVersions = Array.isArray(elements) && elements.length > 0;
+  const canSaveVersions = canAccessFormCanvas && formCanvasElements.length > 0;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

@@ -5,7 +5,7 @@ import FormToolbar from "./FormToolbar";
 import { FormElement } from "@/types/form";
 import FormTopToolbar from "./FormTopToolbar";
 import AIAssistantModal from "./ai-assistant/AIAssistantModal";
-import { FormCanvasProvider, useFormCanvas } from "./context/FormCanvasContext";
+import { useFormCanvas } from "./context/FormCanvasContext";
 import SmartGuides from "./SmartGuides";
 import { CollaboratorAvatars, EditorCursor, CollaborationProvider } from "@/context/CollaborationContext";
 import { useFormMetadata } from "@/context/FormMetadataContext";
@@ -196,9 +196,7 @@ const FormCanvas = () => {
   
   return (
     <CollaborationProvider formId={metadata?.id || 'new-form'}>
-      <FormCanvasProvider>
-        <FormCanvasContent />
-      </FormCanvasProvider>
+      <FormCanvasContent />
     </CollaborationProvider>
   );
 };
