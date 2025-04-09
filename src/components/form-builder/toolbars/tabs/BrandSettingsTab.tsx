@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -127,7 +126,7 @@ const BrandSettingsTab = () => {
                 <Input 
                   id="accent-color"
                   value={brandSettings.colors.accent} 
-                  onChange={(e) => updateColors({ accent: color })}
+                  onChange={(e) => updateColors({ accent: e.target.value })}
                   className="flex-1"
                 />
               </div>

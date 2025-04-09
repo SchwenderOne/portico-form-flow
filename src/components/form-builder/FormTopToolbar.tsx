@@ -13,21 +13,42 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { BrandSettingsSheet } from "./BrandSettingsSheet";
 import AIAssistantButton from "./ai-assistant/AIAssistantButton";
+import { FormElement } from "@/types/form";
 
 interface FormTopToolbarProps {
-  onPreview: () => void;
-  onUndo: () => void;
-  onRedo: () => void;
-  canUndo: boolean;
-  canRedo: boolean;
+  onPreview?: () => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
+  // Add the missing props that FormCanvas is trying to pass
+  selectedElement?: FormElement | null;
+  selectedCount?: number;
+  onDuplicate?: (id: string) => void;
+  onDuplicateGroup?: (ids: string[]) => void;
+  onRequiredToggle?: (id: string, required: boolean) => void;
+  onGroup?: () => void;
+  onUngroup?: () => void;
+  onOpenAIModal?: () => void;
+  existingElements?: FormElement[];
 }
 
 const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
-  onPreview,
-  onUndo,
-  onRedo,
-  canUndo,
-  canRedo
+  onPreview = () => {},
+  onUndo = () => {},
+  onRedo = () => {},
+  canUndo = false,
+  canRedo = false,
+  // Add defaults for new props
+  selectedElement = null,
+  selectedCount = 0,
+  onDuplicate = () => {},
+  onDuplicateGroup = () => {},
+  onRequiredToggle = () => {},
+  onGroup = () => {},
+  onUngroup = () => {},
+  onOpenAIModal = () => {},
+  existingElements = []
 }) => {
   return (
     <div className="h-12 border-b flex items-center justify-between px-4 bg-background">
@@ -74,7 +95,7 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
       </div>
 
       <div className="flex items-center space-x-2">
-        <AIAssistantButton />
+        <AIAssistantButton onClick={onOpenAIModal} />
         
         <BrandSettingsSheet />
 
