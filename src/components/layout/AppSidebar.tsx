@@ -76,7 +76,7 @@ const AppSidebar = () => {
   const menuItems = [
     { icon: LayoutGrid, title: "Templates", path: "/templates" },
     { icon: FileEdit, title: "Forms", path: "/" },
-    { icon: Clipboard, title: "Forms V2", path: "/forms-v2", highlight: true },
+    { icon: Clipboard, title: "Porto", path: "/porto", highlight: true },
     { icon: Send, title: "Distribute", path: "/distribute" },
     { icon: BarChart, title: "Analytics", path: "/analytics" },
     { icon: Zap, title: "Automations", path: "/automations" },
