@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FormElement } from "@/types/form";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -15,6 +15,7 @@ import { Palette, SquareUser, Type, Layers, LayoutGrid } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { ColorPicker } from "@/components/ui/color-picker";
 
 interface AppearanceTabProps {
   element: FormElement;
@@ -23,6 +24,12 @@ interface AppearanceTabProps {
 
 const AppearanceTab: React.FC<AppearanceTabProps> = ({ element, onElementUpdate }) => {
   const [advancedTab, setAdvancedTab] = useState("layout");
+  const [styling, setStyling] = useState(element.styling || {});
+
+  // Update local styling when element styling changes
+  useEffect(() => {
+    setStyling(element.styling || {});
+  }, [element.styling]);
   
   // Function to handle size changes
   const handleSizeChange = (width: number, height: number) => {
@@ -37,15 +44,29 @@ const AppearanceTab: React.FC<AppearanceTabProps> = ({ element, onElementUpdate 
 
   // Function to handle styling changes
   const handleStylingChange = (property: string, value: string) => {
+    const updatedStyling = {
+      ...styling,
+      [property]: value
+    };
+    
+    setStyling(updatedStyling);
+    
     onElementUpdate({
       ...element,
-      styling: {
-        ...(element.styling || {}),
-        [property]: value
-      }
+      styling: updatedStyling
     });
     
     toast.success(`Updated ${property} styling`);
+  };
+
+  // Apply all styling changes at once
+  const applyAllStylingChanges = () => {
+    onElementUpdate({
+      ...element,
+      styling
+    });
+    
+    toast.success("All styling changes applied");
   };
   
   return (
@@ -58,7 +79,7 @@ const AppearanceTab: React.FC<AppearanceTabProps> = ({ element, onElementUpdate 
           <div className="flex items-center gap-2">
             <Slider 
               id="width-slider"
-              defaultValue={[element.size.width]}
+              value={[element.size.width]}
               min={200} 
               max={800}
               step={10}
@@ -81,7 +102,7 @@ const AppearanceTab: React.FC<AppearanceTabProps> = ({ element, onElementUpdate 
             <div className="flex items-center gap-2">
               <Slider 
                 id="height-slider"
-                defaultValue={[element.size.height]}
+                value={[element.size.height]}
                 min={40} 
                 max={200}
                 step={5}
@@ -136,7 +157,7 @@ const AppearanceTab: React.FC<AppearanceTabProps> = ({ element, onElementUpdate 
                           <Label htmlFor="padding" className="text-xs">Padding</Label>
                           <Select 
                             onValueChange={(value) => handleStylingChange('padding', value)}
-                            defaultValue={(element.styling?.padding || 'md')}
+                            value={(styling?.padding || 'md')}
                           >
                             <SelectTrigger id="padding" className="h-8 text-xs">
                               <SelectValue placeholder="Padding" />
@@ -154,7 +175,7 @@ const AppearanceTab: React.FC<AppearanceTabProps> = ({ element, onElementUpdate 
                           <Label htmlFor="margin" className="text-xs">Margin</Label>
                           <Select 
                             onValueChange={(value) => handleStylingChange('margin', value)}
-                            defaultValue={(element.styling?.margin || 'md')}
+                            value={(styling?.margin || 'md')}
                           >
                             <SelectTrigger id="margin" className="h-8 text-xs">
                               <SelectValue placeholder="Margin" />
@@ -177,7 +198,7 @@ const AppearanceTab: React.FC<AppearanceTabProps> = ({ element, onElementUpdate 
                           <Label htmlFor="fontFamily" className="text-xs">Font Family</Label>
                           <Select 
                             onValueChange={(value) => handleStylingChange('fontFamily', value)}
-                            defaultValue={(element.styling?.fontFamily || 'sans')}
+                            value={(styling?.fontFamily || 'sans')}
                           >
                             <SelectTrigger id="fontFamily" className="h-8 text-xs">
                               <SelectValue placeholder="Font Family" />
@@ -193,7 +214,7 @@ const AppearanceTab: React.FC<AppearanceTabProps> = ({ element, onElementUpdate 
                           <Label htmlFor="fontSize" className="text-xs">Font Size</Label>
                           <Select 
                             onValueChange={(value) => handleStylingChange('fontSize', value)}
-                            defaultValue={(element.styling?.fontSize || 'md')}
+                            value={(styling?.fontSize || 'md')}
                           >
                             <SelectTrigger id="fontSize" className="h-8 text-xs">
                               <SelectValue placeholder="Font Size" />
@@ -212,7 +233,7 @@ const AppearanceTab: React.FC<AppearanceTabProps> = ({ element, onElementUpdate 
                         <Label htmlFor="textAlign" className="text-xs">Text Align</Label>
                         <Select 
                           onValueChange={(value) => handleStylingChange('textAlign', value)}
-                          defaultValue={(element.styling?.textAlign || 'left')}
+                          value={(styling?.textAlign || 'left')}
                         >
                           <SelectTrigger id="textAlign" className="h-8 text-xs">
                             <SelectValue placeholder="Text Align" />
@@ -232,14 +253,15 @@ const AppearanceTab: React.FC<AppearanceTabProps> = ({ element, onElementUpdate 
                         <div className="space-y-1">
                           <Label htmlFor="bgColor" className="text-xs">Background</Label>
                           <div className="flex items-center gap-2">
-                            <div 
-                              className="w-6 h-6 rounded-full border" 
-                              style={{backgroundColor: element.styling?.bgColor || '#ffffff'}}
+                            <ColorPicker
+                              color={styling?.bgColor || '#ffffff'}
+                              onChange={(color) => handleStylingChange('bgColor', color)}
+                              label="Background Color"
                             />
                             <Input 
                               id="bgColor"
                               type="text" 
-                              value={element.styling?.bgColor || '#ffffff'} 
+                              value={styling?.bgColor || '#ffffff'} 
                               onChange={(e) => handleStylingChange('bgColor', e.target.value)}
                               className="h-8 text-xs"
                             />
@@ -248,14 +270,15 @@ const AppearanceTab: React.FC<AppearanceTabProps> = ({ element, onElementUpdate 
                         <div className="space-y-1">
                           <Label htmlFor="textColor" className="text-xs">Text Color</Label>
                           <div className="flex items-center gap-2">
-                            <div 
-                              className="w-6 h-6 rounded-full border" 
-                              style={{backgroundColor: element.styling?.textColor || '#000000'}}
+                            <ColorPicker
+                              color={styling?.textColor || '#000000'}
+                              onChange={(color) => handleStylingChange('textColor', color)}
+                              label="Text Color"
                             />
                             <Input 
                               id="textColor"
                               type="text" 
-                              value={element.styling?.textColor || '#000000'} 
+                              value={styling?.textColor || '#000000'} 
                               onChange={(e) => handleStylingChange('textColor', e.target.value)}
                               className="h-8 text-xs"
                             />
@@ -270,7 +293,7 @@ const AppearanceTab: React.FC<AppearanceTabProps> = ({ element, onElementUpdate 
                           <Label htmlFor="borderStyle" className="text-xs">Border Style</Label>
                           <Select 
                             onValueChange={(value) => handleStylingChange('borderStyle', value)}
-                            defaultValue={(element.styling?.borderStyle || 'solid')}
+                            value={(styling?.borderStyle || 'solid')}
                           >
                             <SelectTrigger id="borderStyle" className="h-8 text-xs">
                               <SelectValue placeholder="Border Style" />
@@ -287,7 +310,7 @@ const AppearanceTab: React.FC<AppearanceTabProps> = ({ element, onElementUpdate 
                           <Label htmlFor="borderRadius" className="text-xs">Corner Radius</Label>
                           <Select 
                             onValueChange={(value) => handleStylingChange('borderRadius', value)}
-                            defaultValue={(element.styling?.borderRadius || 'md')}
+                            value={(styling?.borderRadius || 'md')}
                           >
                             <SelectTrigger id="borderRadius" className="h-8 text-xs">
                               <SelectValue placeholder="Corner Radius" />
@@ -309,7 +332,7 @@ const AppearanceTab: React.FC<AppearanceTabProps> = ({ element, onElementUpdate 
                     <Button 
                       size="sm" 
                       variant="secondary"
-                      onClick={() => toast.success("Styling applied to element")}
+                      onClick={applyAllStylingChanges}
                     >
                       Apply Styling
                     </Button>

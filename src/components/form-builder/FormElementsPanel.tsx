@@ -14,7 +14,7 @@ import {
   Heading1,
   TextCursor,
   CheckSquare,
-  CircleDot, // Changed from RadioButton to CircleDot
+  CircleDot, // Use CircleDot instead of RadioButton
   Type,
   FolderPlus,
   X,

@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useElementEditor } from "@/hooks/useElementEditor";
 import UnifiedFloatingToolbar from "@/components/form-builder/toolbars/UnifiedFloatingToolbar";
 import { FormElement } from "@/types/form";
@@ -35,22 +35,32 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
     getSelectedText
   } = useElementEditor(element.id);
 
+  const [localContent, setLocalContent] = useState(content);
   const contentRef = useRef<HTMLDivElement>(null);
-  const { handleDeleteElement, handleDuplicateElement, handleElementAlign } = useFormCanvas();
+  const { handleDeleteElement, handleDuplicateElement, handleElementAlign, updateElement } = useFormCanvas();
 
   // Update the content editable element when content changes from outside
   useEffect(() => {
     if (contentRef.current && !isEditing) {
       contentRef.current.innerHTML = content;
+      setLocalContent(content);
     }
   }, [content, isEditing]);
 
   // Handle content changes and save them
   const handleBlur = () => {
     if (isEditing && contentRef.current && onContentChange) {
-      onContentChange(contentRef.current.innerHTML);
+      const newContent = contentRef.current.innerHTML;
+      onContentChange(newContent);
+      setLocalContent(newContent);
       setIsEditing(false);
       saveChanges();
+      
+      // Also update the element in the form canvas context
+      updateElement({
+        ...element,
+        content: newContent
+      });
     }
   };
 
@@ -58,7 +68,9 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
     if (isEditing && onContentChange) {
       // Update the content as the user types
       const target = e.target as HTMLDivElement;
-      onContentChange(target.innerHTML);
+      const newContent = target.innerHTML;
+      setLocalContent(newContent);
+      onContentChange(newContent);
     }
   };
 
@@ -69,7 +81,9 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
     
     // Save changes and notify parent
     if (contentRef.current && onContentChange) {
-      onContentChange(contentRef.current.innerHTML);
+      const newContent = contentRef.current.innerHTML;
+      setLocalContent(newContent);
+      onContentChange(newContent);
     }
     saveChanges();
   };
@@ -81,7 +95,9 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
     
     // Save changes and notify parent
     if (contentRef.current && onContentChange) {
-      onContentChange(contentRef.current.innerHTML);
+      const newContent = contentRef.current.innerHTML;
+      setLocalContent(newContent);
+      onContentChange(newContent);
     }
     saveChanges();
   };
@@ -96,7 +112,7 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
         onInput={handleInput}
         onDoubleClick={handleDoubleClick}
         suppressContentEditableWarning={true}
-        dangerouslySetInnerHTML={{ __html: content }}
+        dangerouslySetInnerHTML={{ __html: localContent }}
       />
       
       {isEditing && elementRect && (

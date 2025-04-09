@@ -1,8 +1,10 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type ColorPickerProps = {
   color: string;
@@ -11,6 +13,7 @@ type ColorPickerProps = {
   label?: string;
 };
 
+// Extended color palette with more design-friendly options
 const presetColors = [
   "#9b87f5", // Purple (Portico default)
   "#1EAEDB", // Blue
@@ -21,20 +24,29 @@ const presetColors = [
   "#8E9196", // Gray
   "#000000", // Black
   "#ffffff", // White
+  "#6e59a5", // Dark Purple
+  "#e5deff", // Soft Purple
+  "#ffdee2", // Soft Pink
+  "#fec6a1", // Soft Orange
+  "#d3e4fd", // Soft Blue
+  "#f1f0fb", // Soft Gray
 ];
 
 export function ColorPicker({ color, onChange, className, label }: ColorPickerProps) {
+  const [inputColor, setInputColor] = useState(color);
+
   const handleColorChange = (newColor: string) => {
     // Validate hex color format
     const isValidHex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(newColor);
     
     if (isValidHex) {
       onChange(newColor);
+      setInputColor(newColor);
       
       // Show success toast for color change
       if (label) {
         toast.success(`${label} updated to ${newColor}`, {
-          description: "Your brand color changes are applied globally",
+          description: "Your color changes are applied",
           duration: 1500,
         });
       }
@@ -48,16 +60,24 @@ export function ColorPicker({ color, onChange, className, label }: ColorPickerPr
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
+    setInputColor(value);
+    
+    // Add # if missing
+    if (value && !value.startsWith('#')) {
+      value = '#' + value;
+    }
+  };
+
+  const handleInputBlur = () => {
+    let value = inputColor;
     
     // Add # if missing
     if (value && !value.startsWith('#')) {
       value = '#' + value;
     }
     
-    // Immediate validation and feedback for text input
-    if (e.target === document.activeElement) { // Only validate while typing
-      handleColorChange(value);
-    }
+    // Final validation on blur
+    handleColorChange(value);
   };
 
   return (
@@ -74,28 +94,28 @@ export function ColorPicker({ color, onChange, className, label }: ColorPickerPr
         />
       </PopoverTrigger>
       <PopoverContent className="w-64 p-3">
-        <div className="space-y-2">
+        <div className="space-y-3">
+          {label && <Label className="text-xs">{label}</Label>}
+          
           <div className="flex items-center space-x-2">
             <input
               type="color"
               value={color}
               onChange={(e) => handleColorChange(e.target.value)}
-              className="h-8 w-12 cursor-pointer"
+              className="h-8 w-12 cursor-pointer border border-input rounded-md"
               aria-label={label ? `Color picker for ${label}` : "Color picker"}
             />
-            <input
+            <Input
               type="text"
-              value={color}
+              value={inputColor}
               onChange={handleInputChange}
-              onBlur={(e) => {
-                // Final validation on blur
-                handleColorChange(e.target.value);
-              }}
+              onBlur={handleInputBlur}
               className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
               placeholder="#000000"
               aria-label={label ? `Color code for ${label}` : "Color code"}
             />
           </div>
+          
           <div className="grid grid-cols-5 gap-2 mt-2">
             {presetColors.map((presetColor) => (
               <button

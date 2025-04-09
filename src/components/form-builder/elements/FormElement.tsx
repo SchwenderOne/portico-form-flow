@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { FormElement as FormElementType } from '@/types/form';
 import ElementDragHandle from './ElementDragHandle';
@@ -76,6 +77,7 @@ const FormElement: React.FC<FormElementProps> = ({
     toast.success("Element duplicated");
   };
 
+  // Improved rendering of elements based on type
   const renderElement = () => {
     switch (element.type) {
       case 'text':
