@@ -11,7 +11,8 @@ interface DragPreviewProps {
 
 const DragPreview: React.FC<DragPreviewProps> = ({ elementType, position }) => {
   // Create a comprehensive temporary element preview based on the type
-  const previewElement = createNewElement(elementType, position);
+  // Pass an empty array as the third argument for existing elements
+  const previewElement = createNewElement(elementType, position, []);
 
   return (
     <div 

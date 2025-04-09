@@ -19,6 +19,7 @@ interface FloatingToolbarProps {
   elementRect: DOMRect;
   onBold: () => void;
   onItalic: () => void;
+  onUnderline: () => void; // Added the missing onUnderline prop
   onLink: (url?: string) => void;
   onDuplicate: (id: string) => void;
   onDelete: (id: string) => void;
@@ -29,6 +30,7 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   elementRect,
   onBold,
   onItalic,
+  onUnderline, // Added the missing prop in the component function parameters
   onLink,
   onDuplicate,
   onDelete,
@@ -108,6 +110,21 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
           </TooltipTrigger>
           <TooltipContent>
             <p className="text-xs">Italic</p>
+          </TooltipContent>
+        </Tooltip>
+        
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button 
+              className="p-1.5 rounded-md hover:bg-portico-gray-soft text-portico-gray-dark hover:text-portico-purple transition-colors"
+              onClick={onUnderline}
+              aria-label="Underline"
+            >
+              <Underline size={16} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-xs">Underline</p>
           </TooltipContent>
         </Tooltip>
         
