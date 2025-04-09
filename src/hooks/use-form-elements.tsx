@@ -80,6 +80,16 @@ export const useFormElements = () => {
     setElements(prev => [...prev, element]);
     setSelectedElements([element.id]);
   };
+  
+  // Add multiple elements to the canvas (for AI-generated forms)
+  const addMultipleElements = (newElements: FormElement[]) => {
+    if (newElements.length === 0) return;
+    
+    setElements(prev => [...prev, ...newElements]);
+    
+    // Select the first element of the newly added elements
+    setSelectedElements([newElements[0].id]);
+  };
 
   return {
     elements,
@@ -94,6 +104,7 @@ export const useFormElements = () => {
     handleGroupElements,
     handleUngroupElements,
     updateElement,
-    addElement
+    addElement,
+    addMultipleElements
   };
 };
