@@ -27,6 +27,15 @@ const SuggestFieldsModal: React.FC<SuggestFieldsModalProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [additionalContext, setAdditionalContext] = useState("");
   const [suggestions, setSuggestions] = useState<FormElement[]>([]);
+  const [autoGenerateOnMount, setAutoGenerateOnMount] = useState(true);
+
+  // Auto-generate suggestions when modal opens
+  React.useEffect(() => {
+    if (isOpen && autoGenerateOnMount) {
+      handleGenerateSuggestions();
+      setAutoGenerateOnMount(false);
+    }
+  }, [isOpen, autoGenerateOnMount]);
 
   const handleGenerateSuggestions = async () => {
     try {
@@ -78,6 +87,7 @@ const SuggestFieldsModal: React.FC<SuggestFieldsModalProps> = ({
   const handleClose = () => {
     setSuggestions([]);
     setAdditionalContext("");
+    setAutoGenerateOnMount(true);
     onClose();
   };
 
@@ -87,7 +97,7 @@ const SuggestFieldsModal: React.FC<SuggestFieldsModalProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center">
             <LightbulbIcon className="h-5 w-5 mr-2 text-portico-purple" />
-            AI Field Suggestions
+            Smart Field Suggestions
           </DialogTitle>
         </DialogHeader>
 
@@ -95,13 +105,13 @@ const SuggestFieldsModal: React.FC<SuggestFieldsModalProps> = ({
           {suggestions.length === 0 ? (
             <>
               <p className="text-sm text-muted-foreground">
-                The AI will analyze your form's title, description, and existing fields to suggest relevant additional fields.
+                AI is analyzing your form's title, description, and existing fields to suggest relevant additional fields.
               </p>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Additional Context (Optional)</label>
                 <Textarea
-                  placeholder="Describe what your form is for, or any specific fields you're interested in..."
+                  placeholder="Add any specific needs or requirements for this form..."
                   value={additionalContext}
                   onChange={(e) => setAdditionalContext(e.target.value)}
                   rows={3}
@@ -116,12 +126,12 @@ const SuggestFieldsModal: React.FC<SuggestFieldsModalProps> = ({
                 {isGenerating ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating Suggestions...
+                    Analyzing Form & Generating Suggestions...
                   </>
                 ) : (
                   <>
                     <LightbulbIcon className="mr-2 h-4 w-4" />
-                    Generate Field Suggestions
+                    Generate Smart Suggestions
                   </>
                 )}
               </Button>

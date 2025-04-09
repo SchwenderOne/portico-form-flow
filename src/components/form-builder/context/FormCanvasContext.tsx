@@ -29,6 +29,7 @@ type FormCanvasContextType = {
   handleKeyDown: (e: KeyboardEvent<HTMLDivElement>) => void;
   updateElement: (element: FormElement) => void;
   addElement: (element: FormElement) => void;
+  handleElementAlign: (id: string, alignment: 'left' | 'center' | 'right') => void;
   showSmartGuides: boolean;
   guideLines: { horizontal: number[]; vertical: number[] };
   distances: { horizontal: { position: number; distance: number }[]; vertical: { position: number; distance: number }[] };
@@ -107,6 +108,43 @@ export const FormCanvasProvider: React.FC<{
       document.removeEventListener('version-restore', handleVersionRestore);
     };
   }, [setElements, grouping]);
+
+  // Handle element alignment (left, center, right)
+  const handleElementAlign = useCallback((id: string, alignment: 'left' | 'center' | 'right') => {
+    const element = elements.find(el => el.id === id);
+    if (!element) return;
+    
+    // Get the width of the canvas (for now using a fixed width, could be dynamic)
+    const canvasWidth = 800; // Default canvas width
+    
+    // Calculate the new x position based on alignment
+    let newX: number;
+    
+    switch (alignment) {
+      case 'left':
+        newX = 0;
+        break;
+      case 'center':
+        newX = (canvasWidth - element.size.width) / 2;
+        break;
+      case 'right':
+        newX = canvasWidth - element.size.width;
+        break;
+      default:
+        newX = element.position.x;
+    }
+    
+    // Update the element position
+    updateElement({
+      ...element,
+      position: {
+        ...element.position,
+        x: newX
+      }
+    });
+    
+    toast.success(`Element aligned ${alignment}`);
+  }, [elements, updateElement]);
 
   // Mock undo/redo functions until fully implemented
   const [canUndo, setCanUndo] = useState(false);
@@ -252,6 +290,7 @@ export const FormCanvasProvider: React.FC<{
     handleKeyDown,
     updateElement,
     addElement,
+    handleElementAlign,
     showSmartGuides,
     guideLines,
     distances,

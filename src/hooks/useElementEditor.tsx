@@ -49,7 +49,7 @@ export const useElementEditor = (elementId: string) => {
         const range = selection.getRangeAt(0);
         const rect = range.getBoundingClientRect();
         setSelectionRect(rect);
-        setIsTextSelected(true);
+        setIsTextSelected(selectedText.length > 0);
       } else {
         setIsTextSelected(false);
         setSelectionRect(null);
@@ -144,6 +144,14 @@ export const useElementEditor = (elementId: string) => {
     toast.success("Text formatted: Underline");
   };
 
+  const handleStrikethrough = () => {
+    if (!contentEditableRef.current) return;
+    
+    document.execCommand('strikeThrough', false);
+    saveChanges();
+    toast.success("Text formatted: Strikethrough");
+  };
+
   const handleLink = (url?: string) => {
     if (!contentEditableRef.current || !url) return;
     
@@ -170,6 +178,7 @@ export const useElementEditor = (elementId: string) => {
     handleBold,
     handleItalic,
     handleUnderline,
+    handleStrikethrough,
     handleLink,
     setIsEditing,
     saveChanges,

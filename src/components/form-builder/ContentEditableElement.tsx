@@ -1,7 +1,7 @@
 
 import React, { useRef, useEffect } from "react";
 import { useElementEditor } from "@/hooks/useElementEditor";
-import FloatingToolbar from "@/components/form-builder/FloatingToolbar";
+import UnifiedFloatingToolbar from "@/components/form-builder/toolbars/UnifiedFloatingToolbar";
 import { FormElement } from "@/types/form";
 import { useFormCanvas } from "./context/FormCanvasContext";
 
@@ -22,17 +22,21 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
     isEditing,
     elementRef,
     elementRect,
+    isTextSelected,
+    selectionRect,
     handleDoubleClick,
     handleBold,
     handleItalic,
     handleUnderline,
+    handleStrikethrough,
     handleLink,
     setIsEditing,
-    saveChanges
+    saveChanges,
+    getSelectedText
   } = useElementEditor(element.id);
 
   const contentRef = useRef<HTMLDivElement>(null);
-  const { handleDeleteElement, handleDuplicateElement } = useFormCanvas();
+  const { handleDeleteElement, handleDuplicateElement, handleElementAlign } = useFormCanvas();
 
   // Update the content editable element when content changes from outside
   useEffect(() => {
@@ -50,6 +54,22 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
     }
   };
 
+  const handleFontSize = (size: string) => {
+    // Implementation for font size change
+    if (!contentRef.current) return;
+    
+    document.execCommand('fontSize', false, size);
+    saveChanges();
+  };
+
+  const handleTextColor = (color: string) => {
+    // Implementation for text color change
+    if (!contentRef.current) return;
+    
+    document.execCommand('foreColor', false, color);
+    saveChanges();
+  };
+
   return (
     <div ref={elementRef} className="relative w-full h-full">
       <div
@@ -63,15 +83,23 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
       />
       
       {isEditing && elementRect && (
-        <FloatingToolbar
+        <UnifiedFloatingToolbar
           elementId={element.id}
           elementRect={elementRect}
+          isTextSelected={isTextSelected}
+          selectionRect={selectionRect}
+          selectedText={getSelectedText()}
           onBold={handleBold}
           onItalic={handleItalic}
           onUnderline={handleUnderline}
+          onStrikethrough={handleStrikethrough}
           onLink={handleLink}
           onDuplicate={handleDuplicateElement}
           onDelete={handleDeleteElement}
+          onAlign={handleElementAlign}
+          onFontSize={handleFontSize}
+          onTextColor={handleTextColor}
+          element={element}
         />
       )}
     </div>

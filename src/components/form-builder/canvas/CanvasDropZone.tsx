@@ -1,14 +1,15 @@
 
-import React, { ReactNode } from "react";
+import React, { useState, useEffect } from "react";
 import { FormElement } from "@/types/form";
+import DragPreview from "../DragPreview";
 
 interface CanvasDropZoneProps {
-  onDrop: (type: string, position: { x: number, y: number }) => void;
+  onDrop: (type: string, position: { x: number; y: number }) => void;
   isDragOver: boolean;
   setIsDragOver: React.Dispatch<React.SetStateAction<boolean>>;
   onClick: (e: React.MouseEvent) => void;
-  children: ReactNode;
   existingElements: FormElement[];
+  children: React.ReactNode;
 }
 
 const CanvasDropZone: React.FC<CanvasDropZoneProps> = ({
@@ -16,75 +17,104 @@ const CanvasDropZone: React.FC<CanvasDropZoneProps> = ({
   isDragOver,
   setIsDragOver,
   onClick,
-  children,
-  existingElements
+  existingElements,
+  children
 }) => {
+  const [previewElement, setPreviewElement] = useState<{
+    type: string;
+    position: { x: number; y: number };
+  } | null>(null);
+
+  // Clean up preview when component unmounts
+  useEffect(() => {
+    return () => {
+      setPreviewElement(null);
+    };
+  }, []);
+
+  // Handle dragover event to show the drop location
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    if (!isDragOver) {
-      setIsDragOver(true);
+    setIsDragOver(true);
+    
+    // Get element type from dataTransfer
+    const elementType = e.dataTransfer.getData("elementType");
+    const action = e.dataTransfer.getData("action");
+    
+    // Only show preview for new elements, not for moving existing ones
+    if (elementType && action !== "move") {
+      const dropZoneRect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - dropZoneRect.left;
+      const y = e.clientY - dropZoneRect.top;
+      
+      // Snap to grid (25px)
+      const snappedX = Math.round(x / 25) * 25;
+      const snappedY = Math.round(y / 25) * 25;
+      
+      setPreviewElement({
+        type: elementType,
+        position: { x: snappedX, y: snappedY }
+      });
     }
   };
 
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    // Only set isDragOver to false if we're leaving the dropzone
-    // Not just moving between child elements
-    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-      setIsDragOver(false);
-    }
+  const handleDragLeave = () => {
+    setIsDragOver(false);
+    setPreviewElement(null);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
+    setPreviewElement(null);
     
-    // Get position relative to the canvas
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = Math.round((e.clientX - rect.left) / 25) * 25;  // Snap to grid
-    const y = Math.round((e.clientY - rect.top) / 25) * 25;   // Snap to grid
+    const dropZoneRect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - dropZoneRect.left;
+    const y = e.clientY - dropZoneRect.top;
     
-    console.log("Drop event detected with element type:", e.dataTransfer.getData("elementType"));
+    // Snap to grid (25px)
+    const snappedX = Math.round(x / 25) * 25;
+    const snappedY = Math.round(y / 25) * 25;
     
-    // Calculate a valid position that avoids overlaps
-    const calculatedPosition = {
-      x: Math.max(0, x),
-      y: Math.max(0, y)
-    };
-    
-    console.log("Calculated position:", calculatedPosition);
-    
-    // Check if we're dropping an existing element (for repositioning)
+    // Check if this is a move operation
     const elementId = e.dataTransfer.getData("elementId");
-    if (elementId) {
-      // This would be handled by a reposition function
-      console.log("Repositioning element:", elementId);
-      return;
-    }
-    
-    // Handle new element drop
+    const action = e.dataTransfer.getData("action");
     const elementType = e.dataTransfer.getData("elementType");
-    if (elementType) {
-      onDrop(elementType, calculatedPosition);
+    
+    if (action === "move" && elementId) {
+      // Handle element movement within the canvas - this is handled by the context
+      // This event is triggered but the drag/drop logic is handled separately
+    } else if (elementType) {
+      // Handle new element drop
+      onDrop(elementType, { x: snappedX, y: snappedY });
     }
   };
 
   return (
     <div
-      className={`flex-1 relative overflow-auto grid-background ${
-        isDragOver ? "dragging-over" : ""
-      }`}
-      style={{ 
-        height: "100%", 
-        minHeight: "500px",
-        minWidth: "500px"
-      }}
+      className={`relative w-full h-full bg-gray-50 overflow-auto grid-pattern`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       onClick={onClick}
+      style={{
+        backgroundImage: `
+          linear-gradient(to right, rgba(150, 150, 150, 0.1) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(150, 150, 150, 0.1) 1px, transparent 1px)
+        `,
+        backgroundSize: '25px 25px',
+      }}
     >
+      {/* Canvas content */}
       {children}
+      
+      {/* Preview of element being dragged */}
+      {isDragOver && previewElement && (
+        <DragPreview
+          elementType={previewElement.type}
+          position={previewElement.position}
+        />
+      )}
     </div>
   );
 };

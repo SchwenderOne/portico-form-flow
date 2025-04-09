@@ -1,19 +1,19 @@
 
 import React, { useEffect, useState } from "react";
 import FormElementsPanel from "./FormElementsPanel";
-import FormToolbar from "./FormToolbar";
 import { FormElement } from "@/types/form";
 import FormTopToolbar from "./FormTopToolbar";
 import AIAssistantModal from "./ai-assistant/AIAssistantModal";
 import { useFormCanvas } from "./context/FormCanvasContext";
 import SmartGuides from "./SmartGuides";
-import { CollaboratorAvatars, EditorCursor } from "@/context/CollaborationContext";
+import { CollaboratorAvatars } from "@/context/CollaborationContext";
 import { useFormMetadata } from "@/context/FormMetadataContext";
 import CanvasDropZone from "./canvas/CanvasDropZone";
 import { toast } from "sonner";
 import ElementContent from "./ElementContent";
-import FloatingToolbar from "./canvas/FloatingToolbar";
 import ContentEditableElement from "./ContentEditableElement";
+import FormEditorSidebar from "./sidebar/FormEditorSidebar";
+import SuggestFieldsModal from "./ai-assistant/SuggestFieldsModal";
 
 declare global {
   interface WindowEventMap {
@@ -24,6 +24,7 @@ declare global {
 
 const FormCanvasContent = () => {
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+  const [isSuggestFieldsModalOpen, setIsSuggestFieldsModalOpen] = useState(false);
   const { metadata } = useFormMetadata();
   const [hoveredElement, setHoveredElement] = useState<string | null>(null);
   
@@ -46,6 +47,7 @@ const FormCanvasContent = () => {
     distances,
     isDragOver,
     setIsDragOver,
+    handleElementAlign,
     grouping: {
       groupElements,
       ungroupElements
@@ -62,6 +64,14 @@ const FormCanvasContent = () => {
   
   const handleCloseAIModal = () => {
     setIsAIModalOpen(false);
+  };
+
+  const handleOpenSuggestFieldsModal = () => {
+    setIsSuggestFieldsModalOpen(true);
+  };
+  
+  const handleCloseSuggestFieldsModal = () => {
+    setIsSuggestFieldsModalOpen(false);
   };
 
   const handleDuplicateGroupWrapper = () => {
@@ -126,116 +136,118 @@ const FormCanvasContent = () => {
         onGroup={groupElements}
         onUngroup={ungroupElements}
         onOpenAIModal={handleOpenAIModal}
+        onOpenSmartSuggest={handleOpenSuggestFieldsModal}
         existingElements={elements}
       />
       
       <div className="flex flex-1 overflow-hidden">
         <FormElementsPanel onElementDrop={handleElementDrop} />
         
-        <CanvasDropZone
-          onDrop={handleElementDrop}
-          isDragOver={isDragOver}
-          setIsDragOver={setIsDragOver}
-          onClick={handleCanvasClick}
-          existingElements={elements}
-        >
-          <div className="absolute top-2 right-2 z-10">
-            <CollaboratorAvatars />
-          </div>
-          
-          {showSmartGuides && (
-            <SmartGuides 
-              guides={guideLines} 
-              distances={distances} 
-            />
-          )}
-          
-          {elements.map((element) => (
-            <div
-              key={element.id}
-              style={{
-                position: 'absolute',
-                left: `${element.position.x}px`,
-                top: `${element.position.y}px`,
-                width: `${element.size.width}px`,
-                height: `${element.size.height}px`,
-              }}
-              className={`element-container ${
-                selectedElements.includes(element.id) ? 'selected-element' : ''
-              } ${
-                element.groupId ? 'group-element' : ''
-              }`}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleElementSelect(element.id, e.shiftKey);
-              }}
-              onMouseEnter={() => setHoveredElement(element.id)}
-              onMouseLeave={() => setHoveredElement(null)}
-            >
-              <div 
-                className={`relative w-full h-full rounded-md border ${
-                  selectedElements.includes(element.id) 
-                    ? 'outline outline-2 outline-blue-500 shadow-md' 
-                    : 'border-gray-300 shadow-sm'
+        <div className="flex-1 relative">
+          <CanvasDropZone
+            onDrop={handleElementDrop}
+            isDragOver={isDragOver}
+            setIsDragOver={setIsDragOver}
+            onClick={handleCanvasClick}
+            existingElements={elements}
+          >
+            <div className="absolute top-2 right-2 z-10">
+              <CollaboratorAvatars />
+            </div>
+            
+            {showSmartGuides && (
+              <SmartGuides 
+                guides={guideLines} 
+                distances={distances} 
+              />
+            )}
+            
+            {elements.map((element) => (
+              <div
+                key={element.id}
+                style={{
+                  position: 'absolute',
+                  left: `${element.position.x}px`,
+                  top: `${element.position.y}px`,
+                  width: `${element.size.width}px`,
+                  height: `${element.size.height}px`,
+                }}
+                className={`element-container ${
+                  selectedElements.includes(element.id) ? 'selected-element' : ''
                 } ${
-                  element.groupId ? 'bg-white/95' : 'bg-white'
+                  element.groupId ? 'group-element' : ''
                 }`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleElementSelect(element.id, e.shiftKey);
+                }}
+                onMouseEnter={() => setHoveredElement(element.id)}
+                onMouseLeave={() => setHoveredElement(null)}
                 draggable="true"
                 onDragStart={(e) => {
                   e.dataTransfer.setData("elementId", element.id);
+                  e.dataTransfer.setData("action", "move");
+                  // Add a drag image
+                  const dragImage = document.createElement('div');
+                  dragImage.style.width = `${element.size.width}px`;
+                  dragImage.style.height = `${element.size.height}px`;
+                  dragImage.style.backgroundColor = 'transparent';
+                  document.body.appendChild(dragImage);
+                  e.dataTransfer.setDragImage(dragImage, 0, 0);
+                  setTimeout(() => document.body.removeChild(dragImage), 0);
                 }}
               >
-                <div className="p-3 h-full overflow-auto">
-                  {element.type === 'header' || element.type === 'paragraph' ? (
-                    <ContentEditableElement 
-                      element={element}
-                      content={element.content || ''}
-                      onContentChange={(content) => handleElementContentChange(element.id, content)}
-                      className={element.type === 'header' ? 'text-lg font-bold' : 'text-sm'}
-                    />
-                  ) : (
-                    <ElementContent element={element} isEditing={selectedElements.includes(element.id)} />
-                  )}
+                <div 
+                  className={`relative w-full h-full rounded-md border ${
+                    selectedElements.includes(element.id) 
+                      ? 'outline outline-2 outline-blue-500 shadow-md' 
+                      : 'border-gray-300 shadow-sm'
+                  } ${
+                    element.groupId ? 'bg-white/95' : 'bg-white'
+                  }`}
+                >
+                  <div className="p-3 h-full overflow-auto">
+                    {element.type === 'header' || element.type === 'paragraph' ? (
+                      <ContentEditableElement 
+                        element={element}
+                        content={element.content || ''}
+                        onContentChange={(content) => handleElementContentChange(element.id, content)}
+                        className={element.type === 'header' ? 'text-lg font-bold' : 'text-sm'}
+                      />
+                    ) : (
+                      <ElementContent element={element} isEditing={selectedElements.includes(element.id)} />
+                    )}
+                  </div>
                 </div>
-                
-                {/* Show floating toolbar when the element is hovered or selected */}
-                {(hoveredElement === element.id || selectedElements.includes(element.id)) && (
-                  <FloatingToolbar 
-                    element={element}
-                    visible={true}
-                    position={{ 
-                      x: element.size.width / 2, 
-                      y: 0 
-                    }}
-                    onDelete={handleDeleteElement}
-                    onDuplicate={handleDuplicateElement}
-                    onAlign={(id, alignment) => {
-                      // Handle alignment in a future implementation
-                      toast.info(`Align ${alignment} will be available soon`);
-                    }}
-                  />
-                )}
               </div>
-            </div>
-          ))}
-        </CanvasDropZone>
+            ))}
+          </CanvasDropZone>
+        </div>
+        
+        {/* Right Editor Sidebar - Visible only when elements are selected */}
+        {selectedElement && (
+          <FormEditorSidebar 
+            element={selectedElement}
+            onElementUpdate={updateElement}
+            existingElements={elements}
+            onAddElements={handleAddAIElements}
+          />
+        )}
       </div>
-      
-      <FormToolbar
-        selectedElement={selectedElement}
-        selectedCount={selectedElements.length}
-        onUpdate={updateElement}
-        onGroup={groupElements}
-        onUngroup={ungroupElements}
-        onAddElements={handleAddAIElements}
-        existingElements={elements}
-      />
       
       <AIAssistantModal
         isOpen={isAIModalOpen}
         onClose={handleCloseAIModal}
         onAddElements={handleAddAIElements}
         existingElements={elements}
+      />
+      
+      <SuggestFieldsModal
+        isOpen={isSuggestFieldsModalOpen}
+        onClose={handleCloseSuggestFieldsModal}
+        onAddElements={handleAddAIElements}
+        existingElements={elements}
+        formMetadata={metadata}
       />
     </div>
   );

@@ -1,22 +1,25 @@
 
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { FormElement } from "@/types/form";
-import {
-  Copy,
-  CopyPlus,
-  Group,
-  Ungroup,
-  ToggleRight,
-  History,
-  Wand2
+import { 
+  Bold, 
+  Copy, 
+  Send, 
+  Trash, 
+  Trash2, 
+  Wand2, 
+  GroupIcon, 
+  Group, 
+  Ungroup, 
+  ToggleRight, 
+  Lightbulb
 } from "lucide-react";
-import SuggestFieldsButton from "./SuggestFieldsButton";
-import { openVersionHistory } from "./version-history/VersionHistorySheet";
-import { openFormMetadataSheet } from "./FormMetadataSheet";
+import { Button } from "@/components/ui/button";
+import { FormElement } from "@/types/form";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Separator } from "@/components/ui/separator";
+import AIAssistantButton from "./ai-assistant/AIAssistantButton";
 
-interface FormTopToolbarProps {
+type FormTopToolbarProps = {
   selectedElement: FormElement | null;
   selectedCount: number;
   onDuplicate: (id: string) => void;
@@ -25,8 +28,9 @@ interface FormTopToolbarProps {
   onGroup: () => void;
   onUngroup: () => void;
   onOpenAIModal: () => void;
+  onOpenSmartSuggest: () => void;
   existingElements: FormElement[];
-}
+};
 
 const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
   selectedElement,
@@ -37,120 +41,148 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
   onGroup,
   onUngroup,
   onOpenAIModal,
+  onOpenSmartSuggest,
   existingElements
 }) => {
   return (
-    <div className="border-b bg-background h-12 flex items-center px-4 justify-between">
-      <div className="flex items-center space-x-2">
-        <Button 
-          variant="ghost" 
-          size="sm"
-          onClick={() => openFormMetadataSheet()}
-        >
-          Form Settings
-        </Button>
-      </div>
-      
-      <div className="flex items-center gap-1">
-        {selectedCount === 1 && (
-          <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDuplicate(selectedElement!.id)}
-              className="gap-1.5"
-            >
-              <Copy className="h-4 w-4" />
-              <span className="hidden md:inline">Duplicate</span>
-            </Button>
-            
-            {selectedElement && 'required' in selectedElement && (
+    <TooltipProvider>
+      <div className="px-4 py-2 border-b border-gray-200 flex items-center bg-white">
+        <div className="flex space-x-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                onClick={() => onRequiredToggle(selectedElement.id)}
-                className={`gap-1.5 ${selectedElement.required ? 'text-red-500' : ''}`}
+                onClick={onOpenAIModal}
+                className="flex items-center"
               >
-                <ToggleRight className="h-4 w-4" />
-                <span className="hidden md:inline">
-                  {selectedElement.required ? 'Required' : 'Optional'}
-                </span>
+                <Wand2 className="h-4 w-4 mr-1" />
+                AI Assistant
               </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Generate with AI</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onOpenSmartSuggest}
+                className="flex items-center"
+              >
+                <Lightbulb className="h-4 w-4 mr-1" />
+                Smart Suggest
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Analyze form to suggest fields</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+        
+        <Separator orientation="vertical" className="mx-2 h-8" />
+        
+        {selectedCount === 1 && selectedElement && (
+          <div className="flex items-center space-x-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onDuplicate(selectedElement.id)}
+                >
+                  <Copy className="h-4 w-4 mr-1" />
+                  Duplicate
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Duplicate selected element</p>
+              </TooltipContent>
+            </Tooltip>
+            
+            {selectedElement.type !== 'header' && selectedElement.type !== 'paragraph' && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={selectedElement.required ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => onRequiredToggle(selectedElement.id)}
+                  >
+                    <ToggleRight className="h-4 w-4 mr-1" />
+                    {selectedElement.required ? "Required" : "Optional"}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Toggle required/optional</p>
+                </TooltipContent>
+              </Tooltip>
             )}
-          </>
+          </div>
         )}
         
         {selectedCount > 1 && (
-          <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onDuplicateGroup}
-              className="gap-1.5"
-            >
-              <CopyPlus className="h-4 w-4" />
-              <span className="hidden md:inline">Duplicate Group</span>
-            </Button>
+          <div className="flex items-center space-x-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onDuplicateGroup}
+                >
+                  <Copy className="h-4 w-4 mr-1" />
+                  Duplicate Group
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Duplicate selected elements</p>
+              </TooltipContent>
+            </Tooltip>
             
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onGroup}
-              className="gap-1.5"
-            >
-              <Group className="h-4 w-4" />
-              <span className="hidden md:inline">Group</span>
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onGroup}
+                >
+                  <Group className="h-4 w-4 mr-1" />
+                  Group
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Group selected elements</p>
+              </TooltipContent>
+            </Tooltip>
             
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onUngroup}
-              className="gap-1.5"
-            >
-              <Ungroup className="h-4 w-4" />
-              <span className="hidden md:inline">Ungroup</span>
-            </Button>
-          </>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onUngroup}
+                >
+                  <Ungroup className="h-4 w-4 mr-1" />
+                  Ungroup
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Ungroup selected elements</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         )}
         
-        {selectedCount === 0 && (
-          <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => openVersionHistory()}
-              className="gap-1.5"
-            >
-              <History className="h-4 w-4" />
-              <span className="hidden md:inline">Version History</span>
-            </Button>
-            
-            <SuggestFieldsButton 
-              onAddElements={(elements) => {
-                const event = new CustomEvent('add-elements', { 
-                  detail: { elements } 
-                });
-                document.dispatchEvent(event);
-              }}
-              existingElements={existingElements}
-            />
-            
-            <Separator orientation="vertical" className="h-6" />
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onOpenAIModal}
-              className="text-portico-purple hover:text-portico-purple/80 hover:bg-portico-purple/10 gap-1.5"
-            >
-              <Wand2 className="h-4 w-4" />
-              <span className="hidden md:inline">AI Assistant</span>
-            </Button>
-          </>
-        )}
+        <div className="ml-auto">
+          <Button variant="default" size="sm">
+            <Send className="h-4 w-4 mr-1" />
+            Preview
+          </Button>
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 };
 
