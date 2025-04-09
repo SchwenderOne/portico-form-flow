@@ -23,27 +23,34 @@ import {
   Palette,
   Award,
   BarChart,
-  Shield
+  Shield,
+  Users
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BrandSettingsSheet } from "@/components/form-builder/BrandSettingsSheet";
+import { TeamManagementSheet } from "@/components/team/TeamManagementSheet";
 import { useBrandSettings } from "@/context/BrandSettingsContext";
 
 const AppSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isBrandSettingsOpen, setIsBrandSettingsOpen] = useState(false);
+  const [isTeamManagementOpen, setIsTeamManagementOpen] = useState(false);
   const { brandSettings } = useBrandSettings();
 
   useEffect(() => {
     if (location.pathname === "/branding") {
       setIsBrandSettingsOpen(true);
+    } else if (location.pathname === "/team") {
+      setIsTeamManagementOpen(true);
     }
   }, [location.pathname]);
 
   const handleMenuItemClick = (path: string) => {
     if (path === "/branding") {
       setIsBrandSettingsOpen(true);
+    } else if (path === "/team") {
+      setIsTeamManagementOpen(true);
     } else {
       navigate(path);
     }
@@ -57,6 +64,7 @@ const AppSidebar = () => {
     { icon: Palette, title: "Branding", path: "/branding", usesBrandColor: true },
     { icon: History, title: "History", path: "/history" },
     { icon: Shield, title: "Compliance", path: "/compliance" },
+    { icon: Users, title: "Team", path: "/team" },
     { icon: Settings, title: "Settings", path: "/settings" },
   ];
 
@@ -87,7 +95,9 @@ const AppSidebar = () => {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton 
                       className={cn(
-                        (location.pathname === item.path || (item.path === "/branding" && isBrandSettingsOpen)) && 
+                        (location.pathname === item.path || 
+                        (item.path === "/branding" && isBrandSettingsOpen) ||
+                        (item.path === "/team" && isTeamManagementOpen)) && 
                         (item.usesBrandColor 
                           ? "bg-[var(--brand-primary)] text-white font-medium" 
                           : "bg-sidebar-accent text-foreground font-medium")
@@ -123,6 +133,12 @@ const AppSidebar = () => {
       <BrandSettingsSheet 
         open={isBrandSettingsOpen} 
         onOpenChange={setIsBrandSettingsOpen}
+        showTrigger={false}
+      />
+
+      <TeamManagementSheet
+        open={isTeamManagementOpen}
+        onOpenChange={setIsTeamManagementOpen}
         showTrigger={false}
       />
     </>
