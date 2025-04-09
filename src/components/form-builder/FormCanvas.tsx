@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import FormElementsPanel from "./FormElementsPanel";
 import FormToolbar from "./FormToolbar";
@@ -6,8 +5,11 @@ import { FormElement } from "@/types/form";
 import FormTopToolbar from "./FormTopToolbar";
 import AIAssistantModal from "./ai-assistant/AIAssistantModal";
 import { FormCanvasProvider, useFormCanvas } from "./context/FormCanvasContext";
+import SmartGuides from "./SmartGuides";
+import { CollaboratorAvatars, EditorCursor, CollaborationProvider } from "@/context/CollaborationContext";
+import VersionHistorySheet, { registerVersionHistoryControls } from "./version-history/VersionHistorySheet";
+import { useFormMetadata } from "@/context/FormMetadataContext";
 
-// Add this line to keep TypeScript happy about the CustomEvent
 declare global {
   interface WindowEventMap {
     'add-elements': CustomEvent<{elements: FormElement[]}>;
@@ -16,6 +18,8 @@ declare global {
 
 const FormCanvasContent = () => {
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+  const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
+  const { metadata } = useFormMetadata();
   
   const {
     elements,
@@ -31,13 +35,15 @@ const FormCanvasContent = () => {
     handleCanvasClick,
     handleKeyDown,
     updateElement,
+    showSmartGuides,
+    guideLines,
+    distances,
     grouping: {
       groupElements,
       ungroupElements
     }
   } = useFormCanvas();
 
-  // Get the first selected element for properties panel
   const selectedElement = selectedElements.length === 1
     ? elements.find(el => el.id === selectedElements[0])
     : null;
@@ -50,7 +56,6 @@ const FormCanvasContent = () => {
     setIsAIModalOpen(false);
   };
 
-  // Wrapper functions to match expected signatures
   const handleDuplicateGroupWrapper = () => {
     if (selectedElements.length > 0) {
       handleDuplicateGroup(selectedElements);
@@ -58,14 +63,19 @@ const FormCanvasContent = () => {
   };
 
   const handleRequiredToggleWrapper = (id: string) => {
-    // Toggle the current required state
     const element = elements.find(el => el.id === id);
     if (element) {
       handleRequiredToggle(id, !element.required);
     }
   };
 
-  // Listen for the add-elements event
+  useEffect(() => {
+    registerVersionHistoryControls(
+      () => setIsVersionHistoryOpen(true),
+      () => setIsVersionHistoryOpen(false)
+    );
+  }, []);
+
   useEffect(() => {
     const handleAddElementsEvent = (event: CustomEvent<{elements: FormElement[]}>) => {
       const { elements } = event.detail;
@@ -100,11 +110,23 @@ const FormCanvasContent = () => {
       <div className="flex flex-1 overflow-hidden">
         <FormElementsPanel onElementDrop={handleElementDrop} />
         
-        <div className="flex-1 overflow-auto bg-gray-100" onClick={handleCanvasClick}>
+        <div className="flex-1 overflow-auto bg-gray-100 relative" onClick={handleCanvasClick}>
+          <div className="absolute top-2 right-2 z-10">
+            <CollaboratorAvatars />
+          </div>
+          
           <div 
             className="min-h-full w-full relative p-6" 
-            style={{ minHeight: '1200px' }}
+            style={{ 
+              minHeight: '1200px',
+              backgroundSize: '25px 25px',
+              backgroundImage: 'linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px)',
+            }}
           >
+            {showSmartGuides && (
+              <SmartGuides guideLines={guideLines} distances={distances} />
+            )}
+            
             {elements.map((element) => (
               <div
                 key={element.id}
@@ -117,6 +139,8 @@ const FormCanvasContent = () => {
                 }}
                 className={`element-container ${
                   selectedElements.includes(element.id) ? 'selected-element' : ''
+                } ${
+                  element.groupId ? 'group-element' : ''
                 }`}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -124,16 +148,26 @@ const FormCanvasContent = () => {
                 }}
               >
                 <div 
-                  className={`relative w-full h-full ${
+                  className={`relative w-full h-full rounded-md border ${
                     selectedElements.includes(element.id) 
-                      ? 'outline outline-2 outline-blue-500' 
-                      : ''
+                      ? 'outline outline-2 outline-blue-500 shadow-md' 
+                      : 'border-gray-300 shadow-sm'
+                  } ${
+                    element.groupId ? 'bg-white/95' : 'bg-white'
                   }`}
                 >
-                  {/* Element content would go here */}
-                  <div className="p-2">
-                    <div className="font-bold">{element.type}</div>
-                    {element.label && <div>{element.label}</div>}
+                  <div className="p-3 h-full">
+                    <div className="flex flex-col h-full">
+                      <div className="font-medium text-sm mb-1">{element.type.charAt(0).toUpperCase() + element.type.slice(1)}</div>
+                      {element.label && <div className="text-sm text-gray-700">{element.label}</div>}
+                      {element.content && <div className="mt-1 text-xs text-gray-600">{element.content}</div>}
+                      {element.required && (
+                        <div className="absolute top-1 right-1 bg-red-100 text-red-600 text-xs px-1 rounded">Required</div>
+                      )}
+                      {element.groupId && (
+                        <div className="absolute bottom-1 left-1 bg-blue-100 text-blue-600 text-xs px-1 rounded">Grouped</div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -158,15 +192,25 @@ const FormCanvasContent = () => {
         onAddElements={handleAddAIElements}
         existingElements={elements}
       />
+      
+      <VersionHistorySheet 
+        open={isVersionHistoryOpen}
+        onOpenChange={setIsVersionHistoryOpen}
+        showTrigger={false}
+      />
     </div>
   );
 };
 
 const FormCanvas = () => {
+  const { metadata } = useFormMetadata();
+  
   return (
-    <FormCanvasProvider>
-      <FormCanvasContent />
-    </FormCanvasProvider>
+    <CollaborationProvider formId={metadata?.id || 'new-form'}>
+      <FormCanvasProvider>
+        <FormCanvasContent />
+      </FormCanvasProvider>
+    </CollaborationProvider>
   );
 };
 

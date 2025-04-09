@@ -1,194 +1,140 @@
+
 import { FormElement } from "@/types/form";
+import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 
-// This is an implementation of AI field generation that can be enhanced with real AI
-export const generateFieldFromPrompt = async (prompt: string): Promise<FormElement> => {
+// This is a mock implementation that simulates AI field generation
+// In a real application, this would call an AI service
+export const generateFieldSuggestions = async (
+  formTitle: string,
+  formDescription: string,
+  additionalContext: string,
+  existingElements: FormElement[]
+): Promise<FormElement[]> => {
   try {
-    // Simulate API call delay
+    console.log("Generating AI field suggestions for:", { 
+      formTitle, 
+      formDescription, 
+      additionalContext,
+      existingElementsCount: existingElements.length 
+    });
+    
+    // In a production app, this would be an API call to an AI service
+    // For demo purposes, we'll generate contextual suggestions based on the form title and description
+    
+    const suggestions: FormElement[] = [];
+    const existingFieldTypes = new Set(existingElements.map(e => e.type));
+    const existingLabels = new Set(existingElements.map(e => e.label?.toLowerCase()));
+    
+    // Simple contextual rules for different form types
+    if (formTitle.toLowerCase().includes("contact") || formDescription.toLowerCase().includes("contact")) {
+      if (!existingLabels.has("full name") && !existingLabels.has("name")) {
+        suggestions.push(createSuggestionElement("text", "Full Name", "Please enter your full name"));
+      }
+      if (!existingLabels.has("email") && !existingLabels.has("email address")) {
+        suggestions.push(createSuggestionElement("email", "Email Address", "Your email address for correspondence"));
+      }
+      if (!existingLabels.has("message") && !existingLabels.has("comments")) {
+        suggestions.push(createSuggestionElement("textarea", "Message", "How can we help you?"));
+      }
+    }
+    
+    if (formTitle.toLowerCase().includes("registration") || formDescription.toLowerCase().includes("registration")) {
+      if (!existingLabels.has("username")) {
+        suggestions.push(createSuggestionElement("text", "Username", "Choose a unique username"));
+      }
+      if (!existingLabels.has("password")) {
+        suggestions.push(createSuggestionElement("password", "Password", "Choose a secure password"));
+      }
+      if (!existingLabels.has("confirm password")) {
+        suggestions.push(createSuggestionElement("password", "Confirm Password", "Confirm your password"));
+      }
+    }
+    
+    if (formTitle.toLowerCase().includes("survey") || formDescription.toLowerCase().includes("survey") || formDescription.toLowerCase().includes("feedback")) {
+      if (!existingLabels.has("rating")) {
+        suggestions.push(createSuggestionElement("select", "Rating", "How would you rate your experience?", undefined, ["Select a rating", "Excellent", "Good", "Average", "Poor", "Very Poor"]));
+      }
+      if (!existingLabels.has("feedback") && !existingLabels.has("comments")) {
+        suggestions.push(createSuggestionElement("textarea", "Feedback", "Please share your thoughts with us"));
+      }
+    }
+    
+    if (formTitle.toLowerCase().includes("event") || formDescription.toLowerCase().includes("event")) {
+      if (!existingLabels.has("event name") && !existingLabels.has("name")) {
+        suggestions.push(createSuggestionElement("text", "Event Name", "Name of the event you're registering for"));
+      }
+      if (!existingLabels.has("date") && !existingLabels.has("event date")) {
+        suggestions.push(createSuggestionElement("date", "Event Date", "Date of the event"));
+      }
+      if (!existingLabels.has("attendees") && !existingLabels.has("number of attendees")) {
+        suggestions.push(createSuggestionElement("number", "Number of Attendees", "How many people will be attending?"));
+      }
+    }
+    
+    if (formTitle.toLowerCase().includes("application") || formDescription.toLowerCase().includes("application") || formDescription.toLowerCase().includes("job")) {
+      if (!existingLabels.has("resume") && !existingLabels.has("cv")) {
+        suggestions.push(createSuggestionElement("file", "Resume/CV", "Upload your resume or CV"));
+      }
+      if (!existingLabels.has("cover letter")) {
+        suggestions.push(createSuggestionElement("textarea", "Cover Letter", "Tell us why you're interested in this position"));
+      }
+      if (!existingLabels.has("experience") && !existingLabels.has("years of experience")) {
+        suggestions.push(createSuggestionElement("number", "Years of Experience", "How many years of relevant experience do you have?"));
+      }
+    }
+    
+    // Check if we have any suggestions
+    if (suggestions.length === 0) {
+      // If no contextual suggestions, add some general fields
+      if (!existingFieldTypes.has("text")) {
+        suggestions.push(createSuggestionElement("text", "Name", "Your full name"));
+      }
+      if (!existingFieldTypes.has("email")) {
+        suggestions.push(createSuggestionElement("email", "Email Address", "Your email address"));
+      }
+      if (!existingFieldTypes.has("textarea")) {
+        suggestions.push(createSuggestionElement("textarea", "Comments", "Additional comments or information"));
+      }
+    }
+    
+    // Simulate delay for a more realistic AI experience
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    const lowerPrompt = prompt.toLowerCase();
+    return suggestions;
     
-    // Pattern matching for common field types based on the prompt
-    let fieldType = "text";
-    let fieldLabel = "";
-    let fieldPlaceholder = "";
-    let fieldRequired = false;
-    let fieldHelpText = "";
-    let fieldOptions: string[] = [];
-    let fieldValidation = undefined;
-    
-    // Extract likely field label from prompt
-    if (lowerPrompt.includes("field for")) {
-      const match = prompt.match(/field for\s+([^,\.]+)/i);
-      if (match && match[1]) {
-        fieldLabel = match[1].trim();
-        // Capitalize first letter
-        fieldLabel = fieldLabel.charAt(0).toUpperCase() + fieldLabel.slice(1);
-      }
-    } else if (lowerPrompt.includes("add a")) {
-      const match = prompt.match(/add a\s+([^,\.]+)/i);
-      if (match && match[1]) {
-        fieldLabel = match[1].trim();
-        // Capitalize first letter
-        fieldLabel = fieldLabel.charAt(0).toUpperCase() + fieldLabel.slice(1);
-      }
-    }
-    
-    // If no label was extracted, use a generic one
-    if (!fieldLabel) {
-      fieldLabel = "New Field";
-    }
-    
-    // Determine field type based on prompt keywords
-    if (lowerPrompt.includes("email")) {
-      fieldType = "email";
-      fieldPlaceholder = "Enter your email address";
-      fieldValidation = {
-        type: "email",
-        message: "Please enter a valid email address"
-      };
-    } else if (lowerPrompt.includes("password")) {
-      fieldType = "password";
-      fieldPlaceholder = "Enter a secure password";
-    } else if (lowerPrompt.includes("phone")) {
-      fieldType = "tel";
-      fieldPlaceholder = "Enter your phone number";
-    } else if (lowerPrompt.includes("date") || lowerPrompt.includes("birthday")) {
-      fieldType = "date";
-      fieldPlaceholder = "Select a date";
-    } else if (lowerPrompt.includes("checkbox") || lowerPrompt.includes("agree") || lowerPrompt.includes("accept")) {
-      fieldType = "checkbox";
-      if (lowerPrompt.includes("terms")) {
-        fieldLabel = "I agree to the terms and conditions";
-      }
-    } else if (lowerPrompt.includes("dropdown") || lowerPrompt.includes("select")) {
-      fieldType = "select";
-      fieldPlaceholder = "Select an option";
-      
-      // Try to extract options from the prompt
-      if (lowerPrompt.includes("options:")) {
-        const optionsMatch = lowerPrompt.match(/options:\s*([^\.]+)/i);
-        if (optionsMatch && optionsMatch[1]) {
-          fieldOptions = optionsMatch[1].split(',').map(opt => opt.trim());
-        }
-      }
-      
-      // Default options if none specified
-      if (fieldOptions.length === 0) {
-        fieldOptions = ["Option 1", "Option 2", "Option 3"];
-      }
-    } else if (lowerPrompt.includes("textarea") || lowerPrompt.includes("comments") || lowerPrompt.includes("feedback") || lowerPrompt.includes("description")) {
-      fieldType = "textarea";
-      fieldPlaceholder = "Enter your comments here...";
-    } else if (lowerPrompt.includes("number") || lowerPrompt.includes("age") || lowerPrompt.includes("quantity")) {
-      fieldType = "number";
-      fieldPlaceholder = "Enter a number";
-      
-      if (lowerPrompt.includes("age")) {
-        fieldLabel = "Age";
-        fieldPlaceholder = "Enter your age";
-        fieldValidation = {
-          type: "number",
-          min: 0,
-          max: 120
-        };
-      }
-    } else if (lowerPrompt.includes("file") || lowerPrompt.includes("upload")) {
-      fieldType = "file";
-      fieldPlaceholder = "Select a file to upload";
-      
-      if (lowerPrompt.includes("image") || lowerPrompt.includes("photo")) {
-        fieldLabel = fieldLabel || "Upload Image";
-        fieldHelpText = "Upload an image file (JPEG, PNG, GIF)";
-      } else if (lowerPrompt.includes("document") || lowerPrompt.includes("pdf")) {
-        fieldLabel = fieldLabel || "Upload Document";
-        fieldHelpText = "Upload a document file (PDF, DOC, DOCX)";
-      }
-    } else if (lowerPrompt.includes("radio") || lowerPrompt.includes("choice")) {
-      fieldType = "radio";
-      
-      // Try to extract options from the prompt
-      if (lowerPrompt.includes("options:")) {
-        const optionsMatch = lowerPrompt.match(/options:\s*([^\.]+)/i);
-        if (optionsMatch && optionsMatch[1]) {
-          fieldOptions = optionsMatch[1].split(',').map(opt => opt.trim());
-        }
-      }
-      
-      // Default options if none specified
-      if (fieldOptions.length === 0) {
-        fieldOptions = ["Option 1", "Option 2", "Option 3"];
-      }
-    } else if (lowerPrompt.includes("rating") || lowerPrompt.includes("star")) {
-      fieldType = "radio";
-      fieldLabel = fieldLabel || "Rating";
-      
-      if (lowerPrompt.includes("5-star") || lowerPrompt.includes("5 star")) {
-        fieldOptions = ["1 Star", "2 Stars", "3 Stars", "4 Stars", "5 Stars"];
-      } else if (lowerPrompt.includes("10")) {
-        fieldOptions = Array.from({length: 10}, (_, i) => `${i+1}`);
-      } else {
-        fieldOptions = ["1 Star", "2 Stars", "3 Stars", "4 Stars", "5 Stars"];
-      }
-    } else if (lowerPrompt.includes("header") || lowerPrompt.includes("title")) {
-      fieldType = "header";
-      fieldLabel = fieldLabel || "Section Header";
-    } else if (lowerPrompt.includes("paragraph")) {
-      fieldType = "paragraph";
-      fieldLabel = "Information Text";
-    }
-    
-    // Determine if field should be required
-    if (lowerPrompt.includes("required") || lowerPrompt.includes("mandatory") || lowerPrompt.includes("must")) {
-      fieldRequired = true;
-    }
-    
-    // Extract help text if mentioned
-    if (lowerPrompt.includes("help text:")) {
-      const helpTextMatch = prompt.match(/help text:\s*([^\.]+)/i);
-      if (helpTextMatch && helpTextMatch[1]) {
-        fieldHelpText = helpTextMatch[1].trim();
-      }
-    }
-    
-    // Create the form element object
-    const newElement: FormElement = {
-      id: `${fieldType}-${Date.now()}`,
-      type: fieldType,
-      position: {
-        x: 100,
-        y: 100 // This will be adjusted when adding to canvas
-      },
-      size: { 
-        width: 500, 
-        height: fieldType === 'header' || fieldType === 'paragraph' ? 60 : 
-                fieldType === 'checkbox' || fieldType === 'radio' ? 100 : 
-                fieldType === 'file' ? 120 : 80 
-      },
-      label: fieldLabel,
-      placeholder: fieldPlaceholder,
-      required: fieldRequired,
-      groupId: null,
-      helpText: fieldHelpText || undefined
-    };
-    
-    // Add type-specific properties
-    if (fieldType === 'header' || fieldType === 'paragraph') {
-      (newElement as any).content = fieldType === 'header' ? fieldLabel : "Add explanatory text here...";
-    }
-    
-    if (fieldOptions.length > 0 && (fieldType === 'select' || fieldType === 'checkbox' || fieldType === 'radio')) {
-      (newElement as any).options = fieldOptions;
-    }
-    
-    if (fieldValidation) {
-      newElement.validation = fieldValidation;
-    }
-    
-    return newElement;
   } catch (error) {
-    console.error("Error in AI field generation:", error);
-    throw new Error("Failed to generate field from your description");
+    console.error("Error generating field suggestions:", error);
+    toast.error("Failed to generate field suggestions");
+    return [];
   }
 };
+
+function createSuggestionElement(
+  type: string,
+  label: string,
+  helpText: string,
+  required: boolean = false,
+  options?: string[]
+): FormElement {
+  const element: FormElement = {
+    id: `ai-suggestion-${uuidv4()}`,
+    type,
+    label,
+    helpText,
+    required,
+    position: { x: 0, y: 0 },
+    size: { 
+      width: 500, 
+      height: type === 'textarea' ? 120 : type === 'file' ? 100 : 80 
+    },
+    placeholder: `Enter ${label.toLowerCase()}...`,
+    groupId: null
+  };
+  
+  if (options && (type === 'select' || type === 'radio' || type === 'checkbox')) {
+    element.options = options;
+  }
+  
+  return element;
+}

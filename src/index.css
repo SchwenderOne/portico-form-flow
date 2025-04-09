@@ -1,300 +1,155 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Roboto:wght@300;400;500;700&family=Open+Sans:wght@300;400;500;700&display=swap');
-
+ 
 @layer base {
   :root {
-    --background: 258 40% 98%;
-    --foreground: 258 10% 15%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 258 10% 15%;
-
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+ 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+ 
     --popover: 0 0% 100%;
-    --popover-foreground: 258 10% 15%;
-
-    --primary: 258 80% 75%;
-    --primary-foreground: 0 0% 100%;
-    --primary-rgb: 155, 135, 245;
-
-    --secondary: 258 40% 96%;
-    --secondary-foreground: 258 10% 15%;
-
-    --muted: 258 10% 96%;
-    --muted-foreground: 258 5% 40%;
-
-    --accent: 258 40% 96%;
-    --accent-foreground: 258 10% 15%;
-
+    --popover-foreground: 222.2 84% 4.9%;
+ 
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+ 
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+ 
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+ 
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+ 
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+ 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 258 30% 90%;
-    --input: 258 30% 90%;
-    --ring: 258 80% 75%;
-
+    --destructive-foreground: 210 40% 98%;
+ 
+    --ring: 215 20.2% 65.1%;
+ 
     --radius: 0.5rem;
     
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 258 10% 15%;
-    --sidebar-primary: 258 80% 75%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 258 40% 96%;
-    --sidebar-accent-foreground: 258 10% 15%;
-    --sidebar-border: 258 30% 90%;
-    --sidebar-ring: 258 80% 75%;
-
-    /* Brand variables - default values that will be overridden */
-    --brand-primary: #9b87f5;
-    --brand-secondary: #1EAEDB;
-    --brand-accent: #F1F0FB;
-    --brand-font-family: 'Inter, system-ui, sans-serif';
-    --brand-heading-size: 1.25rem;
-    --brand-body-size: 0.875rem;
-    --brand-border-radius: 0.5rem;
-    --brand-border-style: solid;
-    --brand-padding: 0.75rem;
+    --portico-purple: 255 84% 75%;
   }
-
+ 
   .dark {
-    --background: 258 20% 10%;
-    --foreground: 258 10% 95%;
-
-    --card: 258 20% 12%;
-    --card-foreground: 258 10% 95%;
-
-    --popover: 258 20% 12%;
-    --popover-foreground: 258 10% 95%;
-
-    --primary: 258 80% 75%;
-    --primary-foreground: 0 0% 100%;
-    --primary-rgb: 155, 135, 245;
-
-    --secondary: 258 20% 20%;
-    --secondary-foreground: 258 10% 95%;
-
-    --muted: 258 20% 20%;
-    --muted-foreground: 258 10% 70%;
-
-    --accent: 258 20% 20%;
-    --accent-foreground: 258 10% 95%;
-
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+ 
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+ 
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+ 
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+ 
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+ 
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+ 
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+ 
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+ 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 258 10% 95%;
-
-    --border: 258 20% 20%;
-    --input: 258 20% 20%;
-    --ring: 258 80% 75%;
-    
-    --sidebar-background: 258 20% 12%;
-    --sidebar-foreground: 258 10% 95%;
-    --sidebar-primary: 258 80% 75%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 258 20% 20%;
-    --sidebar-accent-foreground: 258 10% 95%;
-    --sidebar-border: 258 20% 20%;
-    --sidebar-ring: 258 80% 75%;
+    --destructive-foreground: 0 85.7% 97.3%;
+ 
+    --ring: 217.2 32.6% 17.5%;
   }
 }
-
+ 
 @layer base {
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
-    font-family: var(--brand-font-family, 'Inter, system-ui, sans-serif');
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    font-size: var(--brand-heading-size, 1.25rem);
-    font-family: var(--brand-font-family, 'Inter, system-ui, sans-serif');
-  }
-  
-  p, span, div, button, input, textarea, select {
-    font-size: var(--brand-body-size, 0.875rem);
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-/* Enhanced grid background */
-.grid-background {
-  background-size: 25px 25px;
-  background-image: 
-    linear-gradient(to right, rgba(155, 135, 245, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(155, 135, 245, 0.05) 1px, transparent 1px);
+/* Form Canvas Styles */
+.element-container {
+  transition: transform 0.2s ease, outline 0.2s ease;
 }
 
-/* Add subtle major grid lines every 100px */
-.grid-background::before {
-  content: "";
+.selected-element {
+  z-index: 10;
+}
+
+.group-element {
+  z-index: 5;
+}
+
+/* Smart Guides */
+.smart-guide {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-size: 100px 100px;
-  background-image: 
-    linear-gradient(to right, rgba(155, 135, 245, 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(155, 135, 245, 0.1) 1px, transparent 1px);
-  pointer-events: none;
+  background-color: #6366F1;
+  z-index: 1000;
 }
 
-.form-element {
-  @apply transition-all duration-100 ease-in-out cursor-move hover:shadow-md;
+.horizontal-guide {
+  width: 100%;
+  height: 1px;
 }
 
-.form-element.selected {
-  @apply ring-2 ring-portico-purple ring-opacity-100;
+.vertical-guide {
+  height: 100%;
+  width: 1px;
 }
 
-.form-element:hover .form-element-handle {
-  @apply opacity-100;
+.distance-marker {
+  position: absolute;
+  background-color: rgba(99, 102, 241, 0.1);
+  border: 1px dashed #6366F1;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #6366F1;
 }
 
-.toolbar-button {
-  @apply rounded-md p-2 text-sm font-medium transition-colors 
-  focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none;
+/* Text selection toolbar */
+.text-selection-toolbar {
+  position: absolute;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  padding: 4px;
 }
 
-.toolbar-button-primary {
-  @apply bg-portico-purple text-white hover:bg-portico-purple-dark;
+/* Suggested fields */
+.suggested-field {
+  border: 1px dashed #9b87f5;
+  background-color: rgba(155, 135, 245, 0.05);
+  border-radius: 0.375rem;
+  position: relative;
 }
 
-.toolbar-button-secondary {
-  @apply bg-portico-gray-soft text-portico-gray-dark hover:bg-muted hover:text-portico-purple;
-}
-
-.form-element-handle {
-  opacity: 0;
-  transition: opacity 0.2s ease-out;
-}
-
-.form-element:hover .form-element-handle,
-.form-element.selected .form-element-handle {
-  opacity: 1;
-}
-
-.form-element-toolbar {
-  @apply absolute -top-10 left-1/2 transform -translate-x-1/2 bg-white shadow-md rounded-md p-1 
-  flex items-center space-x-1 border border-border invisible opacity-0 
-  group-hover:visible group-hover:opacity-100 transition-all duration-200;
-}
-
-/* Animation for smart guides */
-@keyframes guideAppear {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Animation for floating toolbar */
-@keyframes floatingToolbarAppear {
-  from { 
-    opacity: 0;
-    transform: translateY(5px) scale(0.95);
-  }
-  to { 
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Animation for drag preview */
-@keyframes dragPreviewAppear {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 0.9;
-    transform: scale(1);
-  }
-}
-
-.drag-preview {
-  animation: dragPreviewAppear 0.15s ease-out forwards;
-}
-
-.floating-toolbar {
-  animation: floatingToolbarAppear 0.15s ease-out forwards;
-}
-
-/* Smart guides animation */
-[class*="absolute left-0 w-full h-[1px]"],
-[class*="absolute top-0 w-[1px] h-full"] {
-  animation: guideAppear 0.2s ease-out forwards;
-}
-
-/* Distance measurement styles */
-[class*="bg-portico-purple/80 text-white text-xs"] {
-  animation: floatingToolbarAppear 0.15s ease-out forwards;
-  min-width: 24px;
-  text-align: center;
-}
-
-/* CSS variables for Portico colors */
-:root {
-  --portico-purple: #9b87f5;
-  --portico-purple-light: #D6BCFA;
-  --portico-purple-dark: #6b46c1;
-  --portico-gray-soft: #F1F0FB;
-  --portico-gray-dark: #1A1F2C;
-}
-
-/* Add brand-specific utility classes */
-.text-brand-primary {
-  color: var(--brand-primary);
-}
-
-.bg-brand-primary {
-  background-color: var(--brand-primary);
-}
-
-.border-brand-primary {
-  border-color: var(--brand-primary);
-}
-
-.hover\:bg-brand-primary:hover {
-  background-color: var(--brand-primary);
-}
-
-.hover\:text-brand-primary:hover {
-  color: var(--brand-primary);
-}
-
-.ring-brand-primary {
-  --tw-ring-color: var(--brand-primary);
-}
-
-.hover\:bg-brand-primary-90:hover {
-  background-color: color-mix(in srgb, var(--brand-primary) 90%, transparent);
-}
-
-/* Brand font styles */
-.font-brand {
-  font-family: var(--brand-font-family);
-}
-
-.text-brand-heading {
-  font-size: var(--brand-heading-size);
-}
-
-.text-brand-body {
-  font-size: var(--brand-body-size);
-}
-
-/* Field styles based on brand settings */
-.rounded-brand {
-  border-radius: var(--brand-border-radius);
-}
-
-.border-brand-style {
-  border-style: var(--brand-border-style);
-}
-
-.p-brand {
-  padding: var(--brand-padding);
+.suggested-field::before {
+  content: '💡 Suggested';
+  position: absolute;
+  top: -8px;
+  left: 8px;
+  font-size: 10px;
+  background-color: #f1f0fb;
+  padding: 0 4px;
+  border-radius: 2px;
+  color: #9b87f5;
 }

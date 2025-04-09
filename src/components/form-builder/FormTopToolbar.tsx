@@ -1,30 +1,20 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import ExportFormDropdown from "./ExportFormDropdown";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { 
-  Save,
-  Copy, 
-  History, 
-  LayoutGrid, 
-  Group, 
-  Ungroup,
-  ToggleLeft, 
-  Undo, 
-  Redo,
-  Wand2,
-  LightbulbIcon
-} from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import { FormElement } from "@/types/form";
-import { FormMetadataSheet, useFormMetadataSheet } from "./FormMetadataSheet";
-import { toast } from "sonner";
-import { useFormCanvas } from "./context/FormCanvasContext";
-import { useFormMetadata } from "@/context/FormMetadataContext";
-import { saveFormState } from "@/services/forms-service";
+import {
+  Copy,
+  CopyPlus,
+  Group,
+  Ungroup,
+  ToggleRight,
+  History,
+  Wand2
+} from "lucide-react";
+import SuggestFieldsButton from "./SuggestFieldsButton";
 import { openVersionHistory } from "./version-history/VersionHistorySheet";
-import { useAutoSave, AutoSaveEvent } from "./hooks/useAutoSave";
-import SuggestFieldsModal from "./ai-assistant/SuggestFieldsModal";
+import { openFormMetadataSheet } from "./FormMetadataSheet";
 
 interface FormTopToolbarProps {
   selectedElement: FormElement | null;
@@ -36,7 +26,6 @@ interface FormTopToolbarProps {
   onUngroup: () => void;
   onOpenAIModal: () => void;
   existingElements: FormElement[];
-  onOpenVersionHistory?: () => void;
 }
 
 const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
@@ -48,284 +37,119 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
   onGroup,
   onUngroup,
   onOpenAIModal,
-  existingElements,
-  onOpenVersionHistory
+  existingElements
 }) => {
-  const { metadata, saveMetadata } = useFormMetadata();
-  const { queueAutoSaveEvent } = useAutoSave({ elements: existingElements });
-  const [isSaving, setIsSaving] = React.useState(false);
-  const [isSuggestModalOpen, setIsSuggestModalOpen] = React.useState(false);
-
-  const undoOperation = () => toast.info("Undo functionality will be available soon");
-  const redoOperation = () => toast.info("Redo functionality will be available soon");
-  const canUndo = false;
-  const canRedo = false;
-
-  const handleSave = async () => {
-    try {
-      setIsSaving(true);
-      await saveMetadata();
-      await saveFormState(
-        metadata.id,
-        metadata.name,
-        metadata.description || '',
-        existingElements
-      );
-      queueAutoSaveEvent(AutoSaveEvent.PUBLISH);
-      toast.success("Form saved successfully");
-    } catch (error) {
-      console.error("Save error:", error);
-      toast.error("Failed to save form");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const { open: openFormMetadataSheet } = useFormMetadataSheet();
-
-  const handleOpenMetadata = () => {
-    openFormMetadataSheet();
-  };
-
-  const handleHistoryClick = () => {
-    if (onOpenVersionHistory) {
-      onOpenVersionHistory();
-    } else {
-      openVersionHistory();
-    }
-  };
-
-  const handleAddElements = (elements: FormElement[]) => {
-    // We need to dispatch an event that FormCanvas will listen for
-    const addElementsEvent = new CustomEvent('add-elements', {
-      detail: { elements }
-    });
-    document.dispatchEvent(addElementsEvent);
-  };
-
-  const handleOpenSuggestModal = () => {
-    setIsSuggestModalOpen(true);
-  };
-
   return (
-    <div className="border-b bg-background p-2 flex justify-between items-center">
+    <div className="border-b bg-background h-12 flex items-center px-4 justify-between">
       <div className="flex items-center space-x-2">
-        <Button variant="outline" size="sm" onClick={handleOpenMetadata} className="text-xs">
-          {metadata.name || "Untitled Form"}
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={() => openFormMetadataSheet()}
+        >
+          Form Settings
         </Button>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={handleSave}
-                disabled={isSaving}
-              >
-                <Save className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Save</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={handleHistoryClick}
-              >
-                <History className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Version History</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        
-        <div className="h-5 border-l mx-1"></div>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={undoOperation}
-                disabled={!canUndo}
-              >
-                <Undo className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Undo</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={redoOperation}
-                disabled={!canRedo}
-              >
-                <Redo className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Redo</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
       </div>
       
-      <div className="flex items-center space-x-2">
-        {selectedCount === 1 && selectedElement && (
+      <div className="flex items-center gap-1">
+        {selectedCount === 1 && (
           <>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => onDuplicate(selectedElement.id)}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Duplicate Element</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDuplicate(selectedElement!.id)}
+              className="gap-1.5"
+            >
+              <Copy className="h-4 w-4" />
+              <span className="hidden md:inline">Duplicate</span>
+            </Button>
             
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => onRequiredToggle(selectedElement.id)}
-                  >
-                    <ToggleLeft className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {selectedElement.required ? "Make Optional" : "Make Required"}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            {selectedElement && 'required' in selectedElement && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onRequiredToggle(selectedElement.id)}
+                className={`gap-1.5 ${selectedElement.required ? 'text-red-500' : ''}`}
+              >
+                <ToggleRight className="h-4 w-4" />
+                <span className="hidden md:inline">
+                  {selectedElement.required ? 'Required' : 'Optional'}
+                </span>
+              </Button>
+            )}
           </>
         )}
         
         {selectedCount > 1 && (
           <>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={onGroup}
-                  >
-                    <Group className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Group Elements</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onDuplicateGroup}
+              className="gap-1.5"
+            >
+              <CopyPlus className="h-4 w-4" />
+              <span className="hidden md:inline">Duplicate Group</span>
+            </Button>
             
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={onDuplicateGroup}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Duplicate Selection</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onGroup}
+              className="gap-1.5"
+            >
+              <Group className="h-4 w-4" />
+              <span className="hidden md:inline">Group</span>
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onUngroup}
+              className="gap-1.5"
+            >
+              <Ungroup className="h-4 w-4" />
+              <span className="hidden md:inline">Ungroup</span>
+            </Button>
           </>
         )}
         
-        {selectedCount > 0 && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={onUngroup}
-                >
-                  <Ungroup className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Ungroup Elements</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        {selectedCount === 0 && (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => openVersionHistory()}
+              className="gap-1.5"
+            >
+              <History className="h-4 w-4" />
+              <span className="hidden md:inline">Version History</span>
+            </Button>
+            
+            <SuggestFieldsButton 
+              onAddElements={(elements) => {
+                const event = new CustomEvent('add-elements', { 
+                  detail: { elements } 
+                });
+                document.dispatchEvent(event);
+              }}
+              existingElements={existingElements}
+            />
+            
+            <Separator orientation="vertical" className="h-6" />
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onOpenAIModal}
+              className="text-portico-purple hover:text-portico-purple/80 hover:bg-portico-purple/10 gap-1.5"
+            >
+              <Wand2 className="h-4 w-4" />
+              <span className="hidden md:inline">AI Assistant</span>
+            </Button>
+          </>
         )}
-        
-        <div className="h-5 border-l mx-1"></div>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={handleOpenSuggestModal}
-              >
-                <LightbulbIcon className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Suggest Fields</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={onOpenAIModal}
-              >
-                <Wand2 className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>AI Assistant</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        
-        <ExportFormDropdown formElements={existingElements} />
       </div>
-      
-      <FormMetadataSheet showTrigger={false} />
-      
-      <SuggestFieldsModal
-        isOpen={isSuggestModalOpen}
-        onClose={() => setIsSuggestModalOpen(false)}
-        onAddElements={handleAddElements}
-        existingElements={existingElements}
-        formMetadata={{
-          name: metadata.name,
-          description: metadata.description || ''
-        }}
-      />
     </div>
   );
 };
