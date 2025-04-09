@@ -1,10 +1,13 @@
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { FormElement as FormElementType } from "@/types/form";
 import { cn } from "@/lib/utils";
-import { Grip, Trash2, Copy, Settings, Group, Ungroup } from "lucide-react";
 import { useGrouping } from "./GroupingContext";
 import FloatingToolbar from "./FloatingToolbar";
+import ElementContent from "./ElementContent";
+import ElementToolbar from "./ElementToolbar";
+import ElementDragHandle from "./ElementDragHandle";
+import { useElementEditor } from "./useElementEditor";
 
 interface FormElementProps {
   element: FormElementType;
@@ -27,12 +30,19 @@ const FormElement: React.FC<FormElementProps> = ({
   setIsDragging,
   allElements = []
 }) => {
-  const elementRef = useRef<HTMLDivElement>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [hovered, setHovered] = useState(false);
   const grouping = useGrouping();
-  const [showFloatingToolbar, setShowFloatingToolbar] = useState(false);
-  const [elementRect, setElementRect] = useState<DOMRect | null>(null);
+  
+  const {
+    isEditing,
+    elementRect,
+    elementRef,
+    handleDoubleClick,
+    handleBold,
+    handleItalic,
+    handleLink
+  } = useElementEditor(element.id);
 
   // Check if this element is part of a group
   const isGrouped = element.groupId !== null;
@@ -49,27 +59,10 @@ const FormElement: React.FC<FormElementProps> = ({
   useEffect(() => {
     // Update element rect when selected
     if (isSelected && elementRef.current) {
-      setElementRect(elementRef.current.getBoundingClientRect());
+      const rect = elementRef.current.getBoundingClientRect();
+      // This will help position the floating toolbar
     }
   }, [isSelected]);
-
-  useEffect(() => {
-    // Show floating toolbar when element is double-clicked
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        elementRef.current && 
-        !elementRef.current.contains(event.target as Node) &&
-        showFloatingToolbar
-      ) {
-        setShowFloatingToolbar(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showFloatingToolbar]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     // Prevent default to stop text selection during drag
@@ -112,131 +105,12 @@ const FormElement: React.FC<FormElementProps> = ({
     }
   };
 
-  const handleDoubleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    // Only show floating toolbar for text elements (header, paragraph, etc.)
-    if (
-      element.type === 'header' || 
-      element.type === 'paragraph' || 
-      element.type === 'text' || 
-      element.type === 'textarea'
-    ) {
-      setShowFloatingToolbar(true);
-      
-      if (elementRef.current) {
-        setElementRect(elementRef.current.getBoundingClientRect());
-      }
-    }
-  };
-
-  const handleBold = () => {
-    console.log('Bold applied to element:', element.id);
-    // Implement formatting logic here
-  };
-
-  const handleItalic = () => {
-    console.log('Italic applied to element:', element.id);
-    // Implement formatting logic here
-  };
-
-  const handleLink = () => {
-    console.log('Link applied to element:', element.id);
-    // Implement link adding logic here
-  };
-
-  const renderElementContent = () => {
-    switch (element.type) {
-      case 'header':
-        return (
-          <h2 className="text-2xl font-bold">
-            {(element as any).content || 'Header'}
-          </h2>
-        );
-      case 'paragraph':
-        return (
-          <p className="text-base">
-            {(element as any).content || 'Paragraph text'}
-          </p>
-        );
-      case 'text':
-        return (
-          <div className="flex flex-col space-y-1 w-full">
-            <label className="text-sm font-medium">
-              {element.label}
-              {element.required && <span className="text-red-500 ml-1">*</span>}
-            </label>
-            <input 
-              type="text" 
-              className="border rounded-md p-2" 
-              placeholder={element.placeholder}
-              readOnly
-            />
-          </div>
-        );
-      case 'email':
-        return (
-          <div className="flex flex-col space-y-1 w-full">
-            <label className="text-sm font-medium">
-              {element.label}
-              {element.required && <span className="text-red-500 ml-1">*</span>}
-            </label>
-            <input 
-              type="email" 
-              className="border rounded-md p-2" 
-              placeholder={element.placeholder}
-              readOnly
-            />
-          </div>
-        );
-      case 'number':
-        return (
-          <div className="flex flex-col space-y-1 w-full">
-            <label className="text-sm font-medium">
-              {element.label}
-              {element.required && <span className="text-red-500 ml-1">*</span>}
-            </label>
-            <input 
-              type="number" 
-              className="border rounded-md p-2" 
-              placeholder={element.placeholder}
-              readOnly
-            />
-          </div>
-        );
-      case 'textarea':
-        return (
-          <div className="flex flex-col space-y-1 w-full">
-            <label className="text-sm font-medium">
-              {element.label}
-              {element.required && <span className="text-red-500 ml-1">*</span>}
-            </label>
-            <textarea 
-              className="border rounded-md p-2 h-24" 
-              placeholder={element.placeholder}
-              readOnly
-            />
-          </div>
-        );
-      case 'select':
-        return (
-          <div className="flex flex-col space-y-1 w-full">
-            <label className="text-sm font-medium">
-              {element.label}
-              {element.required && <span className="text-red-500 ml-1">*</span>}
-            </label>
-            <select className="border rounded-md p-2">
-              <option disabled>Select an option</option>
-              <option>Option 1</option>
-              <option>Option 2</option>
-              <option>Option 3</option>
-            </select>
-          </div>
-        );
-      default:
-        return <div>Unknown element type</div>;
-    }
-  };
+  // Determine if this element can show the floating toolbar
+  const canShowFloatingToolbar = 
+    element.type === 'header' || 
+    element.type === 'paragraph' || 
+    element.type === 'text' || 
+    element.type === 'textarea';
 
   return (
     <div
@@ -259,7 +133,7 @@ const FormElement: React.FC<FormElementProps> = ({
         e.stopPropagation();
         onSelect(element.id, e.shiftKey);
       }}
-      onDoubleClick={handleDoubleClick}
+      onDoubleClick={canShowFloatingToolbar ? handleDoubleClick : undefined}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -270,77 +144,26 @@ const FormElement: React.FC<FormElementProps> = ({
         </div>
       )}
       
-      {renderElementContent()}
+      <ElementContent element={element} />
       
-      {/* Drag handle */}
-      <div 
-        className="form-element-handle"
-        onMouseDown={handleMouseDown}
-      >
-        <Grip className="h-3 w-3 text-muted-foreground mx-auto mt-1" />
-      </div>
+      <ElementDragHandle onMouseDown={handleMouseDown} />
       
       {/* Element toolbar */}
       {isSelected && (
-        <div className="form-element-toolbar visible opacity-100">
-          <button 
-            className="toolbar-button toolbar-button-secondary p-1"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDuplicate(element.id);
-            }}
-          >
-            <Copy className="h-3 w-3" />
-          </button>
-          
-          {grouping.selectedElements.length > 1 && (
-            <button 
-              className="toolbar-button toolbar-button-secondary p-1"
-              onClick={(e) => {
-                e.stopPropagation();
-                grouping.groupElements();
-              }}
-            >
-              <Group className="h-3 w-3" />
-            </button>
-          )}
-          
-          {isGrouped && (
-            <button 
-              className="toolbar-button toolbar-button-secondary p-1"
-              onClick={(e) => {
-                e.stopPropagation();
-                grouping.ungroupElements();
-              }}
-            >
-              <Ungroup className="h-3 w-3" />
-            </button>
-          )}
-          
-          <button 
-            className="toolbar-button toolbar-button-secondary p-1"
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelect(element.id, false);
-            }}
-          >
-            <Settings className="h-3 w-3" />
-          </button>
-          
-          <button 
-            className="toolbar-button toolbar-button-secondary p-1"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(element.id);
-            }}
-          >
-            <Trash2 className="h-3 w-3" />
-          </button>
-        </div>
+        <ElementToolbar 
+          elementId={element.id}
+          isGrouped={isGrouped}
+          multipleSelected={grouping.selectedElements.length > 1}
+          onDuplicate={onDuplicate}
+          onDelete={onDelete}
+          onSelect={onSelect}
+          onGroup={grouping.groupElements}
+          onUngroup={grouping.ungroupElements}
+        />
       )}
       
       {/* Floating toolbar */}
-      {showFloatingToolbar && elementRect && (
+      {isEditing && elementRect && (
         <FloatingToolbar
           elementId={element.id}
           elementRect={elementRect}

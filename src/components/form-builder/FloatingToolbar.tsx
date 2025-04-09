@@ -7,13 +7,19 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 
 interface FloatingToolbarProps {
   elementId: string;
   elementRect: DOMRect;
   onBold: () => void;
   onItalic: () => void;
-  onLink: () => void;
+  onLink: (url?: string) => void;
   onDuplicate: (id: string) => void;
   onDelete: (id: string) => void;
 }
@@ -29,6 +35,7 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [linkUrl, setLinkUrl] = useState("");
 
   // Calculate position when elementRect changes
   useEffect(() => {
@@ -55,6 +62,14 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
     e.stopPropagation();
   };
 
+  const handleLinkSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (linkUrl.trim()) {
+      onLink(linkUrl);
+      setLinkUrl("");
+    }
+  };
+
   return (
     <TooltipProvider delayDuration={300}>
       <div
@@ -71,6 +86,7 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             <button 
               className="p-1.5 rounded-md hover:bg-portico-gray-soft text-portico-gray-dark hover:text-portico-purple transition-colors"
               onClick={onBold}
+              aria-label="Bold"
             >
               <Bold size={16} />
             </button>
@@ -85,6 +101,7 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             <button 
               className="p-1.5 rounded-md hover:bg-portico-gray-soft text-portico-gray-dark hover:text-portico-purple transition-colors"
               onClick={onItalic}
+              aria-label="Italic"
             >
               <Italic size={16} />
             </button>
@@ -94,19 +111,41 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
           </TooltipContent>
         </Tooltip>
         
-        <Tooltip>
+        <Popover>
           <TooltipTrigger asChild>
-            <button 
-              className="p-1.5 rounded-md hover:bg-portico-gray-soft text-portico-gray-dark hover:text-portico-purple transition-colors"
-              onClick={onLink}
-            >
-              <Link size={16} />
-            </button>
+            <PopoverTrigger asChild>
+              <button 
+                className="p-1.5 rounded-md hover:bg-portico-gray-soft text-portico-gray-dark hover:text-portico-purple transition-colors"
+                aria-label="Add Link"
+              >
+                <Link size={16} />
+              </button>
+            </PopoverTrigger>
           </TooltipTrigger>
+          <PopoverContent className="w-64 p-3">
+            <form onSubmit={handleLinkSubmit} className="space-y-3">
+              <div className="space-y-1">
+                <label htmlFor="link-url" className="text-xs font-medium">
+                  URL
+                </label>
+                <input 
+                  id="link-url"
+                  type="url" 
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  placeholder="https://example.com"
+                  className="w-full border rounded-md text-sm px-2 py-1.5"
+                />
+              </div>
+              <div className="flex justify-end">
+                <Button type="submit" size="sm">Apply</Button>
+              </div>
+            </form>
+          </PopoverContent>
           <TooltipContent>
             <p className="text-xs">Add Link</p>
           </TooltipContent>
-        </Tooltip>
+        </Popover>
         
         <div className="w-px h-4 bg-border mx-0.5" />
         
@@ -115,6 +154,7 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             <button 
               className="p-1.5 rounded-md hover:bg-portico-gray-soft text-portico-gray-dark hover:text-portico-purple transition-colors"
               onClick={() => onDuplicate(elementId)}
+              aria-label="Duplicate"
             >
               <Copy size={16} />
             </button>
@@ -129,6 +169,7 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             <button 
               className="p-1.5 rounded-md hover:bg-portico-gray-soft text-portico-gray-dark hover:text-destructive transition-colors"
               onClick={() => onDelete(elementId)}
+              aria-label="Delete"
             >
               <Trash2 size={16} />
             </button>
