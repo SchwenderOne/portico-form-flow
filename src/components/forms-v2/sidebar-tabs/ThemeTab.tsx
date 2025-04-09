@@ -48,7 +48,7 @@ const ThemeTab = () => {
               <div className="space-y-2">
                 <Label className="text-xs">Primary Color</Label>
                 <ColorPickerWithSwatches
-                  value={brandSettings.colors.primary}
+                  color={brandSettings.colors.primary}
                   onChange={(color) => updateBrandSettings({
                     ...brandSettings,
                     colors: {
@@ -61,14 +61,14 @@ const ThemeTab = () => {
               </div>
               
               <div className="space-y-2">
-                <Label className="text-xs">Background Color</Label>
+                <Label className="text-xs">Secondary Color</Label>
                 <ColorPickerWithSwatches
-                  value={brandSettings.colors.background || "#ffffff"}
+                  color={brandSettings.colors.secondary}
                   onChange={(color) => updateBrandSettings({
                     ...brandSettings,
                     colors: {
                       ...brandSettings.colors,
-                      background: color
+                      secondary: color
                     }
                   })}
                   className="border"
@@ -76,14 +76,14 @@ const ThemeTab = () => {
               </div>
               
               <div className="space-y-2">
-                <Label className="text-xs">Text Color</Label>
+                <Label className="text-xs">Accent Color</Label>
                 <ColorPickerWithSwatches
-                  value={brandSettings.colors.text || "#000000"}
+                  color={brandSettings.colors.accent}
                   onChange={(color) => updateBrandSettings({
                     ...brandSettings,
                     colors: {
                       ...brandSettings.colors,
-                      text: color
+                      accent: color
                     }
                   })}
                   className="border"
