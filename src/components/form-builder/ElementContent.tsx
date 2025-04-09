@@ -4,26 +4,46 @@ import { FormElement } from "@/types/form";
 
 interface ElementContentProps {
   element: FormElement;
+  isEditing?: boolean;
 }
 
-const ElementContent: React.FC<ElementContentProps> = ({ element }) => {
+const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing = false }) => {
+  // For text-based elements, we'll make them contenteditable when in editing mode
+  const makeEditable = (type: string) => {
+    return ['header', 'paragraph', 'text', 'textarea'].includes(type) && isEditing;
+  };
+
+  const contentEditable = makeEditable(element.type);
+
   switch (element.type) {
     case 'header':
       return (
-        <h2 className="text-2xl font-bold">
+        <h2 
+          className="text-2xl font-bold"
+          contentEditable={contentEditable}
+          suppressContentEditableWarning={true}
+        >
           {(element as any).content || 'Header'}
         </h2>
       );
     case 'paragraph':
       return (
-        <p className="text-base">
+        <p 
+          className="text-base"
+          contentEditable={contentEditable}
+          suppressContentEditableWarning={true}
+        >
           {(element as any).content || 'Paragraph text'}
         </p>
       );
     case 'text':
       return (
         <div className="flex flex-col space-y-1 w-full">
-          <label className="text-sm font-medium">
+          <label 
+            className="text-sm font-medium"
+            contentEditable={contentEditable}
+            suppressContentEditableWarning={true}
+          >
             {element.label}
             {element.required && <span className="text-red-500 ml-1">*</span>}
           </label>
@@ -38,7 +58,11 @@ const ElementContent: React.FC<ElementContentProps> = ({ element }) => {
     case 'email':
       return (
         <div className="flex flex-col space-y-1 w-full">
-          <label className="text-sm font-medium">
+          <label 
+            className="text-sm font-medium"
+            contentEditable={contentEditable}
+            suppressContentEditableWarning={true}
+          >
             {element.label}
             {element.required && <span className="text-red-500 ml-1">*</span>}
           </label>
@@ -53,7 +77,11 @@ const ElementContent: React.FC<ElementContentProps> = ({ element }) => {
     case 'number':
       return (
         <div className="flex flex-col space-y-1 w-full">
-          <label className="text-sm font-medium">
+          <label 
+            className="text-sm font-medium"
+            contentEditable={contentEditable}
+            suppressContentEditableWarning={true}
+          >
             {element.label}
             {element.required && <span className="text-red-500 ml-1">*</span>}
           </label>
@@ -68,7 +96,11 @@ const ElementContent: React.FC<ElementContentProps> = ({ element }) => {
     case 'textarea':
       return (
         <div className="flex flex-col space-y-1 w-full">
-          <label className="text-sm font-medium">
+          <label 
+            className="text-sm font-medium"
+            contentEditable={contentEditable}
+            suppressContentEditableWarning={true}
+          >
             {element.label}
             {element.required && <span className="text-red-500 ml-1">*</span>}
           </label>
@@ -82,15 +114,25 @@ const ElementContent: React.FC<ElementContentProps> = ({ element }) => {
     case 'select':
       return (
         <div className="flex flex-col space-y-1 w-full">
-          <label className="text-sm font-medium">
+          <label 
+            className="text-sm font-medium"
+            contentEditable={contentEditable}
+            suppressContentEditableWarning={true}
+          >
             {element.label}
             {element.required && <span className="text-red-500 ml-1">*</span>}
           </label>
           <select className="border rounded-md p-2">
             <option disabled>Select an option</option>
-            <option>Option 1</option>
-            <option>Option 2</option>
-            <option>Option 3</option>
+            {element.options?.map((option, index) => (
+              <option key={index}>{option}</option>
+            )) || (
+              <>
+                <option>Option 1</option>
+                <option>Option 2</option>
+                <option>Option 3</option>
+              </>
+            )}
           </select>
         </div>
       );

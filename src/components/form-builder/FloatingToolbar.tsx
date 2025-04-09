@@ -1,6 +1,6 @@
 
 import React, { useRef, useEffect, useState } from "react";
-import { Bold, Italic, Link, Copy, Trash2 } from "lucide-react";
+import { Bold, Italic, Link, Copy, Trash2, Underline } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,

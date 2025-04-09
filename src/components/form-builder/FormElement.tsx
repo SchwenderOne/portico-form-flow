@@ -68,6 +68,9 @@ const FormElement: React.FC<FormElementProps> = ({
     // Prevent default to stop text selection during drag
     e.preventDefault();
     
+    // If we're in editing mode, don't start dragging
+    if (isEditing) return;
+    
     // Detect if shift key is pressed for multi-select
     const isMultiSelect = e.shiftKey;
     onSelect(element.id, isMultiSelect);
@@ -110,7 +113,10 @@ const FormElement: React.FC<FormElementProps> = ({
     element.type === 'header' || 
     element.type === 'paragraph' || 
     element.type === 'text' || 
-    element.type === 'textarea';
+    element.type === 'textarea' || 
+    element.type === 'email' || 
+    element.type === 'number' || 
+    element.type === 'select';
 
   return (
     <div
@@ -120,7 +126,8 @@ const FormElement: React.FC<FormElementProps> = ({
         isSelected && "ring-2 ring-portico-purple z-10",
         isGrouped && "border-dashed",
         isGroupSelected && !isSelected && "ring-1 ring-portico-purple-light",
-        hovered && !isSelected && "shadow-lg"
+        hovered && !isSelected && "shadow-lg",
+        isEditing && "editing"
       )}
       style={{
         left: element.position.x,
@@ -131,7 +138,10 @@ const FormElement: React.FC<FormElementProps> = ({
       }}
       onClick={(e) => {
         e.stopPropagation();
-        onSelect(element.id, e.shiftKey);
+        // Don't deselect when clicking inside while editing
+        if (!isEditing) {
+          onSelect(element.id, e.shiftKey);
+        }
       }}
       onDoubleClick={canShowFloatingToolbar ? handleDoubleClick : undefined}
       onMouseEnter={() => setHovered(true)}
@@ -144,12 +154,13 @@ const FormElement: React.FC<FormElementProps> = ({
         </div>
       )}
       
-      <ElementContent element={element} />
+      <ElementContent element={element} isEditing={isEditing} />
       
-      <ElementDragHandle onMouseDown={handleMouseDown} />
+      {/* Only show drag handle when not editing */}
+      {!isEditing && <ElementDragHandle onMouseDown={handleMouseDown} />}
       
       {/* Element toolbar */}
-      {isSelected && (
+      {isSelected && !isEditing && (
         <ElementToolbar 
           elementId={element.id}
           isGrouped={isGrouped}
@@ -170,8 +181,8 @@ const FormElement: React.FC<FormElementProps> = ({
           onBold={handleBold}
           onItalic={handleItalic}
           onLink={handleLink}
-          onDuplicate={onDuplicate}
-          onDelete={onDelete}
+          onDuplicate={() => onDuplicate(element.id)}
+          onDelete={() => onDelete(element.id)}
         />
       )}
     </div>
