@@ -14,6 +14,7 @@ import ParagraphField from "./fields/ParagraphField";
 import GDPRConsentField from "./fields/GDPRConsentField";
 import { InfoIcon, AlertTriangle } from "lucide-react";
 import { useCompliance } from "@/context/ComplianceContext";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface ElementContentProps {
   element: FormElement;
@@ -27,6 +28,7 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
   const [checkboxValue, setCheckboxValue] = useState(false);
   const [dateValue, setDateValue] = useState<Date | undefined>(undefined);
   const [gdprConsentValue, setGdprConsentValue] = useState(false);
+  const [radioValue, setRadioValue] = useState('');
   
   // Get compliance context for GDPR field
   const { complianceSettings } = useCompliance();
@@ -78,8 +80,30 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
           />
         );
       case 'radio':
-        // Radio buttons would need a different implementation
-        return <div>Radio field (not implemented)</div>;
+        return (
+          <div className="space-y-2">
+            {element.label && (
+              <label className="text-sm font-medium">
+                {element.label}
+                {element.required && <span className="text-red-500 ml-1">*</span>}
+              </label>
+            )}
+            <RadioGroup
+              value={radioValue}
+              onValueChange={setRadioValue}
+              className="flex flex-col space-y-1"
+            >
+              {(element.options || ['Option 1', 'Option 2', 'Option 3']).map((option, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <RadioGroupItem value={option} id={`${element.id}-${index}`} />
+                  <label htmlFor={`${element.id}-${index}`} className="text-sm">
+                    {option}
+                  </label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
+        );
       case 'select':
         return (
           <SelectField 
