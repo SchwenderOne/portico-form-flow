@@ -2,7 +2,7 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 
-interface TextFieldProps {
+export interface TextFieldProps {
   label: string;
   required?: boolean;
   placeholder?: string;

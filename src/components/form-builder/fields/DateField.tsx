@@ -3,7 +3,7 @@ import React from "react";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 
-interface DateFieldProps {
+export interface DateFieldProps {
   label: string;
   required?: boolean;
   date: Date | undefined;

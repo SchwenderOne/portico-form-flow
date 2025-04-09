@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { FormElement } from "@/types/form";
 import TextField from "./fields/TextField";
 import TextareaField from "./fields/TextareaField";
@@ -19,29 +19,105 @@ interface ElementContentProps {
 }
 
 const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) => {
+  // Add default state values for form controls
+  const [textValue, setTextValue] = useState('');
+  const [selectValue, setSelectValue] = useState('');
+  const [checkboxValue, setCheckboxValue] = useState(false);
+  const [dateValue, setDateValue] = useState<Date | undefined>(undefined);
+
   const renderField = () => {
     switch (element.type) {
       case 'text':
-        return <TextField label={element.label} placeholder={element.placeholder} required={element.required} isEditing={isEditing} />;
+        return (
+          <TextField 
+            label={element.label} 
+            placeholder={element.placeholder} 
+            required={element.required} 
+            isEditing={isEditing} 
+            value={textValue}
+            onChange={setTextValue}
+          />
+        );
       case 'textarea':
-        return <TextareaField label={element.label} placeholder={element.placeholder} required={element.required} isEditing={isEditing} />;
+        return (
+          <TextareaField 
+            label={element.label} 
+            placeholder={element.placeholder} 
+            required={element.required} 
+            isEditing={isEditing} 
+            value={textValue}
+            onChange={setTextValue}
+          />
+        );
       case 'checkbox':
+        return (
+          <CheckboxField 
+            id={element.id}
+            label={element.label} 
+            required={element.required} 
+            isEditing={isEditing} 
+            checked={checkboxValue}
+            onCheckedChange={setCheckboxValue}
+          />
+        );
       case 'radio':
-        return <CheckboxField label={element.label} options={(element as any).options || []} type={element.type} required={element.required} isEditing={isEditing} />;
+        // Radio buttons would need a different implementation
+        return <div>Radio field (not implemented)</div>;
       case 'select':
-        return <SelectField label={element.label} options={(element as any).options || []} required={element.required} isEditing={isEditing} />;
+        return (
+          <SelectField 
+            label={element.label} 
+            options={element.options || []} 
+            required={element.required} 
+            isEditing={isEditing}
+            selectedOption={selectValue}
+            onChange={setSelectValue}
+          />
+        );
       case 'file':
-        return <FileField label={element.label} placeholder={element.placeholder} required={element.required} isEditing={isEditing} />;
+        return (
+          <FileField 
+            label={element.label} 
+            required={element.required} 
+            isEditing={isEditing} 
+          />
+        );
       case 'header':
         return <HeaderField content={(element as any).content || ''} isEditing={isEditing} />;
       case 'paragraph':
         return <ParagraphField content={(element as any).content || ''} isEditing={isEditing} />;
       case 'email':
-        return <EmailField label={element.label} placeholder={element.placeholder} required={element.required} isEditing={isEditing} />;
+        return (
+          <EmailField 
+            label={element.label} 
+            placeholder={element.placeholder} 
+            required={element.required} 
+            isEditing={isEditing}
+            value={textValue}
+            onChange={setTextValue}
+          />
+        );
       case 'date':
-        return <DateField label={element.label} placeholder={element.placeholder} required={element.required} isEditing={isEditing} />;
+        return (
+          <DateField 
+            label={element.label} 
+            required={element.required} 
+            isEditing={isEditing}
+            date={dateValue}
+            onChange={setDateValue}
+          />
+        );
       case 'number':
-        return <NumberField label={element.label} placeholder={element.placeholder} required={element.required} isEditing={isEditing} />;
+        return (
+          <NumberField 
+            label={element.label} 
+            placeholder={element.placeholder} 
+            required={element.required} 
+            isEditing={isEditing}
+            value={textValue}
+            onChange={setTextValue}
+          />
+        );
       default:
         return <div>Unsupported field type: {element.type}</div>;
     }

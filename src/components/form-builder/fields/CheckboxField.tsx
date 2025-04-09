@@ -2,7 +2,7 @@
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 
-interface CheckboxFieldProps {
+export interface CheckboxFieldProps {
   id: string;
   label: string;
   required?: boolean;

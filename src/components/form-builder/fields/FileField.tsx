@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 
-interface FileFieldProps {
+export interface FileFieldProps {
   label: string;
   required?: boolean;
   accept?: string;
