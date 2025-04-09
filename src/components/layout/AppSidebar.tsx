@@ -27,7 +27,6 @@ import {
   Zap
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { BrandSettingsSheet } from "@/components/form-builder/BrandSettingsSheet";
 import { TeamManagementSheet } from "@/components/team/TeamManagementSheet";
 import { useBrandSettings } from "@/context/BrandSettingsContext";
 import { openVersionHistory } from "@/components/form-builder/version-history/VersionHistorySheet";
@@ -48,22 +47,17 @@ const SidebarHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
 const AppSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isBrandSettingsOpen, setIsBrandSettingsOpen] = useState(false);
   const [isTeamManagementOpen, setIsTeamManagementOpen] = useState(false);
   const { brandSettings } = useBrandSettings();
 
   useEffect(() => {
-    if (location.pathname === "/branding") {
-      setIsBrandSettingsOpen(true);
-    } else if (location.pathname === "/team") {
+    if (location.pathname === "/team") {
       setIsTeamManagementOpen(true);
     }
   }, [location.pathname]);
 
   const handleMenuItemClick = (path: string) => {
-    if (path === "/branding") {
-      setIsBrandSettingsOpen(true);
-    } else if (path === "/team") {
+    if (path === "/team") {
       setIsTeamManagementOpen(true);
     } else if (path === "/history" && location.pathname.includes("/form/")) {
       // If we're in a form editor, open the version history instead of navigating
@@ -113,9 +107,7 @@ const AppSidebar = () => {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton 
                       className={cn(
-                        (location.pathname === item.path || 
-                        (item.path === "/branding" && isBrandSettingsOpen) ||
-                        (item.path === "/team" && isTeamManagementOpen)) && 
+                        (location.pathname === item.path) && 
                         (item.usesBrandColor 
                           ? "bg-[var(--brand-primary)] text-white font-medium" 
                           : "bg-sidebar-accent text-foreground font-medium")
@@ -147,12 +139,6 @@ const AppSidebar = () => {
           </div>
         </SidebarFooter>
       </Sidebar>
-
-      <BrandSettingsSheet 
-        open={isBrandSettingsOpen} 
-        onOpenChange={setIsBrandSettingsOpen}
-        showTrigger={false}
-      />
 
       <TeamManagementSheet
         open={isTeamManagementOpen}

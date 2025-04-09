@@ -19,6 +19,7 @@ import FormMetadata from "./pages/FormMetadata";
 import Analytics from "./pages/Analytics";
 import Automations from "./pages/Automations";
 import Distribute from "./pages/Distribute";
+import Branding from "./pages/Branding";
 import Auth from "./pages/Auth";
 import RequireAuth from "./components/auth/RequireAuth";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
@@ -56,7 +57,7 @@ const App = () => (
                       <Route path="/distribute" element={<RequireAuth><Distribute /></RequireAuth>} />
                       <Route path="/analytics" element={<RequireAuth><Analytics /></RequireAuth>} />
                       <Route path="/automations" element={<RequireAuth><Automations /></RequireAuth>} />
-                      <Route path="/branding" element={<RequireAuth><Index /></RequireAuth>} /> {/* Redirects to Index but will open Brand Settings panel */}
+                      <Route path="/branding" element={<RequireAuth><Branding /></RequireAuth>} /> {/* Updated Branding route */}
                       <Route path="/team" element={<RequireAuth><Index /></RequireAuth>} /> {/* Redirects to Index but will open Team Management panel */}
                       <Route path="/history" element={<RequireAuth><NotFound /></RequireAuth>} />
                       <Route path="/compliance" element={<RequireAuth><Compliance /></RequireAuth>} />
