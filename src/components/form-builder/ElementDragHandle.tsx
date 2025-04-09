@@ -9,10 +9,10 @@ interface ElementDragHandleProps {
 const ElementDragHandle: React.FC<ElementDragHandleProps> = ({ onMouseDown }) => {
   return (
     <div 
-      className="form-element-handle"
+      className="form-element-handle absolute -top-6 left-1/2 transform -translate-x-1/2 bg-white p-1 rounded-t-md shadow-sm border border-gray-200 cursor-move hover:bg-portico-purple/10 transition-colors"
       onMouseDown={onMouseDown}
     >
-      <Grip className="h-3 w-3 text-muted-foreground mx-auto mt-1" />
+      <Grip className="h-3 w-3 text-muted-foreground" />
     </div>
   );
 };

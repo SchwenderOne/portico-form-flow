@@ -32,6 +32,7 @@ const FormElement: React.FC<FormElementProps> = ({
 }) => {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [hovered, setHovered] = useState(false);
+  const [isDraggingElement, setIsDraggingElement] = useState(false);
   const grouping = useGrouping();
   const elementRef = useRef<HTMLDivElement>(null);
   
@@ -94,6 +95,7 @@ const FormElement: React.FC<FormElementProps> = ({
         y: e.clientY - rect.top
       });
       setIsDragging(true);
+      setIsDraggingElement(true);
       
       const handleMouseMove = (e: MouseEvent) => {
         if (elementRef.current && elementRef.current.parentElement) {
@@ -131,6 +133,7 @@ const FormElement: React.FC<FormElementProps> = ({
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleMouseUp);
         setIsDragging(false);
+        setIsDraggingElement(false);
       };
       
       window.addEventListener('mousemove', handleMouseMove);
@@ -173,11 +176,12 @@ const FormElement: React.FC<FormElementProps> = ({
     <div
       ref={elementRef}
       className={cn(
-        "form-element absolute p-4 bg-white border rounded-md transition-shadow",
+        "form-element absolute p-4 bg-white border rounded-md transition-all",
         isSelected && "ring-2 ring-portico-purple z-10",
         isGrouped && "border-dashed border-portico-purple-light",
         isGroupSelected && !isSelected && "ring-1 ring-portico-purple-light",
         hovered && !isSelected && "shadow-lg",
+        isDraggingElement && "opacity-90 shadow-xl scale-[1.01] z-20",
         isEditing && "editing"
       )}
       style={{
@@ -185,7 +189,9 @@ const FormElement: React.FC<FormElementProps> = ({
         top: element.position.y,
         width: element.size.width,
         height: element.size.height,
-        zIndex: isSelected ? 10 : 1
+        zIndex: isSelected ? 10 : 1,
+        transitionProperty: "transform, opacity, box-shadow",
+        transitionDuration: "0.1s",
       }}
       onClick={handleElementClick}
       onDoubleClick={canShowFloatingToolbar ? handleDoubleClick : undefined}

@@ -126,6 +126,10 @@
   @apply ring-2 ring-portico-purple ring-opacity-100;
 }
 
+.form-element:hover .form-element-handle {
+  @apply opacity-100;
+}
+
 .toolbar-button {
   @apply rounded-md p-2 text-sm font-medium transition-colors 
   focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none;
@@ -140,7 +144,13 @@
 }
 
 .form-element-handle {
-  @apply absolute top-0 left-0 w-full h-6 bg-transparent cursor-move rounded-t-md invisible group-hover:visible;
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+}
+
+.form-element:hover .form-element-handle,
+.form-element.selected .form-element-handle {
+  opacity: 1;
 }
 
 .form-element-toolbar {
@@ -165,6 +175,22 @@
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+/* Animation for drag preview */
+@keyframes dragPreviewAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+}
+
+.drag-preview {
+  animation: dragPreviewAppear 0.15s ease-out forwards;
 }
 
 .floating-toolbar {
