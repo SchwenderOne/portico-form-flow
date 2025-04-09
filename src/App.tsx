@@ -26,6 +26,7 @@ import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import RequireAuth from "./components/auth/RequireAuth";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
+import FormsV2 from "./pages/FormsV2";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient({
@@ -68,6 +69,7 @@ const App = () => (
                         <Route path="/metadata" element={<RequireAuth><FormMetadata /></RequireAuth>} />
                         <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
                         <Route path="/form-builder" element={<RequireAuth><FormBuilder /></RequireAuth>} />
+                        <Route path="/forms-v2" element={<RequireAuth><FormsV2 /></RequireAuth>} />
                         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                         <Route path="*" element={<NotFound />} />
                       </Routes>

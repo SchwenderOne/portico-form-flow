@@ -24,7 +24,8 @@ import {
   BarChart,
   Shield,
   Users,
-  Zap
+  Zap,
+  Clipboard
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TeamManagementSheet } from "@/components/team/TeamManagementSheet";
@@ -74,6 +75,7 @@ const AppSidebar = () => {
   const menuItems = [
     { icon: LayoutGrid, title: "Templates", path: "/templates" },
     { icon: FileEdit, title: "Forms", path: "/" },
+    { icon: Clipboard, title: "Forms V2", path: "/forms-v2", highlight: true },
     { icon: Send, title: "Distribute", path: "/distribute" },
     { icon: BarChart, title: "Analytics", path: "/analytics" },
     { icon: Zap, title: "Automations", path: "/automations" },
@@ -114,7 +116,8 @@ const AppSidebar = () => {
                         (location.pathname === item.path) && 
                         (item.usesBrandColor 
                           ? "bg-[var(--brand-primary)] text-white font-medium" 
-                          : "bg-sidebar-accent text-foreground font-medium")
+                          : "bg-sidebar-accent text-foreground font-medium"),
+                        item.highlight && "border-l-2 border-primary"
                       )}
                       onClick={() => handleMenuItemClick(item.path)}
                     >
