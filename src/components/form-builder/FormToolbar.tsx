@@ -18,6 +18,7 @@ interface FormToolbarProps {
   onGroup: () => void;
   onUngroup: () => void;
   onAddElements?: (elements: FormElement[]) => void;
+  existingElements?: FormElement[]; // Add this prop to the interface
 }
 
 const FormToolbar: React.FC<FormToolbarProps> = ({
@@ -26,7 +27,8 @@ const FormToolbar: React.FC<FormToolbarProps> = ({
   onUpdate,
   onGroup,
   onUngroup,
-  onAddElements
+  onAddElements,
+  existingElements = [] // Provide a default empty array
 }) => {
   const [activeTab, setActiveTab] = useState<string>("properties");
 
@@ -124,7 +126,10 @@ const FormToolbar: React.FC<FormToolbarProps> = ({
         </TabsContent>
 
         <TabsContent value="ai" className="m-0 h-full">
-          <AIAssistTab onAddElements={onAddElements} />
+          <AIAssistTab 
+            onAddElements={onAddElements} 
+            existingElements={existingElements} // Pass the prop to AIAssistTab
+          />
         </TabsContent>
 
         <TabsContent value="settings" className="m-0 h-full">
