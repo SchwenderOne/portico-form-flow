@@ -114,7 +114,7 @@ const FormBuilder = () => {
 // Separate component to load template elements
 const TemplateFormLoader = () => {
   const { selectedTemplate, setSelectedTemplate } = useSelectedTemplate();
-  const { elements, setElements } = useFormCanvas();
+  const formCanvas = useFormCanvas();
   
   // Effect to load template elements when the form builder loads
   useEffect(() => {
@@ -122,12 +122,18 @@ const TemplateFormLoader = () => {
       console.log("Loading template elements:", selectedTemplate.elements);
       
       // Replace current elements with template elements
-      setElements(selectedTemplate.elements);
+      if (formCanvas && formCanvas.elements) {
+        // Check if we have access to elements in the context
+        if (typeof formCanvas.handleAddAIElements === 'function') {
+          // Use handleAddAIElements which is available in the context
+          formCanvas.handleAddAIElements(selectedTemplate.elements, true);
+        }
+      }
       
       // Clear the selected template to avoid reloading on component re-renders
       setSelectedTemplate(null);
     }
-  }, [selectedTemplate, setElements, setSelectedTemplate]);
+  }, [selectedTemplate, formCanvas, setSelectedTemplate]);
   
   return null;
 };
