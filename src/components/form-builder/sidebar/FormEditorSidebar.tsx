@@ -1,25 +1,24 @@
 
 import React, { useState } from "react";
-import { FormElement } from "@/types/form";
-import { 
-  Box, 
-  Info, 
-  Check, 
-  Wand2, 
-  Shield, 
-  Sliders, 
-  ChevronRight,
-  ChevronLeft
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FormElement } from "@/types/form";
 import PropertiesTab from "../toolbars/tabs/PropertiesTab";
 import ValidationTab from "../toolbars/tabs/ValidationTab";
 import AppearanceTab from "../toolbars/tabs/AppearanceTab";
 import AIAssistTab from "../toolbars/tabs/AIAssistTab";
-import ComplianceTab from "../toolbars/tabs/ComplianceTab";
 import SettingsTab from "../toolbars/tabs/SettingsTab";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import ComplianceTab from "../toolbars/tabs/ComplianceTab";
+import { 
+  Settings, 
+  Wand, 
+  Paintbrush, 
+  ListChecks, 
+  SlidersHorizontal,
+  Shield,
+  ChevronRight,
+  ChevronLeft
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface FormEditorSidebarProps {
   element: FormElement;
@@ -34,201 +33,150 @@ const FormEditorSidebar: React.FC<FormEditorSidebarProps> = ({
   existingElements = [],
   onAddElements
 }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState("properties");
-
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
-  };
-
-  if (isCollapsed) {
+  const [activeTab, setActiveTab] = useState<string>("properties");
+  const [collapsed, setCollapsed] = useState(false);
+  
+  if (collapsed) {
     return (
-      <div className="w-10 border-l border-gray-200 bg-white flex flex-col items-center py-4">
-        <Button 
+      <div className="w-10 bg-background border-l h-full flex flex-col items-center pt-4">
+        <Button
           variant="ghost" 
           size="icon" 
-          onClick={toggleSidebar}
-          className="mb-6"
+          onClick={() => setCollapsed(false)}
+          className="mb-4"
         >
-          <ChevronLeft size={18} />
+          <ChevronLeft className="h-4 w-4" />
         </Button>
-        
-        <TooltipProvider>
-          <div className="flex flex-col space-y-4">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant={activeTab === "properties" ? "secondary" : "ghost"}
-                  size="icon" 
-                  onClick={() => {
-                    setActiveTab("properties");
-                    setIsCollapsed(false);
-                  }}
-                >
-                  <Info size={18} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="left">
-                <p>Properties</p>
-              </TooltipContent>
-            </Tooltip>
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant={activeTab === "validation" ? "secondary" : "ghost"}
-                  size="icon" 
-                  onClick={() => {
-                    setActiveTab("validation");
-                    setIsCollapsed(false);
-                  }}
-                >
-                  <Check size={18} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="left">
-                <p>Validation</p>
-              </TooltipContent>
-            </Tooltip>
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant={activeTab === "appearance" ? "secondary" : "ghost"}
-                  size="icon" 
-                  onClick={() => {
-                    setActiveTab("appearance");
-                    setIsCollapsed(false);
-                  }}
-                >
-                  <Sliders size={18} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="left">
-                <p>Appearance</p>
-              </TooltipContent>
-            </Tooltip>
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant={activeTab === "ai" ? "secondary" : "ghost"}
-                  size="icon" 
-                  onClick={() => {
-                    setActiveTab("ai");
-                    setIsCollapsed(false);
-                  }}
-                >
-                  <Wand2 size={18} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="left">
-                <p>AI Assist</p>
-              </TooltipContent>
-            </Tooltip>
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant={activeTab === "compliance" ? "secondary" : "ghost"}
-                  size="icon" 
-                  onClick={() => {
-                    setActiveTab("compliance");
-                    setIsCollapsed(false);
-                  }}
-                >
-                  <Shield size={18} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="left">
-                <p>Compliance</p>
-              </TooltipContent>
-            </Tooltip>
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant={activeTab === "settings" ? "secondary" : "ghost"}
-                  size="icon" 
-                  onClick={() => {
-                    setActiveTab("settings");
-                    setIsCollapsed(false);
-                  }}
-                >
-                  <Box size={18} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="left">
-                <p>Settings</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        </TooltipProvider>
+        <div className="flex flex-col gap-2 items-center">
+          <Button
+            variant={activeTab === "properties" ? "secondary" : "ghost"}
+            size="icon"
+            onClick={() => { setCollapsed(false); setActiveTab("properties"); }}
+          >
+            <ListChecks className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={activeTab === "validation" ? "secondary" : "ghost"}
+            size="icon"
+            onClick={() => { setCollapsed(false); setActiveTab("validation"); }}
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={activeTab === "appearance" ? "secondary" : "ghost"}
+            size="icon"
+            onClick={() => { setCollapsed(false); setActiveTab("appearance"); }}
+          >
+            <Paintbrush className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={activeTab === "ai" ? "secondary" : "ghost"}
+            size="icon"
+            onClick={() => { setCollapsed(false); setActiveTab("ai"); }}
+          >
+            <Wand className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={activeTab === "settings" ? "secondary" : "ghost"}
+            size="icon"
+            onClick={() => { setCollapsed(false); setActiveTab("settings"); }}
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={activeTab === "compliance" ? "secondary" : "ghost"}
+            size="icon"
+            onClick={() => { setCollapsed(false); setActiveTab("compliance"); }}
+          >
+            <Shield className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-[300px] border-l border-gray-200 bg-white flex flex-col">
-      <div className="p-3 border-b border-gray-200 flex items-center justify-between">
-        <h3 className="text-sm font-medium">
-          Edit {element.type.charAt(0).toUpperCase() + element.type.slice(1)}
-        </h3>
-        <Button variant="ghost" size="icon" onClick={toggleSidebar}>
-          <ChevronRight size={18} />
+    <div className="w-64 bg-background border-l h-full flex flex-col">
+      <div className="flex justify-between items-center border-b px-4 h-10">
+        <h3 className="text-sm font-medium">{element.type.charAt(0).toUpperCase() + element.type.slice(1)} Settings</h3>
+        <Button
+          variant="ghost" 
+          size="icon" 
+          onClick={() => setCollapsed(true)}
+        >
+          <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <TabsList className="grid grid-cols-6 h-auto p-1 m-2">
-          <TabsTrigger value="properties" className="p-2">
-            <Info size={16} />
-          </TabsTrigger>
-          <TabsTrigger value="validation" className="p-2">
-            <Check size={16} />
-          </TabsTrigger>
-          <TabsTrigger value="appearance" className="p-2">
-            <Sliders size={16} />
-          </TabsTrigger>
-          <TabsTrigger value="ai" className="p-2">
-            <Wand2 size={16} />
-          </TabsTrigger>
-          <TabsTrigger value="compliance" className="p-2">
-            <Shield size={16} />
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="p-2">
-            <Box size={16} />
-          </TabsTrigger>
-        </TabsList>
-        
-        <div className="flex-1 overflow-auto">
-          <TabsContent value="properties" className="m-0">
-            <PropertiesTab element={element} onElementUpdate={onElementUpdate} />
-          </TabsContent>
-          
-          <TabsContent value="validation" className="m-0">
-            <ValidationTab element={element} onElementUpdate={onElementUpdate} />
-          </TabsContent>
-          
-          <TabsContent value="appearance" className="m-0">
-            <AppearanceTab element={element} onElementUpdate={onElementUpdate} />
-          </TabsContent>
-          
-          <TabsContent value="ai" className="m-0">
-            <AIAssistTab 
-              onAddElements={onAddElements}
-              existingElements={existingElements}
-            />
-          </TabsContent>
-          
-          <TabsContent value="compliance" className="m-0">
-            <ComplianceTab element={element} onElementUpdate={onElementUpdate} />
-          </TabsContent>
-          
-          <TabsContent value="settings" className="m-0">
-            <SettingsTab element={element} onElementUpdate={onElementUpdate} />
-          </TabsContent>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
+        <div className="border-b px-4 bg-muted/30">
+          <TabsList className="bg-transparent h-10 justify-start border-b-0">
+            <TabsTrigger
+              value="properties"
+              className="data-[state=active]:bg-background rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
+            >
+              <ListChecks className="h-4 w-4 mr-2" />
+              Props
+            </TabsTrigger>
+            
+            <TabsTrigger
+              value="validation"
+              className="data-[state=active]:bg-background rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
+            >
+              <SlidersHorizontal className="h-4 w-4 mr-2" />
+              Valid
+            </TabsTrigger>
+            
+            <TabsTrigger
+              value="appearance"
+              className="data-[state=active]:bg-background rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
+            >
+              <Paintbrush className="h-4 w-4 mr-2" />
+              Look
+            </TabsTrigger>
+            
+            <TabsTrigger
+              value="ai"
+              className="data-[state=active]:bg-background rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
+            >
+              <Wand className="h-4 w-4 mr-2" />
+              AI
+            </TabsTrigger>
+          </TabsList>
         </div>
+
+        <TabsContent value="properties" className="m-0 h-full overflow-auto">
+          <PropertiesTab element={element} onElementUpdate={onElementUpdate} />
+        </TabsContent>
+
+        <TabsContent value="validation" className="m-0 h-full overflow-auto">
+          <ValidationTab element={element} onElementUpdate={onElementUpdate} />
+        </TabsContent>
+
+        <TabsContent value="appearance" className="m-0 h-full overflow-auto">
+          <AppearanceTab element={element} onElementUpdate={onElementUpdate} />
+        </TabsContent>
+
+        <TabsContent value="ai" className="m-0 h-full overflow-auto">
+          <AIAssistTab 
+            onAddElements={onAddElements} 
+            existingElements={existingElements}
+          />
+        </TabsContent>
+
+        <TabsContent value="settings" className="m-0 h-full overflow-auto">
+          <SettingsTab 
+            element={element}
+            onElementUpdate={onElementUpdate}
+          />
+        </TabsContent>
+        
+        <TabsContent value="compliance" className="m-0 h-full overflow-auto">
+          <ComplianceTab 
+            element={element}
+            onElementUpdate={onElementUpdate}
+          />
+        </TabsContent>
       </Tabs>
     </div>
   );

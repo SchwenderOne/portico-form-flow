@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { FormElement } from "@/types/form";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -10,7 +10,11 @@ import {
   PopoverContent
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Palette } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Palette, SquareUser, Type, Layers, LayoutGrid } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 
 interface AppearanceTabProps {
   element: FormElement;
@@ -18,6 +22,7 @@ interface AppearanceTabProps {
 }
 
 const AppearanceTab: React.FC<AppearanceTabProps> = ({ element, onElementUpdate }) => {
+  const [advancedTab, setAdvancedTab] = useState("layout");
   
   // Function to handle size changes
   const handleSizeChange = (width: number, height: number) => {
@@ -28,6 +33,19 @@ const AppearanceTab: React.FC<AppearanceTabProps> = ({ element, onElementUpdate 
         height
       }
     });
+  };
+
+  // Function to handle styling changes
+  const handleStylingChange = (property: string, value: string) => {
+    onElementUpdate({
+      ...element,
+      styling: {
+        ...(element.styling || {}),
+        [property]: value
+      }
+    });
+    
+    toast.success(`Updated ${property} styling`);
   };
   
   return (
@@ -85,16 +103,217 @@ const AppearanceTab: React.FC<AppearanceTabProps> = ({ element, onElementUpdate 
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="text-xs">
-                <Palette className="h-3 w-3 mr-1" /> Color Settings
+                <Palette className="h-3 w-3 mr-1" /> Advanced Styling
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-80">
               <div className="grid gap-4">
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">Advanced Styling</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Additional styling options will be available soon.
-                  </p>
+                  <Tabs value={advancedTab} onValueChange={setAdvancedTab}>
+                    <TabsList className="grid grid-cols-4 h-8">
+                      <TabsTrigger value="layout" className="text-xs py-1 px-2">
+                        <LayoutGrid className="h-3 w-3 mr-1" />
+                        Layout
+                      </TabsTrigger>
+                      <TabsTrigger value="typography" className="text-xs py-1 px-2">
+                        <Type className="h-3 w-3 mr-1" />
+                        Text
+                      </TabsTrigger>
+                      <TabsTrigger value="colors" className="text-xs py-1 px-2">
+                        <Palette className="h-3 w-3 mr-1" />
+                        Colors
+                      </TabsTrigger>
+                      <TabsTrigger value="borders" className="text-xs py-1 px-2">
+                        <Layers className="h-3 w-3 mr-1" />
+                        Borders
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="layout" className="space-y-3 pt-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <Label htmlFor="padding" className="text-xs">Padding</Label>
+                          <Select 
+                            onValueChange={(value) => handleStylingChange('padding', value)}
+                            defaultValue={(element.styling?.padding || 'md')}
+                          >
+                            <SelectTrigger id="padding" className="h-8 text-xs">
+                              <SelectValue placeholder="Padding" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="xs">Extra Small</SelectItem>
+                              <SelectItem value="sm">Small</SelectItem>
+                              <SelectItem value="md">Medium</SelectItem>
+                              <SelectItem value="lg">Large</SelectItem>
+                              <SelectItem value="xl">Extra Large</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="margin" className="text-xs">Margin</Label>
+                          <Select 
+                            onValueChange={(value) => handleStylingChange('margin', value)}
+                            defaultValue={(element.styling?.margin || 'md')}
+                          >
+                            <SelectTrigger id="margin" className="h-8 text-xs">
+                              <SelectValue placeholder="Margin" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="xs">Extra Small</SelectItem>
+                              <SelectItem value="sm">Small</SelectItem>
+                              <SelectItem value="md">Medium</SelectItem>
+                              <SelectItem value="lg">Large</SelectItem>
+                              <SelectItem value="xl">Extra Large</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="typography" className="space-y-3 pt-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <Label htmlFor="fontFamily" className="text-xs">Font Family</Label>
+                          <Select 
+                            onValueChange={(value) => handleStylingChange('fontFamily', value)}
+                            defaultValue={(element.styling?.fontFamily || 'sans')}
+                          >
+                            <SelectTrigger id="fontFamily" className="h-8 text-xs">
+                              <SelectValue placeholder="Font Family" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="sans">Sans-serif</SelectItem>
+                              <SelectItem value="serif">Serif</SelectItem>
+                              <SelectItem value="mono">Monospace</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="fontSize" className="text-xs">Font Size</Label>
+                          <Select 
+                            onValueChange={(value) => handleStylingChange('fontSize', value)}
+                            defaultValue={(element.styling?.fontSize || 'md')}
+                          >
+                            <SelectTrigger id="fontSize" className="h-8 text-xs">
+                              <SelectValue placeholder="Font Size" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="xs">Extra Small</SelectItem>
+                              <SelectItem value="sm">Small</SelectItem>
+                              <SelectItem value="md">Medium</SelectItem>
+                              <SelectItem value="lg">Large</SelectItem>
+                              <SelectItem value="xl">Extra Large</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="textAlign" className="text-xs">Text Align</Label>
+                        <Select 
+                          onValueChange={(value) => handleStylingChange('textAlign', value)}
+                          defaultValue={(element.styling?.textAlign || 'left')}
+                        >
+                          <SelectTrigger id="textAlign" className="h-8 text-xs">
+                            <SelectValue placeholder="Text Align" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="left">Left</SelectItem>
+                            <SelectItem value="center">Center</SelectItem>
+                            <SelectItem value="right">Right</SelectItem>
+                            <SelectItem value="justify">Justify</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="colors" className="space-y-3 pt-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <Label htmlFor="bgColor" className="text-xs">Background</Label>
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-6 h-6 rounded-full border" 
+                              style={{backgroundColor: element.styling?.bgColor || '#ffffff'}}
+                            />
+                            <Input 
+                              id="bgColor"
+                              type="text" 
+                              value={element.styling?.bgColor || '#ffffff'} 
+                              onChange={(e) => handleStylingChange('bgColor', e.target.value)}
+                              className="h-8 text-xs"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="textColor" className="text-xs">Text Color</Label>
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-6 h-6 rounded-full border" 
+                              style={{backgroundColor: element.styling?.textColor || '#000000'}}
+                            />
+                            <Input 
+                              id="textColor"
+                              type="text" 
+                              value={element.styling?.textColor || '#000000'} 
+                              onChange={(e) => handleStylingChange('textColor', e.target.value)}
+                              className="h-8 text-xs"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="borders" className="space-y-3 pt-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <Label htmlFor="borderStyle" className="text-xs">Border Style</Label>
+                          <Select 
+                            onValueChange={(value) => handleStylingChange('borderStyle', value)}
+                            defaultValue={(element.styling?.borderStyle || 'solid')}
+                          >
+                            <SelectTrigger id="borderStyle" className="h-8 text-xs">
+                              <SelectValue placeholder="Border Style" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">None</SelectItem>
+                              <SelectItem value="solid">Solid</SelectItem>
+                              <SelectItem value="dashed">Dashed</SelectItem>
+                              <SelectItem value="dotted">Dotted</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="borderRadius" className="text-xs">Corner Radius</Label>
+                          <Select 
+                            onValueChange={(value) => handleStylingChange('borderRadius', value)}
+                            defaultValue={(element.styling?.borderRadius || 'md')}
+                          >
+                            <SelectTrigger id="borderRadius" className="h-8 text-xs">
+                              <SelectValue placeholder="Corner Radius" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">None</SelectItem>
+                              <SelectItem value="sm">Small</SelectItem>
+                              <SelectItem value="md">Medium</SelectItem>
+                              <SelectItem value="lg">Large</SelectItem>
+                              <SelectItem value="full">Full</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                  <Separator className="my-2" />
+                  <div className="flex justify-end">
+                    <Button 
+                      size="sm" 
+                      variant="secondary"
+                      onClick={() => toast.success("Styling applied to element")}
+                    >
+                      Apply Styling
+                    </Button>
+                  </div>
                 </div>
               </div>
             </PopoverContent>

@@ -4,6 +4,8 @@ import { FormElement as FormElementType } from '@/types/form';
 import ElementDragHandle from './ElementDragHandle';
 import { toast } from "sonner";
 import { useCollaboration } from '@/context/CollaborationContext';
+import { useFormCanvas } from '@/components/form-builder/context/FormCanvasContext';
+import { DragHandleHorizontal } from 'lucide-react';
 
 interface FormElementProps {
   element: FormElementType;
@@ -25,21 +27,40 @@ const FormElement: React.FC<FormElementProps> = ({
   selected
 }) => {
   const { activeElement } = useCollaboration();
+  const { setIsDragging } = useFormCanvas();
   const isBeingDragged = activeElement === element.id;
 
+  const handleDragStart = (e: React.DragEvent) => {
+    e.stopPropagation();
+    onSelect(element.id);
+    setIsDragging(true);
+    
+    // Set the drag data
+    e.dataTransfer.setData('elementId', element.id);
+    e.dataTransfer.setData('action', 'move');
+    e.dataTransfer.setData('startX', e.clientX.toString());
+    e.dataTransfer.setData('startY', e.clientY.toString());
+    e.dataTransfer.setData('elementX', element.position.x.toString());
+    e.dataTransfer.setData('elementY', element.position.y.toString());
+    
+    // Set a drag image (optional)
+    const dragImage = document.createElement('div');
+    dragImage.style.width = `${element.size.width}px`;
+    dragImage.style.height = `${element.size.height}px`;
+    dragImage.style.opacity = '0.5';
+    document.body.appendChild(dragImage);
+    e.dataTransfer.setDragImage(dragImage, 0, 0);
+    setTimeout(() => document.body.removeChild(dragImage), 0);
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+  
   const handleDrag = (e: React.MouseEvent) => {
     e.stopPropagation();
     onSelect(element.id);
-  };
-
-  const handleStop = (e: React.MouseEvent, data: any) => {
-    e.stopPropagation();
-    onPositionChange(element.id, data.x, data.y);
-  };
-
-  const handleResizeStop = (e: React.MouseEvent, data: any, ref: any) => {
-    e.stopPropagation();
-    onResize(element.id, ref.offsetWidth, ref.offsetHeight);
   };
 
   const handleSelect = (e: React.MouseEvent) => {
@@ -55,6 +76,7 @@ const FormElement: React.FC<FormElementProps> = ({
   const handleDuplicate = (e: React.MouseEvent) => {
     e.stopPropagation();
     onDuplicate(element.id);
+    toast.success("Element duplicated");
   };
 
   const renderElement = () => {
@@ -81,9 +103,18 @@ const FormElement: React.FC<FormElementProps> = ({
       }}
       className={`absolute bg-white shadow-md rounded-md border border-dashed border-gray-300 transition-transform duration-200 ${selected ? 'border-blue-500' : ''} ${isBeingDragged ? 'opacity-50' : ''}`}
       onClick={handleSelect}
+      draggable="true"
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
     >
+      <div className="absolute top-0 left-0 w-full h-6 bg-gray-100 rounded-t-md flex items-center px-2 cursor-move"
+           onMouseDown={handleDrag}>
+        <DragHandleHorizontal size={14} className="text-gray-400 mr-2" />
+        <span className="text-xs text-gray-600 truncate">{element.label || element.type}</span>
+      </div>
+      
       <ElementDragHandle onMouseDown={handleDrag} id={element.id} />
-      <div className="p-4">
+      <div className="p-4 mt-6">
         {renderElement()}
       </div>
       {selected && (

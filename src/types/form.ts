@@ -1,4 +1,3 @@
-
 import { Validation } from "./validation";
 import { Database } from "@/integrations/supabase/types";
 
@@ -24,6 +23,18 @@ export interface FormElement {
   content?: string;
   options?: string[];
   value?: any;
+  styling?: {
+    fontFamily?: string;
+    fontSize?: string;
+    textAlign?: string;
+    textColor?: string;
+    bgColor?: string;
+    borderStyle?: string;
+    borderRadius?: string;
+    padding?: string;
+    margin?: string;
+    shadow?: string;
+  };
 }
 
 // Export additional form-related types for better organization

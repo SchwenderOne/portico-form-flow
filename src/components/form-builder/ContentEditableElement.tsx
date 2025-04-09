@@ -54,19 +54,35 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
     }
   };
 
+  const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
+    if (isEditing && onContentChange) {
+      // Update the content as the user types
+      const target = e.target as HTMLDivElement;
+      onContentChange(target.innerHTML);
+    }
+  };
+
   const handleFontSize = (size: string) => {
-    // Implementation for font size change
     if (!contentRef.current) return;
     
     document.execCommand('fontSize', false, size);
+    
+    // Save changes and notify parent
+    if (contentRef.current && onContentChange) {
+      onContentChange(contentRef.current.innerHTML);
+    }
     saveChanges();
   };
 
   const handleTextColor = (color: string) => {
-    // Implementation for text color change
     if (!contentRef.current) return;
     
     document.execCommand('foreColor', false, color);
+    
+    // Save changes and notify parent
+    if (contentRef.current && onContentChange) {
+      onContentChange(contentRef.current.innerHTML);
+    }
     saveChanges();
   };
 
@@ -77,6 +93,7 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
         className={`outline-none ${className}`}
         contentEditable={isEditing}
         onBlur={handleBlur}
+        onInput={handleInput}
         onDoubleClick={handleDoubleClick}
         suppressContentEditableWarning={true}
         dangerouslySetInnerHTML={{ __html: content }}
