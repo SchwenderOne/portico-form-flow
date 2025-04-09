@@ -25,7 +25,8 @@ import {
   Shield,
   Users,
   Zap,
-  Clipboard
+  Clipboard,
+  KeyRound
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TeamManagementSheet } from "@/components/team/TeamManagementSheet";
@@ -84,6 +85,7 @@ const AppSidebar = () => {
     { icon: Shield, title: "Compliance", path: "/compliance" },
     { icon: Users, title: "Team", path: "/team" },
     { icon: Settings, title: "Settings", path: "/settings" },
+    { icon: KeyRound, title: "Security", path: "/security" },
   ];
 
   return (

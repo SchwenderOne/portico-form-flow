@@ -3,24 +3,31 @@ import React, { useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import GeneralSettings from "@/components/settings/GeneralSettings";
 import NotificationSettings from "@/components/settings/NotificationSettings";
 import SecuritySettings from "@/components/settings/SecuritySettings";
 import IntegrationSettings from "@/components/settings/IntegrationSettings";
 import AccountSettings from "@/components/settings/AccountSettings";
-import { Shield, User, Bell, Globe, Puzzle } from "lucide-react";
+import { Shield, User, Bell, Globe, Puzzle, KeyRound } from "lucide-react";
 import ComplianceTab from "@/components/form-builder/toolbars/tabs/ComplianceTab";
+import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("general");
+  const navigate = useNavigate();
 
   const tabIcons = {
     general: <Globe className="h-4 w-4" />,
     account: <User className="h-4 w-4" />,
     notifications: <Bell className="h-4 w-4" />,
-    security: <Shield className="h-4 w-4" />,
+    security: <KeyRound className="h-4 w-4" />,
     integrations: <Puzzle className="h-4 w-4" />,
     compliance: <Shield className="h-4 w-4" />
+  };
+
+  const handleSecurityTabClick = () => {
+    navigate("/security");
   };
 
   return (
@@ -47,16 +54,32 @@ const Settings = () => {
             </CardHeader>
             <CardContent className="p-0">
               <TabsList className="grid w-full grid-cols-6 gap-4 p-4">
-                {Object.entries(tabIcons).map(([key, icon]) => (
-                  <TabsTrigger 
-                    key={key} 
-                    value={key}
-                    className="flex items-center gap-2 capitalize"
-                  >
-                    {icon}
-                    {key}
-                  </TabsTrigger>
-                ))}
+                {Object.entries(tabIcons).map(([key, icon]) => {
+                  if (key === "security") {
+                    return (
+                      <Button 
+                        key={key}
+                        variant="ghost"
+                        className="flex items-center gap-2 capitalize"
+                        onClick={handleSecurityTabClick}
+                      >
+                        {icon}
+                        {key}
+                      </Button>
+                    );
+                  }
+                  
+                  return (
+                    <TabsTrigger 
+                      key={key} 
+                      value={key}
+                      className="flex items-center gap-2 capitalize"
+                    >
+                      {icon}
+                      {key}
+                    </TabsTrigger>
+                  );
+                })}
               </TabsList>
             </CardContent>
           </Card>
@@ -73,10 +96,6 @@ const Settings = () => {
               
               <TabsContent value="notifications" className="mt-0">
                 <NotificationSettings />
-              </TabsContent>
-              
-              <TabsContent value="security" className="mt-0">
-                <SecuritySettings />
               </TabsContent>
               
               <TabsContent value="integrations" className="mt-0">
