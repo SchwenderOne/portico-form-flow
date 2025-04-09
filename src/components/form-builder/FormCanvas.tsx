@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import FormElementsPanel from "./FormElementsPanel";
 import FormToolbar from "./FormToolbar";
@@ -25,7 +26,7 @@ const FormCanvasContent = () => {
     handleAddAIElements,
     handleDeleteElement,
     handleDuplicateElement,
-    handleDuplicateGroup: duplicateGroup,
+    handleDuplicateGroup,
     handleRequiredToggle,
     handleCanvasClick,
     handleKeyDown,
@@ -47,6 +48,21 @@ const FormCanvasContent = () => {
   
   const handleCloseAIModal = () => {
     setIsAIModalOpen(false);
+  };
+
+  // Wrapper functions to match expected signatures
+  const handleDuplicateGroupWrapper = () => {
+    if (selectedElements.length > 0) {
+      handleDuplicateGroup(selectedElements);
+    }
+  };
+
+  const handleRequiredToggleWrapper = (id: string) => {
+    // Toggle the current required state
+    const element = elements.find(el => el.id === id);
+    if (element) {
+      handleRequiredToggle(id, !element.required);
+    }
   };
 
   // Listen for the add-elements event
@@ -73,8 +89,8 @@ const FormCanvasContent = () => {
         selectedElement={selectedElement}
         selectedCount={selectedElements.length}
         onDuplicate={handleDuplicateElement}
-        onDuplicateGroup={duplicateGroup}
-        onRequiredToggle={handleRequiredToggle}
+        onDuplicateGroup={handleDuplicateGroupWrapper}
+        onRequiredToggle={handleRequiredToggleWrapper}
         onGroup={groupElements}
         onUngroup={ungroupElements}
         onOpenAIModal={handleOpenAIModal}
