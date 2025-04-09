@@ -9,7 +9,7 @@ import { BrandSettingsProvider } from "@/context/BrandSettingsContext";
 import { ComplianceProvider } from "@/context/ComplianceContext";
 import { TeamManagementSheet } from "@/components/team/TeamManagementSheet";
 import { TeamProvider } from "@/context/TeamContext";
-import { FormCanvasProvider } from "@/components/form-builder/context/FormCanvasContext";
+import { FormCanvasProvider, useFormCanvas } from "@/components/form-builder/context/FormCanvasContext";
 import { CollaborationProvider } from "@/context/CollaborationContext";
 import { useSelectedTemplate } from "@/context/SelectedTemplateContext";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
@@ -74,33 +74,32 @@ const FormBuilder = () => {
               <ComplianceProvider>
                 <CollaborationProvider formId={formId}>
                   <FormCanvasProvider>
-                    <TemplateFormLoader>
-                      <div className="h-[calc(100vh-0px)] overflow-hidden bg-gray-100">
-                        <FormCanvas />
-                        
-                        <FormMetadataSheet 
-                          showTrigger={false} 
-                          open={metadataSheetOpen} 
-                          onOpenChange={setMetadataSheetOpen} 
-                        />
-                        
-                        <BrandSettingsSheet 
-                          open={brandSheetOpen}
-                          onOpenChange={setBrandSheetOpen}
-                        />
-                        
-                        <VersionHistorySheet 
-                          showTrigger={false}
-                          open={versionHistoryOpen}
-                          onOpenChange={setVersionHistoryOpen}
-                        />
-                        
-                        <TeamManagementSheet
-                          open={teamSheetOpen}
-                          onOpenChange={setTeamSheetOpen}
-                        />
-                      </div>
-                    </TemplateFormLoader>
+                    <TemplateFormLoader />
+                    <div className="h-[calc(100vh-0px)] overflow-hidden bg-gray-100">
+                      <FormCanvas />
+                      
+                      <FormMetadataSheet 
+                        showTrigger={false} 
+                        open={metadataSheetOpen} 
+                        onOpenChange={setMetadataSheetOpen} 
+                      />
+                      
+                      <BrandSettingsSheet 
+                        open={brandSheetOpen}
+                        onOpenChange={setBrandSheetOpen}
+                      />
+                      
+                      <VersionHistorySheet 
+                        showTrigger={false}
+                        open={versionHistoryOpen}
+                        onOpenChange={setVersionHistoryOpen}
+                      />
+                      
+                      <TeamManagementSheet
+                        open={teamSheetOpen}
+                        onOpenChange={setTeamSheetOpen}
+                      />
+                    </div>
                   </FormCanvasProvider>
                 </CollaborationProvider>
               </ComplianceProvider>
@@ -112,22 +111,10 @@ const FormBuilder = () => {
   );
 };
 
-// Component to load template elements
-const TemplateFormLoader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+// Separate component to load template elements
+const TemplateFormLoader = () => {
   const { selectedTemplate, setSelectedTemplate } = useSelectedTemplate();
-  const { elements, setElements } = useFormElements();
-  
-  // Import the useFormElements hook within the component
-  function useFormElements() {
-    // Access the form elements from the FormCanvasContext
-    const formCanvasContext = React.useContext(FormCanvasContext);
-    
-    if (!formCanvasContext) {
-      throw new Error("useFormElements must be used within a FormCanvasProvider");
-    }
-    
-    return formCanvasContext;
-  }
+  const { elements, setElements } = useFormCanvas();
   
   // Effect to load template elements when the form builder loads
   useEffect(() => {
@@ -142,7 +129,7 @@ const TemplateFormLoader: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [selectedTemplate, setElements, setSelectedTemplate]);
   
-  return <>{children}</>;
+  return null;
 };
 
 export default FormBuilder;
