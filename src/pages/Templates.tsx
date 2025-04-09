@@ -1,12 +1,12 @@
 
 import React from "react";
-import TemplateGallery from "@/components/templates/TemplateGallery";
 import AppLayout from "@/components/layout/AppLayout";
+import EnhancedTemplateGallery from "@/components/templates/EnhancedTemplateGallery";
 
 const Templates = () => {
   return (
     <AppLayout>
-      <TemplateGallery />
+      <EnhancedTemplateGallery />
     </AppLayout>
   );
 };

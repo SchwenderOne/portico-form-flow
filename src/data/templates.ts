@@ -1,0 +1,147 @@
+
+export const templatesData = [
+  {
+    id: "1",
+    title: "Job Application Form",
+    description: "Standard job application form with all required fields including work experience, education, and skills.",
+    category: "HR",
+    industry: "Recruitment",
+    image: "/placeholder.svg",
+    created: "2023-10-12",
+    author: "HR Team",
+    popularity: 4.8,
+    timeEstimate: "5-10 mins"
+  },
+  {
+    id: "2",
+    title: "Customer Feedback Survey",
+    description: "Collect detailed feedback from your customers about products and services.",
+    category: "Feedback",
+    industry: "Retail",
+    image: "/placeholder.svg",
+    created: "2023-09-05",
+    author: "Marketing Team",
+    popularity: 4.6,
+    timeEstimate: "2-3 mins"
+  },
+  {
+    id: "3",
+    title: "Patient Intake Form",
+    description: "Complete patient intake form for healthcare facilities with medical history and insurance information.",
+    category: "Healthcare",
+    industry: "Medical",
+    image: "/placeholder.svg",
+    created: "2023-11-20",
+    author: "Healthcare Admin",
+    popularity: 4.9,
+    timeEstimate: "8-12 mins"
+  },
+  {
+    id: "4",
+    title: "Event Registration Form",
+    description: "Register attendees for your upcoming event with meal preferences and accessibility requirements.",
+    category: "Events",
+    industry: "Entertainment",
+    image: "/placeholder.svg",
+    created: "2023-12-01",
+    author: "Events Team",
+    popularity: 4.7,
+    timeEstimate: "3-5 mins"
+  },
+  {
+    id: "5",
+    title: "Government Grant Application",
+    description: "Apply for government grants with all required information and compliance documentation.",
+    category: "Government",
+    industry: "Public Sector",
+    image: "/placeholder.svg",
+    created: "2023-10-30",
+    author: "Gov Affairs",
+    popularity: 4.5,
+    timeEstimate: "15-20 mins"
+  },
+  {
+    id: "6",
+    title: "Research Consent Form",
+    description: "Detailed consent form for research participation with clear explanation of procedures and risks.",
+    category: "Research",
+    industry: "Education",
+    image: "/placeholder.svg", 
+    created: "2023-08-15",
+    author: "Research Team",
+    popularity: 4.4,
+    timeEstimate: "10-15 mins"
+  },
+  {
+    id: "7",
+    title: "Contact Information Update",
+    description: "Simple form to update contact information for existing customers or members.",
+    category: "Administrative",
+    industry: "Various",
+    image: "/placeholder.svg", 
+    created: "2023-07-22",
+    author: "Admin Team",
+    popularity: 4.2,
+    timeEstimate: "1-2 mins"
+  },
+  {
+    id: "8",
+    title: "Employee Onboarding",
+    description: "Comprehensive onboarding form for new employees with tax information and policy acknowledgments.",
+    category: "HR",
+    industry: "Corporate",
+    image: "/placeholder.svg", 
+    created: "2023-11-05",
+    author: "HR Department",
+    popularity: 4.7,
+    timeEstimate: "10-15 mins"
+  },
+  {
+    id: "9",
+    title: "Donation Form",
+    description: "Secure donation form for non-profit organizations with multiple payment options.",
+    category: "Non-profit",
+    industry: "Charity",
+    image: "/placeholder.svg", 
+    created: "2023-09-18",
+    author: "Fundraising Team",
+    popularity: 4.6,
+    timeEstimate: "2-4 mins"
+  },
+  {
+    id: "10",
+    title: "Incident Report",
+    description: "Detailed incident reporting form with witness statements and evidence upload functionality.",
+    category: "Security",
+    industry: "Various",
+    image: "/placeholder.svg", 
+    created: "2023-10-14",
+    author: "Security Team",
+    popularity: 4.8,
+    timeEstimate: "5-8 mins"
+  },
+  {
+    id: "11",
+    title: "Membership Application",
+    description: "Comprehensive membership application form for associations and organizations.",
+    category: "Membership",
+    industry: "Associations",
+    image: "/placeholder.svg", 
+    created: "2023-12-05",
+    author: "Membership Team",
+    popularity: 4.5,
+    timeEstimate: "7-10 mins"
+  },
+  {
+    id: "12",
+    title: "Student Registration",
+    description: "Educational institution registration form with academic history and program selection.",
+    category: "Education",
+    industry: "Academic",
+    image: "/placeholder.svg", 
+    created: "2023-08-30",
+    author: "Admissions",
+    popularity: 4.7,
+    timeEstimate: "8-12 mins"
+  }
+];
