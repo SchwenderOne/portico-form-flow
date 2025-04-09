@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FormElement as FormElementType } from "@/types/form";
 import { cn } from "@/lib/utils";
 import { useGrouping } from "./GroupingContext";
@@ -33,11 +33,11 @@ const FormElement: React.FC<FormElementProps> = ({
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [hovered, setHovered] = useState(false);
   const grouping = useGrouping();
+  const elementRef = useRef<HTMLDivElement>(null);
   
   const {
     isEditing,
     elementRect,
-    elementRef,
     handleDoubleClick,
     handleBold,
     handleItalic,
@@ -64,6 +64,7 @@ const FormElement: React.FC<FormElementProps> = ({
     }
   }, [isSelected]);
 
+  // Improved mouse down handler with group support
   const handleMouseDown = (e: React.MouseEvent) => {
     // Prevent default to stop text selection during drag
     e.preventDefault();
@@ -105,6 +106,23 @@ const FormElement: React.FC<FormElementProps> = ({
           const snappedY = Math.round(y / 25) * 25;
           
           onMove(element.id, { x: snappedX, y: snappedY });
+          
+          // If this element is part of a group, move all elements in the group
+          if (isGrouped) {
+            const groupMates = allElements.filter(el => 
+              el.groupId === element.groupId && el.id !== element.id
+            );
+            
+            // Calculate offset for each group element
+            groupMates.forEach(groupEl => {
+              const offsetX = groupEl.position.x - element.position.x;
+              const offsetY = groupEl.position.y - element.position.y;
+              onMove(groupEl.id, { 
+                x: snappedX + offsetX, 
+                y: snappedY + offsetY 
+              });
+            });
+          }
         }
       };
       
@@ -156,7 +174,7 @@ const FormElement: React.FC<FormElementProps> = ({
       className={cn(
         "form-element absolute p-4 bg-white border rounded-md transition-shadow",
         isSelected && "ring-2 ring-portico-purple z-10",
-        isGrouped && "border-dashed",
+        isGrouped && "border-dashed border-portico-purple-light",
         isGroupSelected && !isSelected && "ring-1 ring-portico-purple-light",
         hovered && !isSelected && "shadow-lg",
         isEditing && "editing"

@@ -17,6 +17,9 @@ import {
   FileCheck,
   Clock,
   Check,
+  Group,
+  Ungroup,
+  CopyPlus
 } from "lucide-react";
 import { FormElement } from "@/types/form";
 import { Badge } from "@/components/ui/badge";
@@ -24,14 +27,22 @@ import { toast } from "sonner";
 
 interface FormTopToolbarProps {
   selectedElement: FormElement | null;
+  selectedCount: number;
   onDuplicate: (id: string) => void;
+  onDuplicateGroup?: (ids: string[]) => void;
   onRequiredToggle?: (id: string, required: boolean) => void;
+  onGroup?: () => void;
+  onUngroup?: () => void;
 }
 
 const FormTopToolbar: React.FC<FormTopToolbarProps> = ({ 
   selectedElement, 
+  selectedCount,
   onDuplicate,
-  onRequiredToggle
+  onDuplicateGroup,
+  onRequiredToggle,
+  onGroup,
+  onUngroup
 }) => {
   const [formName, setFormName] = useState("Untitled Form");
   const [isEditingName, setIsEditingName] = useState(false);
@@ -87,6 +98,26 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
     if (selectedElement) {
       onDuplicate(selectedElement.id);
       toast.success("Element duplicated");
+    }
+  };
+
+  const handleDuplicateGroup = () => {
+    if (selectedCount > 1 && onDuplicateGroup) {
+      // This will be filled with the actual IDs in the component
+      onDuplicateGroup([]);
+      toast.success("Group duplicated");
+    }
+  };
+
+  const handleGroupSelected = () => {
+    if (onGroup && selectedCount > 1) {
+      onGroup();
+    }
+  };
+
+  const handleUngroupSelected = () => {
+    if (onUngroup) {
+      onUngroup();
     }
   };
 
@@ -148,12 +179,52 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
 
       {/* Middle section - Contextual controls */}
       <div className="flex items-center gap-2 flex-1 justify-center">
-        {selectedElement ? (
+        {selectedCount > 0 && (
           <div className="flex items-center gap-1.5 bg-muted/50 rounded-md px-2 py-1">
-            <span className="text-xs font-medium hidden sm:inline-block">Selected:</span>
-            <span className="text-xs text-primary capitalize">{selectedElement.type}</span>
+            <span className="text-xs font-medium hidden sm:inline-block">
+              {selectedCount === 1 ? "Selected:" : `${selectedCount} elements selected`}
+            </span>
             
-            <Separator orientation="vertical" className="h-4 mx-1" />
+            {selectedCount === 1 && (
+              <span className="text-xs text-primary capitalize">{selectedElement?.type}</span>
+            )}
+            
+            {selectedCount === 1 && (
+              <>
+                <Separator orientation="vertical" className="h-4 mx-1" />
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-7 text-xs" 
+                      onClick={() => handleSetRequired(!selectedElement?.required)}
+                    >
+                      <Check className="h-3 w-3 mr-1" />
+                      {selectedElement?.required ? "Required" : "Optional"}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {selectedElement?.required ? "Make field optional" : "Make field required"}
+                  </TooltipContent>
+                </Tooltip>
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-7 text-xs" 
+                      onClick={handleAddValidation}
+                    >
+                      Add Validation
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Add validation rules</TooltipContent>
+                </Tooltip>
+              </>
+            )}
             
             <Tooltip>
               <TooltipTrigger asChild>
@@ -161,48 +232,51 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
                   variant="ghost" 
                   size="sm" 
                   className="h-7 text-xs" 
-                  onClick={() => handleSetRequired(!selectedElement.required)}
-                >
-                  <Check className="h-3 w-3 mr-1" />
-                  {selectedElement.required ? "Required" : "Optional"}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {selectedElement.required ? "Make field optional" : "Make field required"}
-              </TooltipContent>
-            </Tooltip>
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-7 text-xs" 
-                  onClick={handleAddValidation}
-                >
-                  Add Validation
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Add validation rules</TooltipContent>
-            </Tooltip>
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-7 text-xs" 
-                  onClick={handleDuplicateSelected}
+                  onClick={selectedCount === 1 ? handleDuplicateSelected : handleDuplicateGroup}
                 >
                   <Copy className="h-3 w-3 mr-1" />
                   Duplicate
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Duplicate this element</TooltipContent>
+              <TooltipContent>
+                {selectedCount === 1 ? "Duplicate this element" : "Duplicate selected elements"}
+              </TooltipContent>
             </Tooltip>
+            
+            {selectedCount > 1 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 text-xs" 
+                    onClick={handleGroupSelected}
+                  >
+                    <Group className="h-3 w-3 mr-1" />
+                    Group
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Group selected elements</TooltipContent>
+              </Tooltip>
+            )}
+            
+            {selectedElement?.groupId && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 text-xs" 
+                    onClick={handleUngroupSelected}
+                  >
+                    <Ungroup className="h-3 w-3 mr-1" />
+                    Ungroup
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Ungroup elements</TooltipContent>
+              </Tooltip>
+            )}
           </div>
-        ) : (
-          <div className="h-7"></div> 
         )}
       </div>
 
@@ -214,7 +288,7 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
               <Undo className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Undo</TooltipContent>
+          <TooltipContent>Undo (Ctrl+Z)</TooltipContent>
         </Tooltip>
         
         <Tooltip>
@@ -223,7 +297,7 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
               <Redo className="h-4 w-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Redo</TooltipContent>
+          <TooltipContent>Redo (Ctrl+Shift+Z)</TooltipContent>
         </Tooltip>
         
         <Separator orientation="vertical" className="h-4 mx-1" />

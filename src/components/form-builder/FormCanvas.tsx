@@ -1,14 +1,16 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import FormElement from "./FormElement";
 import FormToolbar from "./FormToolbar";
 import FormTopToolbar from "./FormTopToolbar";
 import FormElementsPanel from "./FormElementsPanel";
-import { GroupingProvider } from "./GroupingContext";
+import { GroupingProvider, useGroupingState } from "./GroupingContext";
 import SmartGuides from "./SmartGuides";
 import CanvasDropZone from "./CanvasDropZone";
 import { useFormElements } from "./hooks/useFormElements";
 import { useSmartGuides } from "./hooks/useSmartGuides";
+import { toast } from "sonner";
+import { KeyboardEvent, useCallback } from "react";
 
 const FormCanvas = () => {
   const [isDragging, setIsDragging] = useState(false);
@@ -25,6 +27,7 @@ const FormCanvas = () => {
     handleRequiredToggle,
     handleGroupElements,
     handleUngroupElements,
+    handleDuplicateGroup,
     updateElement
   } = useFormElements();
 
@@ -34,6 +37,60 @@ const FormCanvas = () => {
     calculateSmartGuides
   } = useSmartGuides(elements, isDragging);
 
+  // Enhanced grouping functionality
+  const grouping = useGroupingState(
+    elements,
+    handleGroupElements,
+    handleUngroupElements
+  );
+
+  // Handle keyboard shortcuts for undo/redo
+  const handleKeyDown = useCallback((e: KeyboardEvent<HTMLDivElement>) => {
+    // Ctrl+Z or Cmd+Z for Undo
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+      e.preventDefault();
+      toast.info("Undo functionality will be available soon");
+    }
+    
+    // Ctrl+Shift+Z or Cmd+Shift+Z for Redo
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
+      e.preventDefault();
+      toast.info("Redo functionality will be available soon");
+    }
+    
+    // Delete or Backspace to delete selected elements
+    if ((e.key === 'Delete' || e.key === 'Backspace') && grouping.selectedElements.length > 0) {
+      e.preventDefault();
+      grouping.selectedElements.forEach(id => handleDeleteElement(id));
+      grouping.clearSelection();
+    }
+    
+    // Ctrl+D or Cmd+D for Duplicate
+    if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+      e.preventDefault();
+      if (grouping.selectedElements.length === 1) {
+        handleDuplicateElement(grouping.selectedElements[0]);
+      } else if (grouping.selectedElements.length > 1) {
+        handleDuplicateGroup(grouping.selectedElements);
+        toast.success("Group duplicated successfully");
+      }
+    }
+    
+    // Ctrl+G or Cmd+G for Group
+    if ((e.ctrlKey || e.metaKey) && e.key === 'g') {
+      e.preventDefault();
+      if (grouping.selectedElements.length > 1) {
+        grouping.groupElements();
+      }
+    }
+    
+    // Ctrl+Shift+G or Cmd+Shift+G for Ungroup
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'g') {
+      e.preventDefault();
+      grouping.ungroupElements();
+    }
+  }, [grouping, handleDeleteElement, handleDuplicateElement, handleDuplicateGroup]);
+
   // Handler to update the smart guides when an element is being moved
   const handleElementMoveWithGuides = (id: string, position: { x: number, y: number }) => {
     handleElementMove(id, position);
@@ -42,20 +99,48 @@ const FormCanvas = () => {
     }
   };
 
+  // Sync the element selection between our form elements hook and grouping context
+  useEffect(() => {
+    grouping.selectElements(selectedElements, true);
+  }, [selectedElements]);
+
+  const handleSelect = (id: string, isMultiSelect: boolean) => {
+    handleElementSelect(id, isMultiSelect);
+  };
+
+  // Handle canvas click to clear selection when clicking on empty space
+  const handleCanvasClick = (e: React.MouseEvent) => {
+    // Only clear if clicking directly on canvas, not on elements
+    if (e.target === e.currentTarget) {
+      grouping.clearSelection();
+    }
+  };
+
   return (
     <GroupingProvider value={{ 
-      selectedElements, 
-      groupElements: handleGroupElements, 
-      ungroupElements: handleUngroupElements 
+      selectedElements: grouping.selectedElements,
+      groupElements: grouping.groupElements,
+      ungroupElements: grouping.ungroupElements,
+      isElementSelected: grouping.isElementSelected,
+      selectElements: grouping.selectElements,
+      clearSelection: grouping.clearSelection
     }}>
-      <div className="flex flex-col h-full">
+      <div 
+        className="flex flex-col h-full" 
+        onKeyDown={handleKeyDown} 
+        tabIndex={0} // Make the div focusable to capture keyboard events
+      >
         <FormTopToolbar 
-          selectedElement={selectedElements.length === 1 
-            ? elements.find(el => el.id === selectedElements[0]) || null 
+          selectedElement={grouping.selectedElements.length === 1 
+            ? elements.find(el => el.id === grouping.selectedElements[0]) || null 
             : null
           }
+          selectedCount={grouping.selectedElements.length}
           onDuplicate={handleDuplicateElement}
+          onDuplicateGroup={handleDuplicateGroup}
           onRequiredToggle={handleRequiredToggle}
+          onGroup={grouping.groupElements}
+          onUngroup={grouping.ungroupElements}
         />
         <div className="flex-1 flex">
           <FormElementsPanel onElementDrop={handleElementDrop} />
@@ -64,6 +149,7 @@ const FormCanvas = () => {
               onDrop={handleElementDrop}
               isDragOver={isDragOver}
               setIsDragOver={setIsDragOver}
+              onClick={handleCanvasClick}
             >
               {showSmartGuides && <SmartGuides guides={guideLines} />}
               
@@ -71,8 +157,8 @@ const FormCanvas = () => {
                 <FormElement
                   key={element.id}
                   element={element}
-                  isSelected={selectedElements.includes(element.id)}
-                  onSelect={(id, multiSelect) => handleElementSelect(id, multiSelect)}
+                  isSelected={grouping.isElementSelected(element.id)}
+                  onSelect={handleSelect}
                   onMove={handleElementMoveWithGuides}
                   onDelete={handleDeleteElement}
                   onDuplicate={handleDuplicateElement}
@@ -84,14 +170,14 @@ const FormCanvas = () => {
           </div>
         </div>
         <FormToolbar 
-          selectedElement={selectedElements.length === 1 
-            ? elements.find(el => el.id === selectedElements[0]) || null
+          selectedElement={grouping.selectedElements.length === 1 
+            ? elements.find(el => el.id === grouping.selectedElements[0]) || null
             : null
           } 
+          selectedCount={grouping.selectedElements.length}
           onUpdate={updateElement}
-          selectedCount={selectedElements.length}
-          onGroup={handleGroupElements}
-          onUngroup={handleUngroupElements}
+          onGroup={grouping.groupElements}
+          onUngroup={grouping.ungroupElements}
         />
       </div>
     </GroupingProvider>

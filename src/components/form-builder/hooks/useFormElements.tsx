@@ -151,7 +151,7 @@ export const useFormElements = () => {
           x: elementToDuplicate.position.x + 20,
           y: elementToDuplicate.position.y + 20
         },
-        groupId: null
+        groupId: null // Don't keep the group when duplicating a single element
       };
       setElements([...elements, newElement]);
       setSelectedElements([newElement.id]);
@@ -161,6 +161,41 @@ export const useFormElements = () => {
         description: "A copy of the element has been created.",
       });
     }
+  };
+
+  // New function to duplicate multiple elements as a group
+  const handleDuplicateGroup = (ids: string[]) => {
+    const elementsToGroup = elements.filter(el => ids.includes(el.id) || selectedElements.includes(el.id));
+    if (elementsToGroup.length > 0) {
+      // Find the bounds of the selected elements
+      const bounds = {
+        minX: Math.min(...elementsToGroup.map(el => el.position.x)),
+        minY: Math.min(...elementsToGroup.map(el => el.position.y))
+      };
+      
+      // Create duplicate elements with a new groupId
+      const newGroupId = `group-${Date.now()}`;
+      const newElements = elementsToGroup.map(el => ({
+        ...el,
+        id: `${el.type}-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        position: {
+          x: el.position.x + 20, // Offset slightly
+          y: el.position.y + 20
+        },
+        groupId: newGroupId
+      }));
+      
+      setElements([...elements, ...newElements]);
+      setSelectedElements(newElements.map(el => el.id));
+      
+      toast({
+        title: "Group Duplicated",
+        description: `Created a copy of ${newElements.length} elements.`,
+      });
+      
+      return newElements.map(el => el.id);
+    }
+    return [];
   };
 
   const handleRequiredToggle = (id: string, required: boolean) => {
@@ -230,6 +265,7 @@ export const useFormElements = () => {
     handleElementDrop,
     handleDeleteElement,
     handleDuplicateElement,
+    handleDuplicateGroup,
     handleRequiredToggle,
     handleGroupElements,
     handleUngroupElements,
