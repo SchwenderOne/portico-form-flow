@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { FormElement as FormElementType } from "@/types/form";
 import { cn } from "@/lib/utils";
@@ -6,8 +5,8 @@ import { useGrouping } from "../GroupingContext";
 import FloatingToolbar from "../FloatingToolbar";
 import ElementContent from "../ElementContent";
 import ElementToolbar from "../toolbars/ElementToolbar";
-import ElementDragHandle from "../elements/ElementDragHandle";
-import { useElementEditor } from "@/hooks/use-element-editor";
+import ElementDragHandle from "./ElementDragHandle";
+import { useElementEditor } from "@/hooks/useElementEditor";
 
 interface FormElementProps {
   element: FormElementType;
@@ -45,27 +44,21 @@ const FormElement: React.FC<FormElementProps> = ({
     handleLink
   } = useElementEditor(element.id);
 
-  // Check if this element is part of a group
   const isGrouped = element.groupId !== null;
   const isGroupSelected = isGrouped && grouping.selectedElements.some(id => {
     const selectedElement = allElements.find(el => el.id === id);
     return selectedElement && selectedElement.groupId === element.groupId;
   });
 
-  // Find all elements in the same group
   const groupElements = isGrouped 
     ? allElements.filter(el => el.groupId === element.groupId)
     : [];
 
-  // Improved mouse down handler with group support
   const handleMouseDown = (e: React.MouseEvent) => {
-    // Prevent default to stop text selection during drag
     e.preventDefault();
     
-    // If we're in editing mode, don't start dragging
     if (isEditing) return;
 
-    // Don't initiate drag if clicking on an input element
     if (
       e.target instanceof HTMLInputElement ||
       e.target instanceof HTMLTextAreaElement ||
@@ -76,7 +69,6 @@ const FormElement: React.FC<FormElementProps> = ({
       return;
     }
     
-    // Detect if shift key is pressed for multi-select
     const isMultiSelect = e.shiftKey;
     onSelect(element.id, isMultiSelect);
     
@@ -95,20 +87,16 @@ const FormElement: React.FC<FormElementProps> = ({
           const x = e.clientX - parentRect.left - dragOffset.x;
           const y = e.clientY - parentRect.top - dragOffset.y;
           
-          // Snap to grid (25px)
           const snappedX = Math.round(x / 25) * 25;
           const snappedY = Math.round(y / 25) * 25;
           
-          // Let the Canvas component handle the smart guides and snapping
           onMove(element.id, { x: snappedX, y: snappedY });
           
-          // If this element is part of a group, move all elements in the group
           if (isGrouped) {
             const groupMates = allElements.filter(el => 
               el.groupId === element.groupId && el.id !== element.id
             );
             
-            // Calculate offset for each group element
             groupMates.forEach(groupEl => {
               const offsetX = groupEl.position.x - element.position.x;
               const offsetY = groupEl.position.y - element.position.y;
@@ -133,7 +121,6 @@ const FormElement: React.FC<FormElementProps> = ({
     }
   };
 
-  // Determine if this element can show the floating toolbar
   const canShowFloatingToolbar = 
     element.type === 'header' || 
     element.type === 'paragraph' || 
@@ -143,11 +130,9 @@ const FormElement: React.FC<FormElementProps> = ({
     element.type === 'number' || 
     element.type === 'select';
 
-  // Handle click on the element
   const handleElementClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // Don't select when clicking on input elements
     if (
       e.target instanceof HTMLInputElement ||
       e.target instanceof HTMLTextAreaElement ||
@@ -158,7 +143,6 @@ const FormElement: React.FC<FormElementProps> = ({
       return;
     }
     
-    // Don't deselect when clicking inside while editing
     if (!isEditing) {
       onSelect(element.id, e.shiftKey);
     }
@@ -190,7 +174,6 @@ const FormElement: React.FC<FormElementProps> = ({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Group indicator */}
       {isGrouped && (
         <div className="absolute -top-2 -left-2 bg-portico-purple text-white text-xs px-1 rounded-sm z-20">
           Group
@@ -199,12 +182,10 @@ const FormElement: React.FC<FormElementProps> = ({
       
       <ElementContent element={element} isEditing={isEditing} />
       
-      {/* Only show drag handle when not editing */}
       {(!isEditing && (hovered || isSelected)) && 
         <ElementDragHandle onMouseDown={handleMouseDown} />
       }
       
-      {/* Element toolbar */}
       {isSelected && !isEditing && (
         <ElementToolbar 
           elementId={element.id}
@@ -218,7 +199,6 @@ const FormElement: React.FC<FormElementProps> = ({
         />
       )}
       
-      {/* Floating toolbar */}
       {isEditing && elementRect && (
         <FloatingToolbar
           elementId={element.id}
