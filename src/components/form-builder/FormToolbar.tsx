@@ -17,6 +17,7 @@ interface FormToolbarProps {
   onUpdate: (element: FormElement) => void;
   onGroup: () => void;
   onUngroup: () => void;
+  onAddElement?: (element: FormElement) => void;
 }
 
 const FormToolbar: React.FC<FormToolbarProps> = ({
@@ -25,6 +26,7 @@ const FormToolbar: React.FC<FormToolbarProps> = ({
   onUpdate,
   onGroup,
   onUngroup,
+  onAddElement
 }) => {
   const [activeTab, setActiveTab] = useState<string>("properties");
 
@@ -122,7 +124,7 @@ const FormToolbar: React.FC<FormToolbarProps> = ({
         </TabsContent>
 
         <TabsContent value="ai" className="m-0 h-full">
-          <AIAssistTab />
+          <AIAssistTab onAddElement={onAddElement} />
         </TabsContent>
 
         <TabsContent value="settings" className="m-0 h-full">

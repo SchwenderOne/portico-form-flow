@@ -74,6 +74,12 @@ export const useFormElements = () => {
     handleGroupElements, 
     handleUngroupElements 
   } = useElementGrouping(elements, setElements, selectedElements);
+  
+  // Add a new element directly (for AI-generated elements)
+  const addElement = (element: FormElement) => {
+    setElements(prev => [...prev, element]);
+    setSelectedElements([element.id]);
+  };
 
   return {
     elements,
@@ -87,6 +93,7 @@ export const useFormElements = () => {
     handleRequiredToggle,
     handleGroupElements,
     handleUngroupElements,
-    updateElement
+    updateElement,
+    addElement
   };
 };

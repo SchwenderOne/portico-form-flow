@@ -11,6 +11,7 @@ import { useFormElements } from "@/hooks/use-form-elements";
 import { useSmartGuides } from "./hooks/useSmartGuides";
 import { toast } from "sonner";
 import { KeyboardEvent, useCallback } from "react";
+import { FormElement as FormElementType } from "@/types/form";
 
 const FormCanvas = () => {
   const [isDragging, setIsDragging] = useState(false);
@@ -28,7 +29,8 @@ const FormCanvas = () => {
     handleGroupElements,
     handleUngroupElements,
     handleDuplicateGroup,
-    updateElement
+    updateElement,
+    addElement
   } = useFormElements();
 
   const {
@@ -103,6 +105,30 @@ const FormCanvas = () => {
     
     // Apply the move with the potentially nudged position
     handleElementMove(id, nudgedPosition);
+  };
+
+  // Handler for adding AI-generated elements
+  const handleAddAIElement = (element: FormElementType) => {
+    // Find a good position for the new element (below existing elements)
+    const lowestElementBottom = Math.max(
+      ...elements.map(el => el.position.y + el.size.height),
+      50 // Default starting height if no elements
+    );
+    
+    // Create a copy of the element with the adjusted position
+    const adjustedElement = {
+      ...element,
+      position: {
+        x: 100, // Standard left alignment
+        y: lowestElementBottom + 30 // 30px padding after the lowest element
+      }
+    };
+    
+    // Add the element to the canvas
+    addElement(adjustedElement);
+    
+    // Select the new element
+    handleElementSelect(adjustedElement.id, false);
   };
 
   // Sync the element selection between our form elements hook and grouping context
@@ -190,6 +216,7 @@ const FormCanvas = () => {
           onUpdate={updateElement}
           onGroup={grouping.groupElements}
           onUngroup={grouping.ungroupElements}
+          onAddElement={handleAddAIElement}
         />
       </div>
     </GroupingProvider>
