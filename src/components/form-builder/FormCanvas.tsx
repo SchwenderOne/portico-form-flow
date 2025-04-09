@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import FormElement from "./elements/FormElement";
 import FormToolbar from "./FormToolbar";
@@ -71,6 +72,11 @@ const FormCanvasInner = () => {
     handleElementSelect(id, false);
   };
 
+  // Adapter function to convert between the two different parameter styles
+  const handlePositionChange = (id: string, x: number, y: number) => {
+    handleElementMoveWithGuides(id, { x, y });
+  };
+
   return (
     <GroupingProvider value={{
       selectedElements: grouping.selectedElements,
@@ -122,7 +128,7 @@ const FormCanvasInner = () => {
                   key={element.id}
                   element={element}
                   onSelect={handleElementSelectWrapper}
-                  onPositionChange={handleElementMoveWithGuides}
+                  onPositionChange={handlePositionChange}
                   onDelete={handleDeleteElement}
                   onDuplicate={handleDuplicateElement}
                   onResize={(id, width, height) => {
