@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   Sidebar,
@@ -26,11 +27,13 @@ import {
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BrandSettingsSheet } from "@/components/form-builder/BrandSettingsSheet";
+import { useBrandSettings } from "@/context/BrandSettingsContext";
 
 const AppSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isBrandSettingsOpen, setIsBrandSettingsOpen] = useState(false);
+  const { brandSettings } = useBrandSettings();
 
   useEffect(() => {
     if (location.pathname === "/branding") {
@@ -62,10 +65,17 @@ const AppSidebar = () => {
       <Sidebar>
         <SidebarHeader className="flex items-center px-4 py-2">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-portico-purple rounded-md flex items-center justify-center">
+            <div 
+              className="w-8 h-8 rounded-md flex items-center justify-center" 
+              style={{ backgroundColor: brandSettings.colors.primary }}
+            >
               <span className="text-white font-bold">P</span>
             </div>
-            <span className="font-bold text-xl">Portico</span>
+            <span className="font-bold text-xl" style={{ 
+              fontFamily: brandSettings.typography.fontFamily 
+            }}>
+              {brandSettings.identity.brandName}
+            </span>
           </div>
         </SidebarHeader>
         <SidebarContent>
@@ -78,7 +88,9 @@ const AppSidebar = () => {
                     <SidebarMenuButton 
                       className={cn(
                         (location.pathname === item.path || (item.path === "/branding" && isBrandSettingsOpen)) && 
-                        (item.usesBrandColor ? "bg-[var(--brand-primary)] text-white font-medium" : "bg-sidebar-accent text-portico-purple font-medium")
+                        (item.usesBrandColor 
+                          ? "bg-[var(--brand-primary)] text-white font-medium" 
+                          : "bg-sidebar-accent text-foreground font-medium")
                       )}
                       onClick={() => handleMenuItemClick(item.path)}
                     >
@@ -94,7 +106,7 @@ const AppSidebar = () => {
         <SidebarFooter>
           <div className="px-4 py-2">
             <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-sidebar-accent cursor-pointer">
-              <Award className="h-5 w-5 text-portico-purple" />
+              <Award className="h-5 w-5" style={{ color: brandSettings.colors.primary }} />
               <div className="flex flex-col">
                 <span className="text-xs font-medium">Free Plan</span>
                 <span className="text-xs text-muted-foreground">Upgrade to Pro</span>

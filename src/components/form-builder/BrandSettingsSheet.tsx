@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   Sheet, 
   SheetContent, 
@@ -28,6 +28,7 @@ export function BrandSettingsSheet({
   showTrigger = true
 }: BrandSettingsSheetProps) {
   const [internalOpen, setInternalOpen] = useState(false);
+  const hasShownOpenToast = useRef(false);
   
   // Determine if we're using internal or external state
   const isControlled = externalOpen !== undefined;
@@ -39,48 +40,63 @@ export function BrandSettingsSheet({
     }
     externalOnOpenChange?.(newOpen);
     
-    // Show toast when opened
-    if (newOpen) {
+    // Show toast when opened (only once)
+    if (newOpen && !hasShownOpenToast.current) {
       toast.info("Brand Settings Panel opened", {
         description: "Make changes to affect the global appearance"
       });
+      hasShownOpenToast.current = true;
     }
   };
 
+  // Reset toast flag when fully closed
   useEffect(() => {
-    if (isControlled) {
-      setInternalOpen(externalOpen);
+    if (!open) {
+      setTimeout(() => {
+        hasShownOpenToast.current = false;
+      }, 500); // Wait for animation to finish
     }
-  }, [externalOpen, isControlled]);
+  }, [open]);
+
+  // Register global functions to control the sheet
+  useEffect(() => {
+    const openSheet = () => setInternalOpen(true);
+    const closeSheet = () => setInternalOpen(false);
+    
+    registerBrandSettingsSheetControls(openSheet, closeSheet);
+    
+    return () => {
+      // Clean up by setting controls to null on unmount
+      registerBrandSettingsSheetControls(null, null);
+    };
+  }, []);
 
   return (
-    <BrandSettingsProvider>
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        {showTrigger && (
-          <SheetTrigger asChild>
-            <Button 
-              variant="brand" 
-              size="sm" 
-              className={className}
-            >
-              <Palette className="h-4 w-4 mr-2" />
-              Brand Settings
-            </Button>
-          </SheetTrigger>
-        )}
-        <SheetContent className="sm:max-w-md overflow-auto" side="right">
-          <SheetHeader>
-            <SheetTitle>Brand Settings</SheetTitle>
-            <SheetDescription>
-              Customize your form's appearance with your brand colors, typography, and identity.
-            </SheetDescription>
-          </SheetHeader>
-          <div className="h-[calc(100vh-130px)] overflow-y-auto px-1 py-4">
-            <BrandSettingsTab />
-          </div>
-        </SheetContent>
-      </Sheet>
-    </BrandSettingsProvider>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      {showTrigger && (
+        <SheetTrigger asChild>
+          <Button 
+            variant="brand" 
+            size="sm" 
+            className={className}
+          >
+            <Palette className="h-4 w-4 mr-2" />
+            Brand Settings
+          </Button>
+        </SheetTrigger>
+      )}
+      <SheetContent className="sm:max-w-md overflow-auto" side="right">
+        <SheetHeader>
+          <SheetTitle>Brand Settings</SheetTitle>
+          <SheetDescription>
+            Customize your form's appearance with your brand colors, typography, and identity.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="h-[calc(100vh-130px)] overflow-y-auto px-1 py-4">
+          <BrandSettingsTab />
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -89,8 +105,8 @@ let openBrandSettingsSheet: (() => void) | null = null;
 let closeBrandSettingsSheet: (() => void) | null = null;
 
 export const registerBrandSettingsSheetControls = (
-  open: () => void,
-  close: () => void
+  open: (() => void) | null,
+  close: (() => void) | null
 ) => {
   openBrandSettingsSheet = open;
   closeBrandSettingsSheet = close;

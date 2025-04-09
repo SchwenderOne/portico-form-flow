@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Roboto:wght@300;400;500;700&family=Open+Sans:wght@300;400;500;700&display=swap');
+
 @layer base {
   :root {
     --background: 258 40% 98%;
@@ -15,6 +18,7 @@
 
     --primary: 258 80% 75%;
     --primary-foreground: 0 0% 100%;
+    --primary-rgb: 155, 135, 245;
 
     --secondary: 258 40% 96%;
     --secondary-foreground: 258 10% 15%;
@@ -43,6 +47,7 @@
     --sidebar-border: 258 30% 90%;
     --sidebar-ring: 258 80% 75%;
 
+    /* Brand variables - default values that will be overridden */
     --brand-primary: #9b87f5;
     --brand-secondary: #1EAEDB;
     --brand-accent: #F1F0FB;
@@ -66,6 +71,7 @@
 
     --primary: 258 80% 75%;
     --primary-foreground: 0 0% 100%;
+    --primary-rgb: 155, 135, 245;
 
     --secondary: 258 20% 20%;
     --secondary-foreground: 258 10% 95%;
@@ -101,6 +107,16 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--brand-font-family, 'Inter, system-ui, sans-serif');
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-size: var(--brand-heading-size, 1.25rem);
+    font-family: var(--brand-font-family, 'Inter, system-ui, sans-serif');
+  }
+  
+  p, span, div, button, input, textarea, select {
+    font-size: var(--brand-body-size, 0.875rem);
   }
 }
 
@@ -251,4 +267,34 @@
 
 .ring-brand-primary {
   --tw-ring-color: var(--brand-primary);
+}
+
+.hover\:bg-brand-primary-90:hover {
+  background-color: color-mix(in srgb, var(--brand-primary) 90%, transparent);
+}
+
+/* Brand font styles */
+.font-brand {
+  font-family: var(--brand-font-family);
+}
+
+.text-brand-heading {
+  font-size: var(--brand-heading-size);
+}
+
+.text-brand-body {
+  font-size: var(--brand-body-size);
+}
+
+/* Field styles based on brand settings */
+.rounded-brand {
+  border-radius: var(--brand-border-radius);
+}
+
+.border-brand-style {
+  border-style: var(--brand-border-style);
+}
+
+.p-brand {
+  padding: var(--brand-padding);
 }

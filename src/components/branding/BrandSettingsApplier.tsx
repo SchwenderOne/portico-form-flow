@@ -23,6 +23,9 @@ export function BrandSettingsApplier() {
     if (primaryRgb) {
       const primaryHsl = rgbToHsl(primaryRgb.r, primaryRgb.g, primaryRgb.b);
       root.style.setProperty('--primary', `${primaryHsl.h} ${primaryHsl.s}% ${primaryHsl.l}%`);
+      
+      // Also set the raw RGB values for use in rgba() functions
+      root.style.setProperty('--primary-rgb', `${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}`);
     }
 
     // Typography variables
@@ -30,10 +33,30 @@ export function BrandSettingsApplier() {
     root.style.setProperty('--brand-heading-size', brandSettings.typography.headingSize);
     root.style.setProperty('--brand-body-size', brandSettings.typography.bodySize);
 
+    // Add the font to the document if it's from Google Fonts
+    if (brandSettings.typography.fontFamily && 
+        !brandSettings.typography.fontFamily.includes('system-ui') && 
+        !document.querySelector(`link[href*="${brandSettings.typography.fontFamily.split(',')[0].trim().replace(/['\"]/g, '')}"]`)) {
+      const fontName = brandSettings.typography.fontFamily.split(',')[0].trim().replace(/['\"]/g, '');
+      if (fontName !== 'Inter') { // Skip Inter as it's already included in the app
+        const link = document.createElement('link');
+        link.href = `https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, '+')}:wght@400;500;700&display=swap`;
+        link.rel = 'stylesheet';
+        document.head.appendChild(link);
+      }
+    }
+
     // Field style variables
     root.style.setProperty('--brand-border-radius', brandSettings.fieldStyles.borderRadius);
     root.style.setProperty('--brand-border-style', brandSettings.fieldStyles.borderStyle);
     root.style.setProperty('--brand-padding', brandSettings.fieldStyles.padding);
+
+    // Apply CSS-level font-family directly to make sure fonts take effect immediately
+    if (brandSettings.typography.fontFamily) {
+      document.body.style.fontFamily = brandSettings.typography.fontFamily;
+    }
+
+    console.log("Brand settings applied:", brandSettings);
   }, [brandSettings]);
 
   return null; // This component does not render anything
@@ -41,16 +64,38 @@ export function BrandSettingsApplier() {
 
 // Helper function to convert HEX to RGB
 function hexToRgb(hex: string) {
+  // Handle invalid hex values
+  if (!hex || typeof hex !== 'string') {
+    console.error("Invalid hex color value", hex);
+    return { r: 155, g: 135, b: 245 }; // Default purple
+  }
+
   // Remove # if present
   hex = hex.replace(/^#/, '');
 
-  // Parse the hex values
-  const bigint = parseInt(hex, 16);
-  const r = (bigint >> 16) & 255;
-  const g = (bigint >> 8) & 255;
-  const b = bigint & 255;
+  // Handle 3-digit hex
+  if (hex.length === 3) {
+    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+  }
 
-  return { r, g, b };
+  // Handle invalid hex format
+  if (hex.length !== 6) {
+    console.error("Invalid hex color format", hex);
+    return { r: 155, g: 135, b: 245 }; // Default purple
+  }
+
+  try {
+    // Parse the hex values
+    const bigint = parseInt(hex, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+
+    return { r, g, b };
+  } catch (error) {
+    console.error("Error parsing hex color", hex, error);
+    return { r: 155, g: 135, b: 245 }; // Default purple
+  }
 }
 
 // Helper function to convert RGB to HSL
