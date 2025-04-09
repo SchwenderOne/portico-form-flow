@@ -21,6 +21,7 @@ import Automations from "./pages/Automations";
 import Distribute from "./pages/Distribute";
 import Branding from "./pages/Branding";
 import History from "./pages/History";
+import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import RequireAuth from "./components/auth/RequireAuth";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
@@ -63,7 +64,7 @@ const App = () => (
                       <Route path="/history" element={<RequireAuth><History /></RequireAuth>} />
                       <Route path="/compliance" element={<RequireAuth><Compliance /></RequireAuth>} />
                       <Route path="/metadata" element={<RequireAuth><FormMetadata /></RequireAuth>} />
-                      <Route path="/settings" element={<RequireAuth><NotFound /></RequireAuth>} />
+                      <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
                       <Route path="/form-builder" element={<RequireAuth><FormBuilder /></RequireAuth>} />
                       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                       <Route path="*" element={<NotFound />} />
