@@ -17,6 +17,7 @@ import AIAssistantButton from "./ai-assistant/AIAssistantButton";
 import { FormElement } from "@/types/form";
 import { FormMetadataSheet } from "./FormMetadataSheet";
 import { useFormMetadata } from "@/context/FormMetadataContext";
+import ExportFormDropdown from "./ExportFormDropdown";
 
 interface FormTopToolbarProps {
   onPreview?: () => void;
@@ -123,6 +124,9 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
           <Eye className="h-4 w-4 mr-1" />
           Preview
         </Button>
+
+        {/* Add the export dropdown here */}
+        <ExportFormDropdown formElements={existingElements} />
 
         <Button
           variant="outline"
