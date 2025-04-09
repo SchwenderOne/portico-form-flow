@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { VALIDATION_TYPES } from "@/constants/formBuilder";
+import { Validation } from "@/types/validation";
 
 interface ValidationTabProps {
   element: FormElement;
@@ -17,9 +17,13 @@ const ValidationTab: React.FC<ValidationTabProps> = ({ element, onElementUpdate 
   const [validationOpen, setValidationOpen] = useState(true);
 
   const handleValidationChange = (field: string, value: any) => {
-    const validation = element.validation || {};
-    const updatedValidation = { ...validation, [field]: value };
+    // If validation doesn't exist yet, create a properly typed initial validation object
+    const validation = element.validation || { type: 'custom' } as Validation;
     
+    // Create a new validation object with the updated field
+    const updatedValidation = { ...validation, [field]: value } as Validation;
+    
+    // Update the element with the new validation
     const updatedElement = { 
       ...element, 
       validation: updatedValidation
