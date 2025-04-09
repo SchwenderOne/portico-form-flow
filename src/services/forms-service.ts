@@ -1,5 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { DatabaseForm, DatabaseFormField, DatabaseFormResponse, DatabaseFormVersion, FormElement } from "@/types/form";
+import { DatabaseForm, DatabaseFormField, DatabaseFormResponse, DatabaseFormVersion, FormElement, FormMetadata } from "@/types/form";
 import { toast } from "sonner";
 
 // Form CRUD operations
