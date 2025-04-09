@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Dialog,
   DialogContent,
@@ -12,11 +12,27 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Wand2, Sparkles, History, Plus, Check, RefreshCw, Lightbulb, AlertCircle } from "lucide-react";
+import { 
+  Wand2, 
+  Sparkles, 
+  History, 
+  Plus, 
+  Check, 
+  RefreshCw, 
+  Lightbulb, 
+  AlertCircle, 
+  Clock, 
+  Star, 
+  StarOff, 
+  Edit, 
+  Trash, 
+  ArrowRight
+} from "lucide-react";
 import { toast } from "sonner";
 import { generateFormFromPrompt } from "@/services/ai-form-generator";
 import { FormElement } from "@/types/form";
 import InsertionModeModal from "./InsertionModeModal";
+import { formatDistanceToNow } from "date-fns";
 
 interface AIAssistantModalProps {
   isOpen: boolean;
@@ -24,6 +40,23 @@ interface AIAssistantModalProps {
   onAddElements: (elements: FormElement[], replaceExisting?: boolean) => void;
   existingElements: FormElement[];
 }
+
+interface PromptHistoryItem {
+  id: string;
+  text: string;
+  timestamp: number;
+  isFavorite: boolean;
+}
+
+const EXAMPLE_PROMPTS = [
+  "Create a customer feedback form with name, email, rating, and comment section",
+  "Make a job application form with personal details, experience, and education",
+  "Design a simple event registration with attendee info and preferences",
+  "Create a 5-step onboarding form for HR with name, position, department, consent",
+  "Build a survey with multiple choice and open-ended questions"
+];
+
+const STORAGE_KEY = "portico-ai-form-prompt-history";
 
 const AIAssistantModal: React.FC<AIAssistantModalProps> = ({ 
   isOpen, 
@@ -33,11 +66,30 @@ const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
 }) => {
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [history, setHistory] = useState<string[]>([]);
+  const [history, setHistory] = useState<PromptHistoryItem[]>([]);
   const [activeTab, setActiveTab] = useState<string>("prompt");
+  const [historyTab, setHistoryTab] = useState<string>("history");
   const [generatedElements, setGeneratedElements] = useState<FormElement[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showInsertionModal, setShowInsertionModal] = useState(false);
+
+  // Load history from localStorage on component mount
+  useEffect(() => {
+    const savedHistory = localStorage.getItem(STORAGE_KEY);
+    if (savedHistory) {
+      try {
+        const parsed = JSON.parse(savedHistory);
+        setHistory(parsed);
+      } catch (e) {
+        console.error("Failed to parse history:", e);
+      }
+    }
+  }, []);
+
+  // Save history to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+  }, [history]);
 
   const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setPrompt(e.target.value);
@@ -77,9 +129,17 @@ const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
       setActiveTab("preview");
       
       // Add to history if not already there
-      if (!history.includes(prompt)) {
-        setHistory(prev => [prompt, ...prev].slice(0, 5));
-      }
+      const promptId = Date.now().toString();
+      setHistory(prev => {
+        // Check if this exact prompt already exists
+        if (!prev.some(item => item.text === prompt)) {
+          return [
+            { id: promptId, text: prompt, timestamp: Date.now(), isFavorite: false },
+            ...prev
+          ];
+        }
+        return prev;
+      });
       
       toast.success("Form generated successfully!", {
         description: `${elements.length} elements created`
@@ -108,13 +168,30 @@ const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
     handleCloseModal();
   };
 
-  const handleUseFromHistory = (historyPrompt: string) => {
+  const handleUsePrompt = (historyPrompt: string) => {
     setPrompt(historyPrompt);
     setActiveTab("prompt");
   };
 
+  const handleToggleFavorite = (id: string) => {
+    setHistory(prev => 
+      prev.map(item => 
+        item.id === id ? { ...item, isFavorite: !item.isFavorite } : item
+      )
+    );
+  };
+
+  const handleDeletePrompt = (id: string) => {
+    setHistory(prev => prev.filter(item => item.id !== id));
+    toast.success("Prompt removed from history");
+  };
+
   const handleRegenerateForm = () => {
     setActiveTab("prompt");
+  };
+
+  const handleUseExamplePrompt = (examplePrompt: string) => {
+    setPrompt(examplePrompt);
   };
 
   const handleCloseModal = () => {
@@ -123,6 +200,10 @@ const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
     setActiveTab("prompt");
     setShowInsertionModal(false);
     onClose();
+  };
+
+  const formatTime = (timestamp: number) => {
+    return formatDistanceToNow(timestamp, { addSuffix: true });
   };
 
   return (
@@ -151,14 +232,21 @@ const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
               <div className="bg-portico-purple/5 p-4 rounded-md mb-4">
                 <h3 className="text-sm font-medium flex items-center text-portico-purple mb-2">
                   <Lightbulb className="h-4 w-4 mr-1" />
-                  Prompt Examples
+                  Example Prompts
                 </h3>
-                <ul className="text-xs space-y-1">
-                  <li>• "Create a customer feedback form with name, email, rating, and comment section"</li>
-                  <li>• "Make a job application form with personal details, experience, and education"</li>
-                  <li>• "Design a simple event registration with attendee info and preferences"</li>
-                  <li>• "Create a 5-step onboarding form for HR with name, position, department, consent"</li>
-                </ul>
+                <div className="flex flex-wrap gap-2">
+                  {EXAMPLE_PROMPTS.map((example, index) => (
+                    <Button 
+                      key={index} 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-xs py-1 h-auto bg-background/80 justify-start"
+                      onClick={() => handleUseExamplePrompt(example)}
+                    >
+                      {example}
+                    </Button>
+                  ))}
+                </div>
               </div>
 
               <Textarea
@@ -198,26 +286,125 @@ const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
               </div>
 
               {history.length > 0 && (
-                <div className="mt-6">
-                  <div className="flex items-center mb-2">
-                    <History className="h-4 w-4 mr-1 text-muted-foreground" />
-                    <h4 className="text-sm font-medium text-muted-foreground">Recent Prompts</h4>
-                  </div>
-                  <ScrollArea className="h-24">
-                    <div className="space-y-1">
-                      {history.map((historyItem, index) => (
-                        <Button 
-                          key={index} 
-                          variant="ghost" 
-                          size="sm" 
-                          className="w-full justify-start text-xs h-auto py-1.5 text-left" 
-                          onClick={() => handleUseFromHistory(historyItem)}
-                        >
-                          {historyItem}
-                        </Button>
-                      ))}
-                    </div>
-                  </ScrollArea>
+                <div className="mt-6 border-t pt-4">
+                  <Tabs defaultValue="history" value={historyTab} onValueChange={setHistoryTab} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-2">
+                      <TabsTrigger value="history" className="text-xs">
+                        <History className="h-3.5 w-3.5 mr-1" /> History
+                      </TabsTrigger>
+                      <TabsTrigger value="favorites" className="text-xs">
+                        <Star className="h-3.5 w-3.5 mr-1" /> Favorites
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="history" className="mt-0">
+                      <ScrollArea className="h-[150px]">
+                        <div className="space-y-1">
+                          {history.length > 0 ? (
+                            history.map((item) => (
+                              <div 
+                                key={item.id} 
+                                className="group flex items-center justify-between py-2 px-3 text-sm rounded-md hover:bg-accent/50 transition-colors"
+                              >
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1">
+                                    <span className="font-medium truncate">{item.text}</span>
+                                  </div>
+                                  <div className="text-muted-foreground text-xs flex items-center mt-0.5">
+                                    <Clock className="h-3 w-3 mr-1" />
+                                    {formatTime(item.timestamp)}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8" 
+                                    onClick={() => handleToggleFavorite(item.id)}
+                                    title={item.isFavorite ? "Remove from favorites" : "Add to favorites"}
+                                  >
+                                    {item.isFavorite ? (
+                                      <StarOff className="h-4 w-4 text-amber-500" />
+                                    ) : (
+                                      <Star className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8" 
+                                    onClick={() => handleUsePrompt(item.text)}
+                                    title="Edit prompt"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8 text-destructive/70 hover:text-destructive" 
+                                    onClick={() => handleDeletePrompt(item.id)}
+                                    title="Delete prompt"
+                                  >
+                                    <Trash className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-center py-4 text-muted-foreground">
+                              No prompt history yet
+                            </div>
+                          )}
+                        </div>
+                      </ScrollArea>
+                    </TabsContent>
+
+                    <TabsContent value="favorites" className="mt-0">
+                      <ScrollArea className="h-[150px]">
+                        <div className="space-y-1">
+                          {history.filter(item => item.isFavorite).length > 0 ? (
+                            history.filter(item => item.isFavorite).map((item) => (
+                              <div 
+                                key={item.id} 
+                                className="group flex items-center justify-between py-2 px-3 text-sm rounded-md hover:bg-accent/50 transition-colors"
+                              >
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1">
+                                    <Star className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                                    <span className="font-medium truncate">{item.text}</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8" 
+                                    onClick={() => handleToggleFavorite(item.id)}
+                                    title="Remove from favorites"
+                                  >
+                                    <StarOff className="h-4 w-4 text-amber-500" />
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8" 
+                                    onClick={() => handleUsePrompt(item.text)}
+                                    title="Use this prompt"
+                                  >
+                                    <ArrowRight className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-center py-4 text-muted-foreground">
+                              No favorite prompts yet
+                            </div>
+                          )}
+                        </div>
+                      </ScrollArea>
+                    </TabsContent>
+                  </Tabs>
                 </div>
               )}
             </TabsContent>
