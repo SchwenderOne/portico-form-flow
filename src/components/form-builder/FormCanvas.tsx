@@ -44,6 +44,7 @@ const FormCanvas = () => {
   const [elements, setElements] = useState<FormElementType[]>(initialElements);
   const [selectedElements, setSelectedElements] = useState<string[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const [showSmartGuides, setShowSmartGuides] = useState(false);
   const [guideLines, setGuideLines] = useState<{horizontal: number[], vertical: number[]}>({
     horizontal: [],
@@ -133,6 +134,8 @@ const FormCanvas = () => {
   };
 
   const handleElementDrop = (type: string, position: { x: number, y: number }) => {
+    console.log(`Dropping element of type: ${type} at position:`, position);
+    
     // Create new element based on type
     const newElement: FormElementType = {
       id: `${type}-${Date.now()}`,
@@ -156,7 +159,7 @@ const FormCanvas = () => {
       (newElement as any).options = ['Select an option', 'Option 1', 'Option 2', 'Option 3'];
     }
 
-    setElements([...elements, newElement]);
+    setElements(prev => [...prev, newElement]);
     setSelectedElements([newElement.id]);
     
     toast({
@@ -259,23 +262,36 @@ const FormCanvas = () => {
   // Handle the drop event on the canvas
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    setIsDragOver(false);
     
     const elementType = e.dataTransfer.getData("elementType");
-    if (!elementType || !canvasRef.current) return;
+    console.log("Drop event detected with element type:", elementType);
+    
+    if (!elementType || !canvasRef.current) {
+      console.log("Missing element type or canvas ref");
+      return;
+    }
     
     const canvasRect = canvasRef.current.getBoundingClientRect();
     // Calculate position relative to the canvas and snap to grid
     const x = Math.round((e.clientX - canvasRect.left) / 25) * 25;
     const y = Math.round((e.clientY - canvasRect.top) / 25) * 25;
     
+    console.log("Calculated position:", { x, y });
     handleElementDrop(elementType, { x, y });
   };
 
   // Handle dragover to allow dropping
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    if (!isDragOver) setIsDragOver(true);
     // Change the cursor to indicate droppable area
     e.dataTransfer.dropEffect = "copy";
+  };
+  
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
   };
 
   // Clear smart guides when dragging stops
@@ -300,9 +316,11 @@ const FormCanvas = () => {
               ref={canvasRef}
               className={cn(
                 "form-canvas min-h-full w-full p-4 relative bg-white",
-                isDragging && "cursor-grabbing"
+                isDragging && "cursor-grabbing",
+                isDragOver && "bg-portico-purple/5 outline-dashed outline-2 outline-portico-purple/30"
               )}
               onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
               onDrop={handleDrop}
             >
               {showSmartGuides && <SmartGuides guides={guideLines} />}

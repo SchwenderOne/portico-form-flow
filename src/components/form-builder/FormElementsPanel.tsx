@@ -64,20 +64,38 @@ const FormElementsPanel: React.FC<FormElementsPanelProps> = ({ onElementDrop }) 
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleDragStart = (e: React.DragEvent, type: string) => {
+    // Set data that will be transferred during drag
     e.dataTransfer.setData("elementType", type);
-    // Add a drag image for better visual feedback
+    e.dataTransfer.effectAllowed = "copy";
+    
+    // Create visual feedback for dragging
     const dragImage = document.createElement('div');
     dragImage.style.width = '100px';
     dragImage.style.height = '30px';
     dragImage.style.backgroundColor = 'rgba(155, 135, 245, 0.2)';
     dragImage.style.borderRadius = '4px';
     dragImage.style.border = '1px dashed #9b87f5';
-    dragImage.style.display = 'none';
+    dragImage.style.display = 'flex';
+    dragImage.style.alignItems = 'center';
+    dragImage.style.justifyContent = 'center';
+    dragImage.style.color = '#9b87f5';
+    dragImage.style.fontSize = '12px';
+    dragImage.textContent = type;
+    
     document.body.appendChild(dragImage);
-    e.dataTransfer.setDragImage(dragImage, 50, 15);
-    setTimeout(() => {
+    
+    try {
+      e.dataTransfer.setDragImage(dragImage, 50, 15);
+    } catch (error) {
+      console.error("Failed to set drag image:", error);
+    }
+    
+    // Clean up the drag image element
+    requestAnimationFrame(() => {
       document.body.removeChild(dragImage);
-    }, 0);
+    });
+    
+    console.log(`Started dragging: ${type}`);
   };
 
   // Filter elements based on search term
@@ -99,7 +117,7 @@ const FormElementsPanel: React.FC<FormElementsPanelProps> = ({ onElementDrop }) 
               "flex flex-col items-center justify-center p-2 rounded-md border border-dashed cursor-grab bg-white",
               "hover:border-portico-purple hover:bg-portico-purple/5 transition-colors relative group"
             )}
-            draggable
+            draggable="true"
             onDragStart={(e) => handleDragStart(e, element.type)}
           >
             <GripVertical className="h-3 w-3 absolute top-1 left-1 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
