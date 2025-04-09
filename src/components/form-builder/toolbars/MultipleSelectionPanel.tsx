@@ -1,30 +1,45 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Group } from "lucide-react";
+import { Group, Ungroup } from "lucide-react";
 
 interface MultipleSelectionPanelProps {
   selectedCount: number;
   onGroup: () => void;
+  onUngroup: () => void;
 }
 
-const MultipleSelectionPanel: React.FC<MultipleSelectionPanelProps> = ({ 
-  selectedCount, 
-  onGroup 
+const MultipleSelectionPanel: React.FC<MultipleSelectionPanelProps> = ({
+  selectedCount,
+  onGroup,
+  onUngroup
 }) => {
   return (
-    <div className="h-64 border-t border-border p-4 bg-muted/20">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-medium">{selectedCount} elements selected</h3>
-          <p className="text-xs text-muted-foreground mt-1">You can group these elements to move them together</p>
-        </div>
-        <div className="flex space-x-2">
-          <Button size="sm" onClick={onGroup}>
-            <Group className="h-4 w-4 mr-2" />
-            Group Elements
-          </Button>
-        </div>
+    <div className="p-4 flex flex-col gap-4">
+      <div className="text-sm">
+        <span className="font-medium">{selectedCount} elements selected</span>
+      </div>
+      
+      <div className="flex gap-3">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={onGroup}
+          className="flex items-center gap-1.5"
+        >
+          <Group className="h-4 w-4" />
+          <span>Group Elements</span>
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={onUngroup}
+          className="flex items-center gap-1.5"
+        >
+          <Ungroup className="h-4 w-4" />
+          <span>Ungroup Elements</span>
+        </Button>
       </div>
     </div>
   );

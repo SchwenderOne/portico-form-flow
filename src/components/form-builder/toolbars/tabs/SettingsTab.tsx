@@ -5,7 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { MagicWandIcon, InfoIcon } from "lucide-react";
+import { Wand2, InfoIcon } from "lucide-react";
 import { getSmartDefaultsStatus, toggleSmartDefaults } from "@/utils/smart-defaults";
 
 const SettingsTab = () => {
@@ -28,7 +28,7 @@ const SettingsTab = () => {
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <MagicWandIcon className="h-4 w-4 text-indigo-500" />
+            <Wand2 className="h-4 w-4 text-indigo-500" />
             <h4 className="text-sm font-semibold">Smart Features</h4>
           </div>
           <CollapsibleTrigger asChild>

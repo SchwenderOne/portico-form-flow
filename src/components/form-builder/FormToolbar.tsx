@@ -41,7 +41,7 @@ const FormToolbar: React.FC<FormToolbarProps> = ({
     return (
       <div className="h-48 border-t bg-background flex flex-col">
         <MultipleSelectionPanel
-          count={selectedCount}
+          selectedCount={selectedCount}
           onGroup={onGroup}
           onUngroup={onUngroup}
         />
@@ -113,7 +113,12 @@ const FormToolbar: React.FC<FormToolbarProps> = ({
         </TabsContent>
 
         <TabsContent value="appearance" className="m-0 h-full">
-          {selectedElement && <AppearanceTab element={selectedElement} />}
+          {selectedElement && (
+            <AppearanceTab
+              element={selectedElement}
+              onElementUpdate={onUpdate}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="ai" className="m-0 h-full">
