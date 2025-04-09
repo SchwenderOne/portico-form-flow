@@ -34,7 +34,9 @@ const FormCanvas = () => {
   const {
     showSmartGuides,
     guideLines,
-    calculateSmartGuides
+    distances,
+    calculateSmartGuides,
+    autoNudgePosition
   } = useSmartGuides(elements, isDragging);
 
   // Enhanced grouping functionality
@@ -91,12 +93,16 @@ const FormCanvas = () => {
     }
   }, [grouping, handleDeleteElement, handleDuplicateElement, handleDuplicateGroup]);
 
-  // Handler to update the smart guides when an element is being moved
+  // Handler to update the smart guides when an element is being moved with snapping
   const handleElementMoveWithGuides = (id: string, position: { x: number, y: number }) => {
-    handleElementMove(id, position);
-    if (isDragging) {
-      calculateSmartGuides(id, position);
-    }
+    // First calculate the smart guides
+    calculateSmartGuides(id, position);
+    
+    // Then apply auto-nudging for snapping
+    const nudgedPosition = autoNudgePosition(id, position);
+    
+    // Apply the move with the potentially nudged position
+    handleElementMove(id, nudgedPosition);
   };
 
   // Sync the element selection between our form elements hook and grouping context
@@ -151,7 +157,12 @@ const FormCanvas = () => {
               setIsDragOver={setIsDragOver}
               onClick={handleCanvasClick}
             >
-              {showSmartGuides && <SmartGuides guides={guideLines} />}
+              {showSmartGuides && 
+                <SmartGuides 
+                  guides={guideLines} 
+                  distances={distances} 
+                />
+              }
               
               {elements.map((element) => (
                 <FormElement

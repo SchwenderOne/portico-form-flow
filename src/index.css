@@ -95,11 +95,27 @@
   }
 }
 
-.form-canvas {
+/* Enhanced grid background */
+.grid-background {
   background-size: 25px 25px;
   background-image: 
     linear-gradient(to right, rgba(155, 135, 245, 0.05) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(155, 135, 245, 0.05) 1px, transparent 1px);
+}
+
+/* Add subtle major grid lines every 100px */
+.grid-background::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: 100px 100px;
+  background-image: 
+    linear-gradient(to right, rgba(155, 135, 245, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(155, 135, 245, 0.1) 1px, transparent 1px);
+  pointer-events: none;
 }
 
 .form-element {
@@ -153,6 +169,19 @@
 
 .floating-toolbar {
   animation: floatingToolbarAppear 0.15s ease-out forwards;
+}
+
+/* Smart guides animation */
+[class*="absolute left-0 w-full h-[1px]"],
+[class*="absolute top-0 w-[1px] h-full"] {
+  animation: guideAppear 0.2s ease-out forwards;
+}
+
+/* Distance measurement styles */
+[class*="bg-portico-purple/80 text-white text-xs"] {
+  animation: floatingToolbarAppear 0.15s ease-out forwards;
+  min-width: 24px;
+  text-align: center;
 }
 
 /* CSS variables for Portico colors */

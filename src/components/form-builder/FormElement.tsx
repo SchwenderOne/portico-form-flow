@@ -105,6 +105,7 @@ const FormElement: React.FC<FormElementProps> = ({
           const snappedX = Math.round(x / 25) * 25;
           const snappedY = Math.round(y / 25) * 25;
           
+          // Let the Canvas component handle the smart guides and snapping
           onMove(element.id, { x: snappedX, y: snappedY });
           
           // If this element is part of a group, move all elements in the group
