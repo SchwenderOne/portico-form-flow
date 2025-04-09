@@ -24,15 +24,18 @@ import { UserPlus } from "lucide-react";
 import { useTeam } from "@/context/TeamContext";
 import { InviteData } from "@/types/team";
 
-// The schema needs to match the InviteData type
+// Define the schema with required fields to match InviteData
 const formSchema = z.object({
   email: z
     .string()
+    .min(1, { message: "Email is required" })
     .email({ message: "Please enter a valid email address" }),
-  role: z.enum(["Editor", "Viewer"]),
+  role: z.enum(["Editor", "Viewer"], {
+    required_error: "Please select a role",
+  }),
 });
 
-// Update this to match InviteData for proper type safety
+// Use the zod schema to infer the form values type
 type FormValues = z.infer<typeof formSchema>;
 
 const InviteTeamMemberForm = () => {
@@ -47,8 +50,13 @@ const InviteTeamMemberForm = () => {
   });
 
   const onSubmit = async (values: FormValues) => {
-    // Since FormValues now matches InviteData structure, this is type-safe
-    await inviteTeamMember(values);
+    // Now values will have the correct type with required properties
+    const inviteData: InviteData = {
+      email: values.email,
+      role: values.role,
+    };
+    
+    await inviteTeamMember(inviteData);
     form.reset();
   };
 
