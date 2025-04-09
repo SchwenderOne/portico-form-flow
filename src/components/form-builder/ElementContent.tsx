@@ -30,7 +30,7 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
       case 'text':
         return (
           <TextField 
-            label={element.label} 
+            label={element.label || ''} 
             placeholder={element.placeholder} 
             required={element.required} 
             isEditing={isEditing} 
@@ -41,7 +41,7 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
       case 'textarea':
         return (
           <TextareaField 
-            label={element.label} 
+            label={element.label || ''} 
             placeholder={element.placeholder} 
             required={element.required} 
             isEditing={isEditing} 
@@ -53,7 +53,7 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
         return (
           <CheckboxField 
             id={element.id}
-            label={element.label} 
+            label={element.label || ''} 
             required={element.required} 
             isEditing={isEditing} 
             checked={checkboxValue}
@@ -66,7 +66,7 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
       case 'select':
         return (
           <SelectField 
-            label={element.label} 
+            label={element.label || ''} 
             options={element.options || []} 
             required={element.required} 
             isEditing={isEditing}
@@ -77,7 +77,7 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
       case 'file':
         return (
           <FileField 
-            label={element.label} 
+            label={element.label || ''} 
             required={element.required} 
             isEditing={isEditing} 
           />
@@ -89,7 +89,7 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
       case 'email':
         return (
           <EmailField 
-            label={element.label} 
+            label={element.label || ''} 
             placeholder={element.placeholder} 
             required={element.required} 
             isEditing={isEditing}
@@ -100,7 +100,7 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
       case 'date':
         return (
           <DateField 
-            label={element.label} 
+            label={element.label || ''} 
             required={element.required} 
             isEditing={isEditing}
             date={dateValue}
@@ -110,7 +110,7 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
       case 'number':
         return (
           <NumberField 
-            label={element.label} 
+            label={element.label || ''} 
             placeholder={element.placeholder} 
             required={element.required} 
             isEditing={isEditing}

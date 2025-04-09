@@ -1,13 +1,13 @@
 
 import React, { useState, useEffect } from "react";
-import FormElement from "./FormElement";
+import FormElement from "./elements/FormElement";
 import FormToolbar from "./FormToolbar";
 import FormTopToolbar from "./FormTopToolbar";
 import FormElementsPanel from "./FormElementsPanel";
 import { GroupingProvider, useGroupingState } from "./GroupingContext";
 import SmartGuides from "./SmartGuides";
-import CanvasDropZone from "./CanvasDropZone";
-import { useFormElements } from "./hooks/useFormElements";
+import CanvasDropZone from "./canvas/CanvasDropZone";
+import { useFormElements } from "@/hooks/use-form-elements";
 import { useSmartGuides } from "./hooks/useSmartGuides";
 import { toast } from "sonner";
 import { KeyboardEvent, useCallback } from "react";
