@@ -63,28 +63,46 @@ const VersionHistorySheet: React.FC<VersionHistorySheetProps> = ({
   const { metadata } = useFormMetadata();
   const { user } = useAuth();
   
-  // Safely try to access the form canvas context
-  let canAccessFormCanvas = false;
-  try {
-    // Only import useFormCanvas dynamically within the try block
-    const { useFormCanvas } = require('../context/FormCanvasContext');
-    // If we have access to useFormCanvas, get the elements
-    const { elements } = useFormCanvas();
-    setFormCanvasElements(elements);
-    canAccessFormCanvas = true;
-  } catch (error) {
-    // If useFormCanvas fails, continue with empty elements array
-    console.log("VersionHistorySheet: FormCanvasProvider not available");
-  }
+  // Safely check if we're in the FormCanvas context
+  const [canAccessFormCanvas, setCanAccessFormCanvas] = useState(false);
+  
+  useEffect(() => {
+    // Safely try to access the form canvas context
+    let formElements: FormElement[] = [];
+    try {
+      // Dynamic import to avoid errors when used outside FormCanvasProvider
+      const formCanvasModule = import('../context/FormCanvasContext');
+      formCanvasModule.then(module => {
+        try {
+          const { useFormCanvas } = module;
+          // We're just testing if it's available - will throw if not in provider
+          const formCanvas = useFormCanvas();
+          setFormCanvasElements(formCanvas.elements);
+          setCanAccessFormCanvas(true);
+        } catch (error) {
+          console.log("VersionHistorySheet: FormCanvasProvider not available");
+          setCanAccessFormCanvas(false);
+        }
+      }).catch(() => {
+        console.log("VersionHistorySheet: FormCanvasProvider not available");
+        setCanAccessFormCanvas(false);
+      });
+    } catch (error) {
+      console.log("VersionHistorySheet: FormCanvasProvider not available");
+      setCanAccessFormCanvas(false);
+    }
+  }, [open]);
 
   // Fetch versions when component mounts or form ID changes
   useEffect(() => {
-    if (open) {
+    if (open && metadata?.id) {
       fetchVersions();
     }
-  }, [open, metadata.id]);
+  }, [open, metadata?.id]);
 
   const fetchVersions = async () => {
+    if (!metadata?.id) return;
+    
     try {
       setIsLoading(true);
       const fetchedVersions = await getFormVersions(metadata.id);

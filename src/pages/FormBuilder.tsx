@@ -12,7 +12,7 @@ import { TeamProvider } from "@/context/TeamContext";
 import { FormCanvasProvider } from "@/components/form-builder/context/FormCanvasContext";
 import { CollaborationProvider } from "@/context/CollaborationContext";
 
-// Import the version history sheet and its controls
+// Import the version history sheet and its controls - using ES Module imports
 import VersionHistorySheet, { 
   registerVersionHistoryControls 
 } from "@/components/form-builder/version-history/VersionHistorySheet";
@@ -69,7 +69,6 @@ const FormBuilder = () => {
                     onOpenChange={setBrandSheetOpen}
                   />
                   
-                  {/* Wrap the VersionHistorySheet, which is now conditionally using useFormCanvas */}
                   <VersionHistorySheet 
                     showTrigger={false}
                     open={versionHistoryOpen}
