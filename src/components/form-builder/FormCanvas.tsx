@@ -12,13 +12,16 @@ import { useSmartGuides } from "./hooks/useSmartGuides";
 import { toast } from "sonner";
 import { KeyboardEvent, useCallback } from "react";
 import { FormElement as FormElementType } from "@/types/form";
+import AIAssistantModal from "./ai-assistant/AIAssistantModal";
 
 const FormCanvas = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   
   const {
     elements,
+    setElements,
     selectedElements,
     handleElementSelect,
     handleElementMove,
@@ -93,9 +96,29 @@ const FormCanvas = () => {
     handleElementMove(id, nudgedPosition);
   };
 
-  const handleAddAIElements = (elements: FormElementType[]) => {
+  const handleAddAIElements = (elements: FormElementType[], replaceExisting = false) => {
     if (!elements || elements.length === 0) return;
     
+    if (replaceExisting) {
+      // Replace all existing elements with the new ones
+      setElements(elements.map((element, index) => ({
+        ...element,
+        position: {
+          x: 100, // Standard left alignment
+          y: 50 + (index > 0 ? index * 100 : 0) // Proper vertical spacing
+        }
+      })));
+      
+      // Select the first element in the new form
+      if (elements.length > 0) {
+        handleElementSelect(elements[0].id, false);
+      }
+      
+      toast.success(`Replaced with ${elements.length} new elements`);
+      return;
+    }
+    
+    // Find the lowest position of existing elements to place new elements below
     const lowestElementBottom = Math.max(
       ...elements.map(el => el.position.y + el.size.height),
       50
@@ -103,26 +126,41 @@ const FormCanvas = () => {
     
     let currentY = lowestElementBottom + 30;
     
-    elements.forEach(element => {
+    // Calculate proper alignment with grid
+    currentY = Math.round(currentY / 25) * 25;
+    
+    // Add each element with proper spacing and alignment
+    elements.forEach((element, index) => {
       const adjustedElement = {
         ...element,
         position: {
-          x: 100,
+          x: 100, // Standard left alignment
           y: currentY
         }
       };
       
       addElement(adjustedElement);
       
-      currentY += adjustedElement.size.height + 20;
+      // Calculate next element position based on current element height
+      const elementHeight = element.size.height || 80;
+      const spacing = 20; // Default spacing between elements
+      currentY += elementHeight + spacing;
+      
+      // Ensure alignment to grid
+      currentY = Math.round(currentY / 25) * 25;
     });
     
+    // Select the last added element
     if (elements.length > 0) {
       const lastElement = elements[elements.length - 1];
       handleElementSelect(lastElement.id, false);
     }
     
     toast.success(`${elements.length} elements added to canvas`);
+  };
+
+  const handleOpenAIModal = () => {
+    setIsAIModalOpen(true);
   };
 
   useEffect(() => {
@@ -164,7 +202,7 @@ const FormCanvas = () => {
           onRequiredToggle={handleRequiredToggle}
           onGroup={grouping.groupElements}
           onUngroup={grouping.ungroupElements}
-          onAddElements={handleAddAIElements}
+          onOpenAIModal={handleOpenAIModal}
         />
         <div className="flex-1 flex">
           <FormElementsPanel onElementDrop={handleElementDrop} />
@@ -209,6 +247,13 @@ const FormCanvas = () => {
           onGroup={grouping.groupElements}
           onUngroup={grouping.ungroupElements}
           onAddElements={handleAddAIElements}
+        />
+        
+        <AIAssistantModal
+          isOpen={isAIModalOpen}
+          onClose={() => setIsAIModalOpen(false)}
+          onAddElements={handleAddAIElements}
+          existingElements={elements}
         />
       </div>
     </GroupingProvider>

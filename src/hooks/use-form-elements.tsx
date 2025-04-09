@@ -93,6 +93,7 @@ export const useFormElements = () => {
 
   return {
     elements,
+    setElements,
     selectedElements,
     handleElementSelect,
     handleElementMove,
