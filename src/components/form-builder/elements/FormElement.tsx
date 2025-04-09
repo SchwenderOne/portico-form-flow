@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { FormElement as FormElementType } from '@/types/form';
-import { ElementDragHandle } from './ElementDragHandle';
+import ElementDragHandle from './ElementDragHandle';
 import { toast } from "sonner";
 import { useCollaboration } from '@/context/CollaborationContext';
 
@@ -23,8 +24,8 @@ const FormElement: React.FC<FormElementProps> = ({
   onSelect,
   selected
 }) => {
-  const { activeElementId } = useCollaboration();
-  const isBeingDragged = activeElementId === element.id;
+  const { activeElement } = useCollaboration();
+  const isBeingDragged = activeElement === element.id;
 
   const handleDrag = (e: React.MouseEvent) => {
     e.stopPropagation();
