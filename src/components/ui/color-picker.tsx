@@ -74,6 +74,7 @@ export function ColorPicker({ color, onChange, className, label }: ColorPickerPr
     // Add # if missing
     if (value && !value.startsWith('#')) {
       value = '#' + value;
+      setInputColor(value);
     }
     
     // Final validation on blur
