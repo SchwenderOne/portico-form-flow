@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Sidebar,
@@ -33,7 +32,6 @@ const AppSidebar = () => {
   const location = useLocation();
   const [isBrandSettingsOpen, setIsBrandSettingsOpen] = useState(false);
 
-  // Effect to handle opening brand settings when the URL is /branding
   useEffect(() => {
     if (location.pathname === "/branding") {
       setIsBrandSettingsOpen(true);
@@ -53,7 +51,7 @@ const AppSidebar = () => {
     { icon: FileEdit, title: "Forms", path: "/" },
     { icon: Send, title: "Distribute", path: "/distribute" },
     { icon: BarChart, title: "Analytics", path: "/analytics" },
-    { icon: Palette, title: "Branding", path: "/branding" },
+    { icon: Palette, title: "Branding", path: "/branding", usesBrandColor: true },
     { icon: History, title: "History", path: "/history" },
     { icon: Shield, title: "Compliance", path: "/compliance" },
     { icon: Settings, title: "Settings", path: "/settings" },
@@ -80,7 +78,7 @@ const AppSidebar = () => {
                     <SidebarMenuButton 
                       className={cn(
                         (location.pathname === item.path || (item.path === "/branding" && isBrandSettingsOpen)) && 
-                        "bg-sidebar-accent text-portico-purple font-medium"
+                        (item.usesBrandColor ? "bg-[var(--brand-primary)] text-white font-medium" : "bg-sidebar-accent text-portico-purple font-medium")
                       )}
                       onClick={() => handleMenuItemClick(item.path)}
                     >
@@ -110,7 +108,6 @@ const AppSidebar = () => {
         </SidebarFooter>
       </Sidebar>
 
-      {/* Brand Settings Sheet */}
       <BrandSettingsSheet 
         open={isBrandSettingsOpen} 
         onOpenChange={setIsBrandSettingsOpen}

@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Palette, Type, Image, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 
 const BrandSettingsTab = () => {
   const { 
@@ -47,6 +48,15 @@ const BrandSettingsTab = () => {
     }
   };
 
+  // Toast notification for brand changes
+  const handleColorChange = (colorKey: keyof typeof brandSettings.colors, color: string) => {
+    updateColors({ [colorKey]: color });
+    toast.success(`${colorKey.charAt(0).toUpperCase() + colorKey.slice(1)} color updated`, {
+      description: "Your brand color changes are applied globally",
+      duration: 2000,
+    });
+  };
+
   return (
     <div className="p-4 h-full overflow-y-auto">
       <div className="mb-4 flex items-center justify-between">
@@ -54,7 +64,10 @@ const BrandSettingsTab = () => {
         <Button 
           variant="outline" 
           size="sm" 
-          onClick={resetToDefaults} 
+          onClick={() => {
+            resetToDefaults();
+            toast.success("Brand settings reset to defaults");
+          }} 
           className="flex items-center gap-1"
         >
           <RefreshCw className="h-3.5 w-3.5" />
@@ -86,12 +99,12 @@ const BrandSettingsTab = () => {
                 <div className="flex items-center gap-2">
                   <ColorPicker 
                     color={brandSettings.colors.primary} 
-                    onChange={(color) => updateColors({ primary: color })}
+                    onChange={(color) => handleColorChange('primary', color)}
                   />
                   <Input 
                     id="primary-color"
                     value={brandSettings.colors.primary} 
-                    onChange={(e) => updateColors({ primary: e.target.value })}
+                    onChange={(e) => handleColorChange('primary', e.target.value)}
                     className="flex-1"
                   />
                 </div>
@@ -103,12 +116,12 @@ const BrandSettingsTab = () => {
                 <div className="flex items-center gap-2">
                   <ColorPicker 
                     color={brandSettings.colors.secondary} 
-                    onChange={(color) => updateColors({ secondary: color })}
+                    onChange={(color) => handleColorChange('secondary', color)}
                   />
                   <Input 
                     id="secondary-color"
                     value={brandSettings.colors.secondary} 
-                    onChange={(e) => updateColors({ secondary: e.target.value })}
+                    onChange={(e) => handleColorChange('secondary', e.target.value)}
                     className="flex-1"
                   />
                 </div>
@@ -121,12 +134,12 @@ const BrandSettingsTab = () => {
               <div className="flex items-center gap-2">
                 <ColorPicker 
                   color={brandSettings.colors.accent} 
-                  onChange={(color) => updateColors({ accent: color })}
+                  onChange={(color) => handleColorChange('accent', color)}
                 />
                 <Input 
                   id="accent-color"
                   value={brandSettings.colors.accent} 
-                  onChange={(e) => updateColors({ accent: e.target.value })}
+                  onChange={(e) => handleColorChange('accent', e.target.value)}
                   className="flex-1"
                 />
               </div>
@@ -429,7 +442,13 @@ const BrandSettingsTab = () => {
             <Badge variant="outline" className="mr-2">Live Preview</Badge>
             <Badge variant="success">Changes Auto-saved</Badge>
           </div>
-          <Button size="sm" className="bg-portico-purple hover:bg-portico-purple-dark">
+          <Button 
+            variant="brand" 
+            size="sm"
+            onClick={() => toast.success("Brand settings applied globally", {
+              description: "Your brand settings are now visible throughout the application"
+            })}
+          >
             Apply Branding
           </Button>
         </div>

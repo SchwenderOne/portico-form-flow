@@ -11,7 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Palette } from "lucide-react";
 import BrandSettingsTab from "./toolbars/tabs/BrandSettingsTab";
-import { BrandSettingsProvider } from "@/context/BrandSettingsContext";
+import { BrandSettingsProvider, useBrandSettings } from "@/context/BrandSettingsContext";
+import { toast } from "sonner";
 
 interface BrandSettingsSheetProps {
   className?: string;
@@ -37,6 +38,13 @@ export function BrandSettingsSheet({
       setInternalOpen(newOpen);
     }
     externalOnOpenChange?.(newOpen);
+    
+    // Show toast when opened
+    if (newOpen) {
+      toast.info("Brand Settings Panel opened", {
+        description: "Make changes to affect the global appearance"
+      });
+    }
   };
 
   useEffect(() => {
@@ -51,7 +59,7 @@ export function BrandSettingsSheet({
         {showTrigger && (
           <SheetTrigger asChild>
             <Button 
-              variant="outline" 
+              variant="brand" 
               size="sm" 
               className={className}
             >

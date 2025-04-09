@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { BrandSettingsProvider } from "@/context/BrandSettingsContext";
+import { BrandSettingsApplier } from "@/components/branding/BrandSettingsApplier";
 import Index from "./pages/Index";
 import Templates from "./pages/Templates";
 import NotFound from "./pages/NotFound";
@@ -16,6 +17,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <BrandSettingsProvider>
+        <BrandSettingsApplier />
         <Toaster />
         <Sonner />
         <BrowserRouter>
