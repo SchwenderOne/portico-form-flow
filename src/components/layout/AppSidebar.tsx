@@ -24,7 +24,8 @@ import {
   Award,
   BarChart,
   Shield,
-  Users
+  Users,
+  Zap
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BrandSettingsSheet } from "@/components/form-builder/BrandSettingsSheet";
@@ -61,6 +62,7 @@ const AppSidebar = () => {
     { icon: FileEdit, title: "Forms", path: "/" },
     { icon: Send, title: "Distribute", path: "/distribute" },
     { icon: BarChart, title: "Analytics", path: "/analytics" },
+    { icon: Zap, title: "Automations", path: "/automations" },
     { icon: Palette, title: "Branding", path: "/branding", usesBrandColor: true },
     { icon: History, title: "History", path: "/history" },
     { icon: Shield, title: "Compliance", path: "/compliance" },
