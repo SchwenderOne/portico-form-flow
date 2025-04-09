@@ -22,6 +22,7 @@ import {
   Phone,
   Search,
   Plus,
+  FileInput
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,7 @@ const formFields = [
   { type: "checkbox", name: "Checkbox", icon: CheckSquare },
   { type: "radio", name: "Radio Group", icon: Radio },
   { type: "date", name: "Date Picker", icon: Calendar },
+  { type: "file", name: "File Upload", icon: FileInput },
 ];
 
 const textElements = [

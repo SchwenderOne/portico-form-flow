@@ -1,6 +1,9 @@
 
 import React from "react";
 import { FormElement } from "@/types/form";
+import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { format } from "date-fns";
 
 interface ElementContentProps {
   element: FormElement;
@@ -72,6 +75,7 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing = fa
             placeholder={element.placeholder}
             readOnly
           />
+          {!isEditing && <div className="text-xs text-muted-foreground">Validates email format automatically</div>}
         </div>
       );
     case 'number':
@@ -134,6 +138,58 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing = fa
               </>
             )}
           </select>
+        </div>
+      );
+    case 'checkbox':
+      return (
+        <div className="flex flex-col space-y-1 w-full">
+          <div className="flex items-center space-x-2">
+            <Checkbox id={`checkbox-${element.id}`} />
+            <label 
+              htmlFor={`checkbox-${element.id}`}
+              className="text-sm font-medium cursor-pointer"
+              contentEditable={contentEditable}
+              suppressContentEditableWarning={true}
+            >
+              {element.label}
+              {element.required && <span className="text-red-500 ml-1">*</span>}
+            </label>
+          </div>
+        </div>
+      );
+    case 'date':
+      return (
+        <div className="flex flex-col space-y-1 w-full">
+          <label 
+            className="text-sm font-medium"
+            contentEditable={contentEditable}
+            suppressContentEditableWarning={true}
+          >
+            {element.label}
+            {element.required && <span className="text-red-500 ml-1">*</span>}
+          </label>
+          <div className="border rounded-md p-2 bg-white">
+            <div className="text-muted-foreground cursor-pointer">
+              {(element as any).value ? format((element as any).value, 'PP') : 'Select a date...'}
+            </div>
+          </div>
+        </div>
+      );
+    case 'file':
+      return (
+        <div className="flex flex-col space-y-1 w-full">
+          <label 
+            className="text-sm font-medium"
+            contentEditable={contentEditable}
+            suppressContentEditableWarning={true}
+          >
+            {element.label}
+            {element.required && <span className="text-red-500 ml-1">*</span>}
+          </label>
+          <div className="border rounded-md p-2 bg-white">
+            <input type="file" disabled className="w-full" />
+          </div>
+          {!isEditing && <div className="text-xs text-muted-foreground">Accepts PDF, PNG files only</div>}
         </div>
       );
     default:

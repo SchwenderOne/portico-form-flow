@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import FormElement from "./FormElement";
 import FormToolbar from "./FormToolbar";
@@ -68,13 +67,11 @@ const FormCanvas = () => {
   };
 
   const handleElementMove = (id: string, position: { x: number, y: number }) => {
-    // Update the element position
     const updatedElements = elements.map(el => {
       if (el.id === id) {
         return { ...el, position };
       }
       
-      // If this element is part of a group that's being moved, also move it
       if (selectedElements.includes(id)) {
         const selectedElement = elements.find(e => e.id === id);
         if (selectedElement && el.groupId === selectedElement.groupId && el.groupId !== null) {
@@ -87,7 +84,6 @@ const FormCanvas = () => {
     
     setElements(updatedElements);
     
-    // Calculate potential guide lines during movement
     if (isDragging) {
       calculateSmartGuides(id, position);
     }
@@ -100,7 +96,6 @@ const FormCanvas = () => {
     const horizontalGuides: number[] = [];
     const verticalGuides: number[] = [];
     
-    // Calculate center and edges of moving element
     const movingLeft = position.x;
     const movingRight = position.x + movingElement.size.width;
     const movingTop = position.y;
@@ -108,7 +103,6 @@ const FormCanvas = () => {
     const movingCenterX = position.x + movingElement.size.width / 2;
     const movingCenterY = position.y + movingElement.size.height / 2;
     
-    // Check alignment with other elements
     elements.forEach(el => {
       if (el.id === movingId) return;
       
@@ -119,12 +113,10 @@ const FormCanvas = () => {
       const elCenterX = el.position.x + el.size.width / 2;
       const elCenterY = el.position.y + el.size.height / 2;
       
-      // Horizontal alignment (top, center, bottom)
       if (Math.abs(movingTop - elTop) < 10) horizontalGuides.push(elTop);
       if (Math.abs(movingCenterY - elCenterY) < 10) horizontalGuides.push(elCenterY);
       if (Math.abs(movingBottom - elBottom) < 10) horizontalGuides.push(elBottom);
       
-      // Vertical alignment (left, center, right)
       if (Math.abs(movingLeft - elLeft) < 10) verticalGuides.push(elLeft);
       if (Math.abs(movingCenterX - elCenterX) < 10) verticalGuides.push(elCenterX);
       if (Math.abs(movingRight - elRight) < 10) verticalGuides.push(elRight);
@@ -137,19 +129,24 @@ const FormCanvas = () => {
   const handleElementDrop = (type: string, position: { x: number, y: number }) => {
     console.log(`Dropping element of type: ${type} at position:`, position);
     
-    // Create new element based on type
     const newElement: FormElementType = {
       id: `${type}-${Date.now()}`,
       type,
       position,
-      size: { width: 500, height: type === 'header' || type === 'paragraph' ? 60 : 80 },
+      size: { 
+        width: 500, 
+        height: type === 'header' || type === 'paragraph' ? 60 : 
+                type === 'checkbox' ? 50 : 
+                type === 'file' ? 120 : 80 
+      },
       label: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
-      placeholder: `Enter ${type}...`,
+      placeholder: type === 'file' ? 'Upload file (PDF, PNG)' : 
+                   type === 'date' ? 'Select a date...' : 
+                   `Enter ${type}...`,
       required: false,
       groupId: null
     };
 
-    // Special handling for certain element types
     if (type === 'header') {
       (newElement as any).content = 'New Form Header';
     } else if (type === 'paragraph') {
@@ -158,6 +155,15 @@ const FormCanvas = () => {
       (newElement as any).options = ['Option 1', 'Option 2', 'Option 3'];
     } else if (type === 'select') {
       (newElement as any).options = ['Select an option', 'Option 1', 'Option 2', 'Option 3'];
+    } else if (type === 'date') {
+      (newElement as any).value = null;
+    } else if (type === 'file') {
+      (newElement as any).accept = '.pdf,.png';
+      (newElement as any).maxSize = 5;
+    } else if (type === 'email') {
+      newElement.label = 'Email Address';
+      newElement.placeholder = 'example@domain.com';
+      (newElement as any).validation = 'email';
     }
 
     setElements(prev => [...prev, newElement]);
@@ -170,7 +176,6 @@ const FormCanvas = () => {
   };
 
   const handleDeleteElement = (id: string) => {
-    // If element is part of a group, ask if user wants to delete the whole group
     const element = elements.find(el => el.id === id);
     if (element && element.groupId) {
       const groupElements = elements.filter(el => el.groupId === element.groupId);
@@ -202,7 +207,7 @@ const FormCanvas = () => {
           x: elementToDuplicate.position.x + 20,
           y: elementToDuplicate.position.y + 20
         },
-        groupId: null // Reset group ID for the duplicate
+        groupId: null
       };
       setElements([...elements, newElement]);
       setSelectedElements([newElement.id]);
@@ -245,7 +250,6 @@ const FormCanvas = () => {
   };
 
   const handleUngroupElements = () => {
-    // Find the group ID of the first selected element
     const selectedElement = elements.find(el => selectedElements.includes(el.id));
     if (!selectedElement || !selectedElement.groupId) {
       toast({
@@ -268,7 +272,6 @@ const FormCanvas = () => {
     });
   };
 
-  // Handle the drop event on the canvas
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
@@ -282,7 +285,6 @@ const FormCanvas = () => {
     }
     
     const canvasRect = canvasRef.current.getBoundingClientRect();
-    // Calculate position relative to the canvas and snap to grid
     const x = Math.round((e.clientX - canvasRect.left) / 25) * 25;
     const y = Math.round((e.clientY - canvasRect.top) / 25) * 25;
     
@@ -290,20 +292,17 @@ const FormCanvas = () => {
     handleElementDrop(elementType, { x, y });
   };
 
-  // Handle dragover to allow dropping
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     if (!isDragOver) setIsDragOver(true);
-    // Change the cursor to indicate droppable area
     e.dataTransfer.dropEffect = "copy";
   };
-  
+
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
   };
 
-  // Clear smart guides when dragging stops
   useEffect(() => {
     if (!isDragging) {
       setShowSmartGuides(false);
