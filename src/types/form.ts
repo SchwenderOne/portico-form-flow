@@ -16,6 +16,18 @@ export interface FormElement {
   options?: string[];
   content?: string;
   groupId: string | null;
+  validation?: {
+    type?: 'email' | 'number' | 'regex' | 'length' | 'date' | 'custom';
+    pattern?: string;
+    minLength?: number;
+    maxLength?: number;
+    min?: number;
+    max?: number;
+    message?: string;
+    required?: boolean;
+  };
+  helpText?: string;
+  disabled?: boolean;
 }
 
 export interface Form {

@@ -9,7 +9,7 @@ interface DragPreviewProps {
 }
 
 const DragPreview: React.FC<DragPreviewProps> = ({ elementType, position }) => {
-  // Create a more comprehensive temporary element preview based on the type
+  // Create a comprehensive temporary element preview based on the type
   const previewElement: FormElement = {
     id: `preview-${elementType}`,
     type: elementType,
@@ -17,7 +17,7 @@ const DragPreview: React.FC<DragPreviewProps> = ({ elementType, position }) => {
     size: { 
       width: 500, 
       height: elementType === 'header' || elementType === 'paragraph' ? 60 : 
-              elementType === 'checkbox' ? 50 : 
+              elementType === 'checkbox' ? 100 : 
               elementType === 'file' ? 120 : 80 
     },
     label: `New ${elementType.charAt(0).toUpperCase() + elementType.slice(1)}`,
@@ -25,7 +25,8 @@ const DragPreview: React.FC<DragPreviewProps> = ({ elementType, position }) => {
                 elementType === 'date' ? 'Select a date...' : 
                 `Enter ${elementType}...`,
     required: false,
-    groupId: null
+    groupId: null,
+    helpText: 'Optional help text for this field'
   };
 
   // Add specific properties based on element type
@@ -40,23 +41,34 @@ const DragPreview: React.FC<DragPreviewProps> = ({ elementType, position }) => {
   } else if (elementType === 'email') {
     previewElement.label = 'Email Address';
     previewElement.placeholder = 'example@domain.com';
-    (previewElement as any).validation = 'email';
+    previewElement.validation = { 
+      type: 'email',
+      message: 'Please enter a valid email address'
+    };
   } else if (elementType === 'phone') {
     previewElement.label = 'Phone Number';
     previewElement.placeholder = '(123) 456-7890';
+  } else if (elementType === 'number') {
+    previewElement.label = 'Number Input';
+    previewElement.placeholder = 'Enter a number';
+    previewElement.validation = {
+      type: 'number',
+      min: 0,
+      max: 100,
+      message: 'Please enter a number between 0 and 100'
+    };
   }
 
   return (
     <div 
-      className="absolute border-2 border-dashed border-portico-purple/50 bg-white rounded-md p-4 pointer-events-none shadow-lg"
+      className="absolute border-2 border-dashed border-portico-purple/80 bg-white rounded-md p-4 pointer-events-none shadow-lg"
       style={{
         left: position.x,
         top: position.y,
         width: previewElement.size.width,
         height: 'auto', // Allow height to adapt to content
         zIndex: 100,
-        opacity: 0.9,
-        transition: 'transform 0.1s ease-out, opacity 0.2s ease-out',
+        opacity: 0.95,
         animation: 'pulse 2s infinite ease-in-out'
       }}
     >

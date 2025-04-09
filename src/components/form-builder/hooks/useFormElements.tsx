@@ -20,7 +20,8 @@ const initialElements: FormElementType[] = [
     required: true,
     position: { x: 100, y: 130 },
     size: { width: 500, height: 80 },
-    groupId: null
+    groupId: null,
+    helpText: "Please enter your legal full name as it appears on your ID"
   },
   {
     id: "email-1",
@@ -30,7 +31,11 @@ const initialElements: FormElementType[] = [
     required: true,
     position: { x: 100, y: 230 },
     size: { width: 500, height: 80 },
-    groupId: null
+    groupId: null,
+    validation: {
+      type: "email",
+      message: "Please enter a valid email address"
+    }
   }
 ];
 
@@ -73,6 +78,37 @@ export const useFormElements = () => {
   const handleElementDrop = (type: string, position: { x: number, y: number }) => {
     console.log(`Dropping element of type: ${type} at position:`, position);
     
+    // Check for overlapping elements at the drop position
+    const overlapCheck = elements.some(el => {
+      const elRight = el.position.x + el.size.width;
+      const elBottom = el.position.y + el.size.height;
+      
+      // Define a buffer zone around elements (20px)
+      const buffer = 20;
+      
+      // Check if the new element would overlap with this existing element
+      return (
+        position.x < elRight + buffer &&
+        position.x + 500 > el.position.x - buffer &&
+        position.y < elBottom + buffer &&
+        position.y + 80 > el.position.y - buffer
+      );
+    });
+    
+    // If overlapping, find a better position
+    if (overlapCheck) {
+      // Find the lowest element's bottom position
+      const lowestElementBottom = Math.max(
+        ...elements.map(el => el.position.y + el.size.height)
+      );
+      
+      // Place the new element below all existing elements with some padding
+      position = {
+        x: 100, // Standard left alignment
+        y: lowestElementBottom + 30 // 30px padding after the lowest element
+      };
+    }
+    
     const newElement: FormElementType = {
       id: `${type}-${Date.now()}`,
       type,
@@ -80,7 +116,7 @@ export const useFormElements = () => {
       size: { 
         width: 500, 
         height: type === 'header' || type === 'paragraph' ? 60 : 
-                type === 'checkbox' ? 50 : 
+                type === 'checkbox' || type === 'radio' ? 100 : 
                 type === 'file' ? 120 : 80 
       },
       label: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
@@ -107,7 +143,18 @@ export const useFormElements = () => {
     } else if (type === 'email') {
       newElement.label = 'Email Address';
       newElement.placeholder = 'example@domain.com';
-      (newElement as any).validation = 'email';
+      newElement.validation = { 
+        type: 'email',
+        message: 'Please enter a valid email address'
+      };
+    } else if (type === 'number') {
+      newElement.label = 'Number';
+      newElement.placeholder = 'Enter a number';
+      newElement.validation = {
+        type: 'number',
+        min: 0,
+        max: 100
+      };
     }
 
     setElements(prev => [...prev, newElement]);
