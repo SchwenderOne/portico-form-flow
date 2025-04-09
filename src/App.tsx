@@ -9,6 +9,7 @@ import { TeamProvider } from "@/context/TeamContext";
 import { ComplianceProvider } from "@/context/ComplianceContext";
 import { FormMetadataProvider } from "@/context/FormMetadataContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { SelectedTemplateProvider } from "@/context/SelectedTemplateContext";
 import { BrandSettingsApplier } from "@/components/branding/BrandSettingsApplier";
 import Index from "./pages/Index";
 import Templates from "./pages/Templates";
@@ -45,31 +46,33 @@ const App = () => (
             <TeamProvider>
               <ComplianceProvider>
                 <FormMetadataProvider>
-                  {/* Apply brand settings globally */}
-                  <BrandSettingsApplier />
-                  
-                  <Toaster />
-                  <Sonner />
-                  
-                  <BrowserRouter>
-                    <Routes>
-                      <Route path="/auth" element={<Auth />} />
-                      <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
-                      <Route path="/templates" element={<RequireAuth><Templates /></RequireAuth>} />
-                      <Route path="/distribute" element={<RequireAuth><Distribute /></RequireAuth>} />
-                      <Route path="/analytics" element={<RequireAuth><Analytics /></RequireAuth>} />
-                      <Route path="/automations" element={<RequireAuth><Automations /></RequireAuth>} />
-                      <Route path="/branding" element={<RequireAuth><Branding /></RequireAuth>} />
-                      <Route path="/team" element={<RequireAuth><Index /></RequireAuth>} />
-                      <Route path="/history" element={<RequireAuth><History /></RequireAuth>} />
-                      <Route path="/compliance" element={<RequireAuth><Compliance /></RequireAuth>} />
-                      <Route path="/metadata" element={<RequireAuth><FormMetadata /></RequireAuth>} />
-                      <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
-                      <Route path="/form-builder" element={<RequireAuth><FormBuilder /></RequireAuth>} />
-                      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </BrowserRouter>
+                  <SelectedTemplateProvider>
+                    {/* Apply brand settings globally */}
+                    <BrandSettingsApplier />
+                    
+                    <Toaster />
+                    <Sonner />
+                    
+                    <BrowserRouter>
+                      <Routes>
+                        <Route path="/auth" element={<Auth />} />
+                        <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
+                        <Route path="/templates" element={<RequireAuth><Templates /></RequireAuth>} />
+                        <Route path="/distribute" element={<RequireAuth><Distribute /></RequireAuth>} />
+                        <Route path="/analytics" element={<RequireAuth><Analytics /></RequireAuth>} />
+                        <Route path="/automations" element={<RequireAuth><Automations /></RequireAuth>} />
+                        <Route path="/branding" element={<RequireAuth><Branding /></RequireAuth>} />
+                        <Route path="/team" element={<RequireAuth><Index /></RequireAuth>} />
+                        <Route path="/history" element={<RequireAuth><History /></RequireAuth>} />
+                        <Route path="/compliance" element={<RequireAuth><Compliance /></RequireAuth>} />
+                        <Route path="/metadata" element={<RequireAuth><FormMetadata /></RequireAuth>} />
+                        <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
+                        <Route path="/form-builder" element={<RequireAuth><FormBuilder /></RequireAuth>} />
+                        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </BrowserRouter>
+                  </SelectedTemplateProvider>
                 </FormMetadataProvider>
               </ComplianceProvider>
             </TeamProvider>

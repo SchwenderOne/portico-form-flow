@@ -11,6 +11,7 @@ import { TeamManagementSheet } from "@/components/team/TeamManagementSheet";
 import { TeamProvider } from "@/context/TeamContext";
 import { FormCanvasProvider } from "@/components/form-builder/context/FormCanvasContext";
 import { CollaborationProvider } from "@/context/CollaborationContext";
+import { useSelectedTemplate } from "@/context/SelectedTemplateContext";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
 
 // Import the version history sheet and its controls using ES Module imports
@@ -73,31 +74,33 @@ const FormBuilder = () => {
               <ComplianceProvider>
                 <CollaborationProvider formId={formId}>
                   <FormCanvasProvider>
-                    <div className="h-[calc(100vh-0px)] overflow-hidden bg-gray-100">
-                      <FormCanvas />
-                      
-                      <FormMetadataSheet 
-                        showTrigger={false} 
-                        open={metadataSheetOpen} 
-                        onOpenChange={setMetadataSheetOpen} 
-                      />
-                      
-                      <BrandSettingsSheet 
-                        open={brandSheetOpen}
-                        onOpenChange={setBrandSheetOpen}
-                      />
-                      
-                      <VersionHistorySheet 
-                        showTrigger={false}
-                        open={versionHistoryOpen}
-                        onOpenChange={setVersionHistoryOpen}
-                      />
-                      
-                      <TeamManagementSheet
-                        open={teamSheetOpen}
-                        onOpenChange={setTeamSheetOpen}
-                      />
-                    </div>
+                    <TemplateFormLoader>
+                      <div className="h-[calc(100vh-0px)] overflow-hidden bg-gray-100">
+                        <FormCanvas />
+                        
+                        <FormMetadataSheet 
+                          showTrigger={false} 
+                          open={metadataSheetOpen} 
+                          onOpenChange={setMetadataSheetOpen} 
+                        />
+                        
+                        <BrandSettingsSheet 
+                          open={brandSheetOpen}
+                          onOpenChange={setBrandSheetOpen}
+                        />
+                        
+                        <VersionHistorySheet 
+                          showTrigger={false}
+                          open={versionHistoryOpen}
+                          onOpenChange={setVersionHistoryOpen}
+                        />
+                        
+                        <TeamManagementSheet
+                          open={teamSheetOpen}
+                          onOpenChange={setTeamSheetOpen}
+                        />
+                      </div>
+                    </TemplateFormLoader>
                   </FormCanvasProvider>
                 </CollaborationProvider>
               </ComplianceProvider>
@@ -107,6 +110,39 @@ const FormBuilder = () => {
       </AppLayout>
     </ErrorBoundary>
   );
+};
+
+// Component to load template elements
+const TemplateFormLoader: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { selectedTemplate, setSelectedTemplate } = useSelectedTemplate();
+  const { elements, setElements } = useFormElements();
+  
+  // Import the useFormElements hook within the component
+  function useFormElements() {
+    // Access the form elements from the FormCanvasContext
+    const formCanvasContext = React.useContext(FormCanvasContext);
+    
+    if (!formCanvasContext) {
+      throw new Error("useFormElements must be used within a FormCanvasProvider");
+    }
+    
+    return formCanvasContext;
+  }
+  
+  // Effect to load template elements when the form builder loads
+  useEffect(() => {
+    if (selectedTemplate && selectedTemplate.elements && selectedTemplate.elements.length > 0) {
+      console.log("Loading template elements:", selectedTemplate.elements);
+      
+      // Replace current elements with template elements
+      setElements(selectedTemplate.elements);
+      
+      // Clear the selected template to avoid reloading on component re-renders
+      setSelectedTemplate(null);
+    }
+  }, [selectedTemplate, setElements, setSelectedTemplate]);
+  
+  return <>{children}</>;
 };
 
 export default FormBuilder;

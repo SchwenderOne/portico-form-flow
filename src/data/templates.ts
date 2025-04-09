@@ -1,4 +1,176 @@
 
+import { FormElement } from "@/types/form";
+
+// Sample form elements for templates
+const jobApplicationElements: FormElement[] = [
+  {
+    id: "header-job",
+    type: "header",
+    content: "Job Application Form",
+    position: { x: 100, y: 50 },
+    size: { width: 500, height: 60 },
+    groupId: null
+  },
+  {
+    id: "name-job",
+    type: "text",
+    label: "Full Name",
+    placeholder: "Enter your full name",
+    required: true,
+    position: { x: 100, y: 130 },
+    size: { width: 500, height: 80 },
+    groupId: null,
+    helpText: "Please enter your legal full name as it appears on your ID"
+  },
+  {
+    id: "email-job",
+    type: "email",
+    label: "Email Address",
+    placeholder: "Enter your email address",
+    required: true,
+    position: { x: 100, y: 230 },
+    size: { width: 500, height: 80 },
+    groupId: null,
+    validation: {
+      type: "email",
+      message: "Please enter a valid email address"
+    }
+  },
+  {
+    id: "experience-job",
+    type: "textarea",
+    label: "Work Experience",
+    placeholder: "Describe your relevant work experience",
+    required: true,
+    position: { x: 100, y: 330 },
+    size: { width: 500, height: 120 },
+    groupId: null
+  }
+];
+
+const feedbackElements: FormElement[] = [
+  {
+    id: "header-feedback",
+    type: "header",
+    content: "Customer Feedback Survey",
+    position: { x: 100, y: 50 },
+    size: { width: 500, height: 60 },
+    groupId: null
+  },
+  {
+    id: "name-feedback",
+    type: "text",
+    label: "Your Name",
+    placeholder: "Enter your name",
+    required: false,
+    position: { x: 100, y: 130 },
+    size: { width: 500, height: 80 },
+    groupId: null
+  },
+  {
+    id: "rating-feedback",
+    type: "select",
+    label: "How would you rate our service?",
+    required: true,
+    position: { x: 100, y: 230 },
+    size: { width: 500, height: 80 },
+    groupId: null,
+    options: ["Excellent", "Good", "Average", "Poor", "Very Poor"]
+  },
+  {
+    id: "comments-feedback",
+    type: "textarea",
+    label: "Additional Comments",
+    placeholder: "Please share any additional feedback",
+    required: false,
+    position: { x: 100, y: 330 },
+    size: { width: 500, height: 120 },
+    groupId: null
+  }
+];
+
+const patientIntakeElements: FormElement[] = [
+  {
+    id: "header-patient",
+    type: "header",
+    content: "Patient Intake Form",
+    position: { x: 100, y: 50 },
+    size: { width: 500, height: 60 },
+    groupId: null
+  },
+  {
+    id: "name-patient",
+    type: "text",
+    label: "Patient Name",
+    placeholder: "Enter full name",
+    required: true,
+    position: { x: 100, y: 130 },
+    size: { width: 500, height: 80 },
+    groupId: null
+  },
+  {
+    id: "dob-patient",
+    type: "date",
+    label: "Date of Birth",
+    required: true,
+    position: { x: 100, y: 230 },
+    size: { width: 500, height: 80 },
+    groupId: null
+  },
+  {
+    id: "insurance-patient",
+    type: "text",
+    label: "Insurance Provider",
+    placeholder: "Enter insurance provider name",
+    required: true,
+    position: { x: 100, y: 330 },
+    size: { width: 500, height: 80 },
+    groupId: null
+  },
+  {
+    id: "allergies-patient",
+    type: "textarea",
+    label: "Known Allergies",
+    placeholder: "List any known allergies",
+    required: false,
+    position: { x: 100, y: 430 },
+    size: { width: 500, height: 120 },
+    groupId: null
+  }
+];
+
+// Define generic elements for other templates
+const genericElements: FormElement[] = [
+  {
+    id: "header-generic",
+    type: "header",
+    content: "Form Title",
+    position: { x: 100, y: 50 },
+    size: { width: 500, height: 60 },
+    groupId: null
+  },
+  {
+    id: "name-generic",
+    type: "text",
+    label: "Full Name",
+    placeholder: "Enter your full name",
+    required: true,
+    position: { x: 100, y: 130 },
+    size: { width: 500, height: 80 },
+    groupId: null
+  },
+  {
+    id: "email-generic",
+    type: "email",
+    label: "Email Address",
+    placeholder: "Enter your email address",
+    required: true,
+    position: { x: 100, y: 230 },
+    size: { width: 500, height: 80 },
+    groupId: null
+  }
+];
+
 export const templatesData = [
   {
     id: "1",
@@ -10,7 +182,8 @@ export const templatesData = [
     created: "2023-10-12",
     author: "HR Team",
     popularity: 4.8,
-    timeEstimate: "5-10 mins"
+    timeEstimate: "5-10 mins",
+    elements: jobApplicationElements
   },
   {
     id: "2",
@@ -22,7 +195,8 @@ export const templatesData = [
     created: "2023-09-05",
     author: "Marketing Team",
     popularity: 4.6,
-    timeEstimate: "2-3 mins"
+    timeEstimate: "2-3 mins",
+    elements: feedbackElements
   },
   {
     id: "3",
@@ -34,7 +208,8 @@ export const templatesData = [
     created: "2023-11-20",
     author: "Healthcare Admin",
     popularity: 4.9,
-    timeEstimate: "8-12 mins"
+    timeEstimate: "8-12 mins",
+    elements: patientIntakeElements
   },
   {
     id: "4",
@@ -46,7 +221,8 @@ export const templatesData = [
     created: "2023-12-01",
     author: "Events Team",
     popularity: 4.7,
-    timeEstimate: "3-5 mins"
+    timeEstimate: "3-5 mins",
+    elements: genericElements
   },
   {
     id: "5",
@@ -58,7 +234,8 @@ export const templatesData = [
     created: "2023-10-30",
     author: "Gov Affairs",
     popularity: 4.5,
-    timeEstimate: "15-20 mins"
+    timeEstimate: "15-20 mins",
+    elements: genericElements
   },
   {
     id: "6",
@@ -70,7 +247,8 @@ export const templatesData = [
     created: "2023-08-15",
     author: "Research Team",
     popularity: 4.4,
-    timeEstimate: "10-15 mins"
+    timeEstimate: "10-15 mins",
+    elements: genericElements
   },
   {
     id: "7",
@@ -82,7 +260,8 @@ export const templatesData = [
     created: "2023-07-22",
     author: "Admin Team",
     popularity: 4.2,
-    timeEstimate: "1-2 mins"
+    timeEstimate: "1-2 mins",
+    elements: genericElements
   },
   {
     id: "8",
@@ -94,7 +273,8 @@ export const templatesData = [
     created: "2023-11-05",
     author: "HR Department",
     popularity: 4.7,
-    timeEstimate: "10-15 mins"
+    timeEstimate: "10-15 mins",
+    elements: genericElements
   },
   {
     id: "9",
@@ -106,7 +286,8 @@ export const templatesData = [
     created: "2023-09-18",
     author: "Fundraising Team",
     popularity: 4.6,
-    timeEstimate: "2-4 mins"
+    timeEstimate: "2-4 mins",
+    elements: genericElements
   },
   {
     id: "10",
@@ -118,7 +299,8 @@ export const templatesData = [
     created: "2023-10-14",
     author: "Security Team",
     popularity: 4.8,
-    timeEstimate: "5-8 mins"
+    timeEstimate: "5-8 mins",
+    elements: genericElements
   },
   {
     id: "11",
@@ -130,7 +312,8 @@ export const templatesData = [
     created: "2023-12-05",
     author: "Membership Team",
     popularity: 4.5,
-    timeEstimate: "7-10 mins"
+    timeEstimate: "7-10 mins",
+    elements: genericElements
   },
   {
     id: "12",
@@ -142,6 +325,7 @@ export const templatesData = [
     created: "2023-08-30",
     author: "Admissions",
     popularity: 4.7,
-    timeEstimate: "8-12 mins"
+    timeEstimate: "8-12 mins",
+    elements: genericElements
   }
 ];

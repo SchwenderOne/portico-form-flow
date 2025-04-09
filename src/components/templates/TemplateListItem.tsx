@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Copy, Eye, Building, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useBrandSettings } from "@/context/BrandSettingsContext";
+import { useSelectedTemplate } from "@/context/SelectedTemplateContext";
+import { templatesData } from "@/data/templates";
 
 interface Template {
   id: string;
@@ -18,6 +20,7 @@ interface Template {
   author?: string;
   popularity?: number;
   timeEstimate?: string;
+  elements?: any[];
 }
 
 interface TemplateListItemProps {
@@ -28,13 +31,28 @@ export const TemplateListItem: React.FC<TemplateListItemProps> = ({ template }) 
   const navigate = useNavigate();
   const { toast } = useToast();
   const { brandSettings } = useBrandSettings();
+  const { setSelectedTemplate } = useSelectedTemplate();
 
   const handleUseTemplate = () => {
-    toast({
-      title: "Template Selected",
-      description: `${template.title} template has been loaded.`,
-    });
-    navigate('/form-builder');
+    // Find the full template with elements from the templatesData
+    const fullTemplate = templatesData.find(t => t.id === template.id);
+    
+    if (fullTemplate) {
+      setSelectedTemplate(fullTemplate);
+      
+      toast({
+        title: "Template Selected",
+        description: `${template.title} template has been loaded.`,
+      });
+      
+      navigate('/form-builder');
+    } else {
+      toast({
+        title: "Error",
+        description: "Unable to load template. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleDuplicate = (e: React.MouseEvent) => {
