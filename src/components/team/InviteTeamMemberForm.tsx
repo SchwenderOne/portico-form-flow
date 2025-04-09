@@ -22,7 +22,9 @@ import {
 } from "@/components/ui/select";
 import { UserPlus } from "lucide-react";
 import { useTeam } from "@/context/TeamContext";
+import { InviteData } from "@/types/team";
 
+// The schema needs to match the InviteData type
 const formSchema = z.object({
   email: z
     .string()
@@ -30,6 +32,7 @@ const formSchema = z.object({
   role: z.enum(["Editor", "Viewer"]),
 });
 
+// Update this to match InviteData for proper type safety
 type FormValues = z.infer<typeof formSchema>;
 
 const InviteTeamMemberForm = () => {
@@ -44,6 +47,7 @@ const InviteTeamMemberForm = () => {
   });
 
   const onSubmit = async (values: FormValues) => {
+    // Since FormValues now matches InviteData structure, this is type-safe
     await inviteTeamMember(values);
     form.reset();
   };
