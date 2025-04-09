@@ -1,9 +1,16 @@
 
 import React, { PropsWithChildren } from 'react';
-import { render, RenderOptions } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import type { RenderResult } from '@testing-library/react';
 import { FormCanvasProvider } from '@/components/form-builder/context/FormCanvasContext';
 import { GroupingProvider } from '@/components/form-builder/GroupingContext';
 import { vi } from 'vitest';
+
+// Define RenderOptions type since it's not exported from testing-library
+interface RenderOptions {
+  wrapper?: React.ComponentType<any>;
+  [key: string]: any;
+}
 
 // Mock providers wrapper
 const AllProviders = ({ children }: PropsWithChildren<{}>) => {
@@ -30,7 +37,7 @@ const AllProviders = ({ children }: PropsWithChildren<{}>) => {
 const customRender = (
   ui: React.ReactElement,
   options?: Omit<RenderOptions, 'wrapper'>
-) => render(ui, { wrapper: AllProviders, ...options });
+): RenderResult => render(ui, { wrapper: AllProviders, ...options });
 
 // Re-export everything from testing-library
 export * from '@testing-library/react';
