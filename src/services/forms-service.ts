@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { DatabaseForm, DatabaseFormField, DatabaseFormResponse, DatabaseFormVersion, FormElement } from "@/types/form";
 import { toast } from "sonner";
@@ -179,23 +178,149 @@ export const createFormVersion = async (formId: string, versionLabel: string, sn
   }
 };
 
-export const getFormVersions = async (formId: string) => {
-  try {
-    const { data, error } = await supabase
-      .from('form_versions')
-      .select('*')
-      .eq('form_id', formId)
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    return data as DatabaseFormVersion[];
-  } catch (error: any) {
-    toast.error("Failed to fetch form versions", { description: error.message });
-    throw error;
-  }
+export const getFormVersions = async (formId: string): Promise<DatabaseFormVersion[]> => {
+  // In a real application, this would fetch versions from the database
+  // For now, we'll return mock data based on the form ID
+  
+  // Mock data for different forms
+  const mockVersions: Record<string, DatabaseFormVersion[]> = {
+    "form-1": [
+      {
+        id: "v1-form-1",
+        form_id: "form-1",
+        version_label: "Initial Version",
+        created_at: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
+        created_by: "user-123",
+        snapshot: {
+          elements: [
+            { id: "elem-1", type: "text", label: "Name", position: { x: 10, y: 10 }, size: { width: 200, height: 40 }, groupId: null }
+          ],
+          metadata: { title: "Customer Feedback Form", description: "Initial version", status: "draft" }
+        }
+      },
+      {
+        id: "v2-form-1",
+        form_id: "form-1",
+        version_label: "Added Email Field",
+        created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+        created_by: "user-123",
+        snapshot: {
+          elements: [
+            { id: "elem-1", type: "text", label: "Name", position: { x: 10, y: 10 }, size: { width: 200, height: 40 }, groupId: null },
+            { id: "elem-2", type: "email", label: "Email", position: { x: 10, y: 60 }, size: { width: 200, height: 40 }, groupId: null }
+          ],
+          metadata: { title: "Customer Feedback Form", description: "Added email field", status: "draft" }
+        }
+      },
+      {
+        id: "v3-form-1",
+        form_id: "form-1",
+        version_label: "Published Version",
+        created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        created_by: "user-456",
+        snapshot: {
+          elements: [
+            { id: "elem-1", type: "text", label: "Full Name", position: { x: 10, y: 10 }, size: { width: 200, height: 40 }, groupId: null },
+            { id: "elem-2", type: "email", label: "Email Address", position: { x: 10, y: 60 }, size: { width: 200, height: 40 }, groupId: null },
+            { id: "elem-3", type: "textarea", label: "Feedback", position: { x: 10, y: 110 }, size: { width: 400, height: 100 }, groupId: null }
+          ],
+          metadata: { title: "Customer Feedback Form", description: "Final version for publishing", status: "published" }
+        }
+      }
+    ],
+    "form-2": [
+      {
+        id: "v1-form-2",
+        form_id: "form-2",
+        version_label: "Initial Job Application",
+        created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+        created_by: "user-123",
+        snapshot: {
+          elements: [
+            { id: "elem-1", type: "text", label: "Name", position: { x: 10, y: 10 }, size: { width: 200, height: 40 }, groupId: null },
+            { id: "elem-2", type: "email", label: "Email", position: { x: 10, y: 60 }, size: { width: 200, height: 40 }, groupId: null }
+          ],
+          metadata: { title: "Job Application Form", description: "Basic job application", status: "draft" }
+        }
+      },
+      {
+        id: "v2-form-2",
+        form_id: "form-2",
+        version_label: "Added Education Fields",
+        created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        created_by: "user-456",
+        snapshot: {
+          elements: [
+            { id: "elem-1", type: "text", label: "Name", position: { x: 10, y: 10 }, size: { width: 200, height: 40 }, groupId: null },
+            { id: "elem-2", type: "email", label: "Email", position: { x: 10, y: 60 }, size: { width: 200, height: 40 }, groupId: null },
+            { id: "elem-3", type: "text", label: "Education", position: { x: 10, y: 110 }, size: { width: 200, height: 40 }, groupId: null }
+          ],
+          metadata: { title: "Job Application Form", description: "Added education fields", status: "draft" }
+        }
+      }
+    ],
+    "form-3": [
+      {
+        id: "v1-form-3",
+        form_id: "form-3",
+        version_label: "Event Registration Draft",
+        created_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+        created_by: "user-456",
+        snapshot: {
+          elements: [
+            { id: "elem-1", type: "text", label: "Name", position: { x: 10, y: 10 }, size: { width: 200, height: 40 }, groupId: null },
+            { id: "elem-2", type: "email", label: "Email", position: { x: 10, y: 60 }, size: { width: 200, height: 40 }, groupId: null }
+          ],
+          metadata: { title: "Event Registration Form", description: "Basic registration form", status: "draft" }
+        }
+      }
+    ]
+  };
+  
+  // Return mock versions for the form or empty array if no versions exist
+  return mockVersions[formId] || [];
 };
 
-// Form responses operations
+export const getForms = async (): Promise<FormMetadata[]> => {
+  // In a real application, this would fetch forms from the database
+  // For now, we'll return mock data
+  return [
+    {
+      id: "form-1",
+      name: "Customer Feedback Form",
+      description: "Collect feedback from customers about our services",
+      status: "published",
+      responsiblePerson: "Jane Doe",
+      lastEditedBy: "John Smith",
+      lastEditDate: new Date().toISOString(),
+      tags: ["feedback", "customer"],
+      createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "form-2",
+      name: "Job Application Form",
+      description: "Collect applications for open positions",
+      status: "draft",
+      responsiblePerson: "Jane Doe",
+      lastEditedBy: "Jane Doe",
+      lastEditDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      tags: ["recruitment", "hr"],
+      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    {
+      id: "form-3",
+      name: "Event Registration Form",
+      description: "Register participants for our annual conference",
+      status: "review",
+      responsiblePerson: "John Smith",
+      lastEditedBy: "Jane Doe",
+      lastEditDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+      tags: ["event", "registration"],
+      createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    }
+  ];
+};
+
 export const submitFormResponse = async (formId: string, responseData: any) => {
   try {
     const { data, error } = await supabase

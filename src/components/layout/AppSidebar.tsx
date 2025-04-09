@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Sidebar,
@@ -31,7 +30,6 @@ import { TeamManagementSheet } from "@/components/team/TeamManagementSheet";
 import { useBrandSettings } from "@/context/BrandSettingsContext";
 import { openVersionHistory } from "@/components/form-builder/version-history/VersionHistorySheet";
 
-// Create a SidebarHeader component since it's missing
 const SidebarHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ 
   className, 
   children, 
@@ -59,9 +57,14 @@ const AppSidebar = () => {
   const handleMenuItemClick = (path: string) => {
     if (path === "/team") {
       setIsTeamManagementOpen(true);
-    } else if (path === "/history" && location.pathname.includes("/form/")) {
-      // If we're in a form editor, open the version history instead of navigating
-      openVersionHistory();
+    } else if (path === "/history") {
+      const isInFormEditor = location.pathname.includes("form-builder");
+      
+      if (isInFormEditor) {
+        openVersionHistory();
+      } else {
+        navigate(path);
+      }
     } else {
       navigate(path);
     }
