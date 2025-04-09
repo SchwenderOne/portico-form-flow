@@ -22,6 +22,9 @@ const FormBuilder = () => {
   const [brandSheetOpen, setBrandSheetOpen] = useState(false);
   const [teamSheetOpen, setTeamSheetOpen] = useState(false);
   const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
+  
+  // Default form ID for collaboration - in a real app this would come from the URL or state management
+  const formId = "default-form-id";
 
   // Register controls for the metadata sheet
   useEffect(() => {
@@ -54,7 +57,7 @@ const FormBuilder = () => {
         <FormMetadataProvider>
           <BrandSettingsProvider>
             <ComplianceProvider>
-              <CollaborationProvider>
+              <CollaborationProvider formId={formId}>
                 <FormCanvasProvider>
                   <div className="h-[calc(100vh-0px)] overflow-hidden bg-gray-100">
                     <FormCanvas />
