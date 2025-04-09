@@ -1,45 +1,40 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { ExportFormDropdown } from "./ExportFormDropdown";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
+  Save,
   Copy, 
-  Trash, 
-  LucideToggleRight, 
-  Users, 
-  BrainCircuit, 
-  FileText,
-  ChevronsUpDown,
-  CheckSquare
+  History, 
+  LayoutGrid, 
+  Group, 
+  Ungroup, 
+  Toggle, 
+  Undo, 
+  Redo,
+  Wand2
 } from "lucide-react";
 import { FormElement } from "@/types/form";
-import { useFormMetadata } from "@/context/FormMetadataContext";
-import { CollaboratorAvatars } from "@/context/CollaborationContext";
+import { FormMetadataSheet, openFormMetadataSheet } from "./FormMetadataSheet";
 import { toast } from "sonner";
-
-// Used to show/hide the metadata sheet
-const formMetadataSheetControls = {
-  open: null as (() => void) | null,
-  close: null as (() => void) | null,
-};
-
-export const registerFormMetadataSheetControls = (
-  openFn: (() => void) | null,
-  closeFn: (() => void) | null
-) => {
-  formMetadataSheetControls.open = openFn;
-  formMetadataSheetControls.close = closeFn;
-};
+import { useFormCanvas } from "./context/FormCanvasContext";
+import { useFormMetadata } from "@/context/FormMetadataContext";
+import { saveFormState } from "@/services/forms-service";
+import { openVersionHistory } from "./version-history/VersionHistorySheet";
+import { useAutoSave, AutoSaveEvent } from "./hooks/useAutoSave";
 
 interface FormTopToolbarProps {
   selectedElement: FormElement | null;
   selectedCount: number;
   onDuplicate: (id: string) => void;
-  onDuplicateGroup: (ids: string[]) => void;
-  onRequiredToggle: (id: string, required: boolean) => void;
+  onDuplicateGroup: () => void;
+  onRequiredToggle: (id: string) => void;
   onGroup: () => void;
   onUngroup: () => void;
   onOpenAIModal: () => void;
   existingElements: FormElement[];
+  onOpenVersionHistory?: () => void;
 }
 
 const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
@@ -51,126 +46,244 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
   onGroup,
   onUngroup,
   onOpenAIModal,
-  existingElements
+  existingElements,
+  onOpenVersionHistory
 }) => {
+  const { undoOperation, redoOperation, canUndo, canRedo } = useFormCanvas();
   const { metadata, saveMetadata } = useFormMetadata();
+  const { queueAutoSaveEvent } = useAutoSave({ elements: existingElements });
+  const [isSaving, setIsSaving] = React.useState(false);
 
-  const handleOpenMetadataSheet = () => {
-    if (formMetadataSheetControls.open) {
-      formMetadataSheetControls.open();
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      // Save form metadata
+      await saveMetadata();
+      
+      // Save form elements to database
+      await saveFormState(
+        metadata.id,
+        metadata.name,
+        metadata.description || '',
+        existingElements
+      );
+      
+      // Queue an auto-save event when manually saving
+      queueAutoSaveEvent(AutoSaveEvent.PUBLISH);
+      
+      toast.success("Form saved successfully");
+    } catch (error) {
+      console.error("Save error:", error);
+      toast.error("Failed to save form");
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleSaveForm = async () => {
-    try {
-      await saveMetadata();
-      toast.success("Form metadata saved successfully");
-    } catch (error) {
-      console.error("Error saving form metadata:", error);
-      toast.error("Failed to save form metadata");
+  const handleOpenMetadata = () => {
+    openFormMetadataSheet();
+  };
+
+  const handleHistoryClick = () => {
+    if (onOpenVersionHistory) {
+      onOpenVersionHistory();
+    } else {
+      openVersionHistory();
     }
   };
 
   return (
     <div className="border-b bg-background p-2 flex justify-between items-center">
       <div className="flex items-center space-x-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleOpenMetadataSheet}
-          className="flex items-center"
-        >
-          <FileText className="h-4 w-4 mr-1" />
-          <span className="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
-            {metadata.name || "Untitled Form"}
-          </span>
-          <ChevronsUpDown className="h-4 w-4 ml-1" />
+        <Button variant="outline" size="sm" onClick={handleOpenMetadata} className="text-xs">
+          {metadata.name || "Untitled Form"}
         </Button>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleSaveForm}
-        >
-          Save
-        </Button>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleSave}
+                disabled={isSaving}
+              >
+                <Save className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Save</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleHistoryClick}
+              >
+                <History className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Version History</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <div className="h-5 border-l mx-1"></div>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={undoOperation}
+                disabled={!canUndo}
+              >
+                <Undo className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Undo</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={redoOperation}
+                disabled={!canRedo}
+              >
+                <Redo className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Redo</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
-
+      
       <div className="flex items-center space-x-2">
-        {/* Show collaborators */}
-        <div className="mr-4">
-          <CollaboratorAvatars />
-        </div>
-
-        {selectedCount > 0 && (
+        {selectedCount === 1 && selectedElement && (
           <>
-            {selectedCount === 1 && selectedElement && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onRequiredToggle(selectedElement.id, !selectedElement.required)}
-                disabled={selectedElement.type === 'header' || selectedElement.type === 'paragraph'}
-              >
-                <CheckSquare className={`h-4 w-4 mr-1 ${selectedElement.required ? 'text-portico-purple' : ''}`} />
-                {selectedElement.required ? 'Required' : 'Optional'}
-              </Button>
-            )}
-
-            {selectedCount === 1 && selectedElement && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onDuplicate(selectedElement.id)}
-              >
-                <Copy className="h-4 w-4 mr-1" />
-                Duplicate
-              </Button>
-            )}
-
-            {selectedCount > 1 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onDuplicateGroup([])}
-              >
-                <Copy className="h-4 w-4 mr-1" />
-                Duplicate Selection
-              </Button>
-            )}
-
-            {selectedCount > 1 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onGroup}
-              >
-                <Users className="h-4 w-4 mr-1" />
-                Group
-              </Button>
-            )}
-
-            {selectedCount >= 1 && selectedElement?.groupId && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onUngroup}
-              >
-                <Users className="h-4 w-4 mr-1" />
-                Ungroup
-              </Button>
-            )}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => onDuplicate(selectedElement.id)}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Duplicate Element</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => onRequiredToggle(selectedElement.id)}
+                  >
+                    <Toggle className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {selectedElement.required ? "Make Optional" : "Make Required"}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </>
         )}
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onOpenAIModal}
-        >
-          <BrainCircuit className="h-4 w-4 mr-1" />
-          AI Assist
-        </Button>
+        
+        {selectedCount > 1 && (
+          <>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={onGroup}
+                  >
+                    <Group className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Group Elements</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={onDuplicateGroup}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Duplicate Selection</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </>
+        )}
+        
+        {selectedCount > 0 && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={onUngroup}
+                >
+                  <Ungroup className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Ungroup Elements</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+        
+        <div className="h-5 border-l mx-1"></div>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={onOpenAIModal}
+              >
+                <Wand2 className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>AI Assistant</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <ExportFormDropdown elements={existingElements} />
       </div>
+      
+      <FormMetadataSheet showTrigger={false} />
     </div>
   );
 };

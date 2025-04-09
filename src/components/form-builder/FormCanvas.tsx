@@ -11,6 +11,9 @@ import AIAssistantModal from "./ai-assistant/AIAssistantModal";
 import { FormCanvasProvider, useFormCanvas } from "./context/FormCanvasContext";
 import { CollaborationProvider, useCollaboration, EditorCursor } from "@/context/CollaborationContext";
 import { useFormMetadata } from "@/context/FormMetadataContext";
+import VersionHistorySheet, { registerVersionHistoryControls } from "./version-history/VersionHistorySheet";
+import { useAutoSave, AutoSaveEvent } from "./hooks/useAutoSave";
+import { useState } from "react";
 
 const FormCanvasInner = () => {
   const {
@@ -38,7 +41,40 @@ const FormCanvasInner = () => {
     grouping
   } = useFormCanvas();
 
+  const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
   const { collaborators, updateCursorPosition } = useCollaboration();
+  const { queueAutoSaveEvent } = useAutoSave({ elements });
+
+  // Register controls for version history
+  React.useEffect(() => {
+    const openSheet = () => setVersionHistoryOpen(true);
+    const closeSheet = () => setVersionHistoryOpen(false);
+    
+    registerVersionHistoryControls(openSheet, closeSheet);
+    
+    return () => {
+      registerVersionHistoryControls(null, null);
+    };
+  }, []);
+
+  // Auto-save on group operations
+  React.useEffect(() => {
+    const handleGroupChange = () => {
+      queueAutoSaveEvent(AutoSaveEvent.GROUP_OPERATION);
+    };
+    
+    grouping.groupElements = (...args) => {
+      const result = grouping.groupElements(...args);
+      handleGroupChange();
+      return result;
+    };
+    
+    grouping.ungroupElements = (...args) => {
+      const result = grouping.ungroupElements(...args);
+      handleGroupChange();
+      return result;
+    };
+  }, [grouping, queueAutoSaveEvent]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -75,6 +111,21 @@ const FormCanvasInner = () => {
   // Adapter function to convert between the two different parameter styles
   const handlePositionChange = (id: string, x: number, y: number) => {
     handleElementMoveWithGuides(id, { x, y });
+    // Queue auto-save after significant position changes
+    queueAutoSaveEvent(AutoSaveEvent.LAYOUT_CHANGE);
+  };
+
+  // Enhanced element drop handler with auto-save
+  const handleElementDropWithAutoSave = (...args: Parameters<typeof handleElementDrop>) => {
+    const result = handleElementDrop(...args);
+    queueAutoSaveEvent(AutoSaveEvent.FIELD_ADDITION);
+    return result;
+  };
+
+  // Enhanced delete handler with auto-save
+  const handleDeleteElementWithAutoSave = (id: string) => {
+    handleDeleteElement(id);
+    queueAutoSaveEvent(AutoSaveEvent.FIELD_DELETION);
   };
 
   return (
@@ -104,12 +155,13 @@ const FormCanvasInner = () => {
           onUngroup={grouping.ungroupElements}
           onOpenAIModal={handleOpenAIModal}
           existingElements={elements}
+          onOpenVersionHistory={() => setVersionHistoryOpen(true)}
         />
         <div className="flex-1 flex">
-          <FormElementsPanel onElementDrop={handleElementDrop} />
+          <FormElementsPanel onElementDrop={handleElementDropWithAutoSave} />
           <div className="flex-1 relative overflow-auto">
             <CanvasDropZone
-              onDrop={handleElementDrop}
+              onDrop={handleElementDropWithAutoSave}
               isDragOver={isDragOver}
               setIsDragOver={setIsDragOver}
               onClick={handleCanvasClick}
@@ -129,7 +181,7 @@ const FormCanvasInner = () => {
                   element={element}
                   onSelect={handleElementSelectWrapper}
                   onPositionChange={handlePositionChange}
-                  onDelete={handleDeleteElement}
+                  onDelete={handleDeleteElementWithAutoSave}
                   onDuplicate={handleDuplicateElement}
                   onResize={(id, width, height) => {
                     // Handle resize logic here if needed
@@ -165,6 +217,12 @@ const FormCanvasInner = () => {
           onClose={() => setIsAIModalOpen(false)}
           onAddElements={handleAddAIElements}
           existingElements={elements}
+        />
+
+        <VersionHistorySheet
+          showTrigger={false}
+          open={versionHistoryOpen}
+          onOpenChange={setVersionHistoryOpen}
         />
       </div>
     </GroupingProvider>

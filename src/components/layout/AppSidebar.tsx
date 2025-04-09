@@ -6,7 +6,6 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
@@ -31,6 +30,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { BrandSettingsSheet } from "@/components/form-builder/BrandSettingsSheet";
 import { TeamManagementSheet } from "@/components/team/TeamManagementSheet";
 import { useBrandSettings } from "@/context/BrandSettingsContext";
+import { openVersionHistory } from "@/components/form-builder/version-history/VersionHistorySheet";
 
 const AppSidebar = () => {
   const navigate = useNavigate();
@@ -52,6 +52,9 @@ const AppSidebar = () => {
       setIsBrandSettingsOpen(true);
     } else if (path === "/team") {
       setIsTeamManagementOpen(true);
+    } else if (path === "/history" && location.pathname.includes("/form/")) {
+      // If we're in a form editor, open the version history instead of navigating
+      openVersionHistory();
     } else {
       navigate(path);
     }
