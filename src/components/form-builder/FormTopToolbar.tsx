@@ -95,7 +95,10 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
       </div>
 
       <div className="flex items-center space-x-2">
-        <AIAssistantButton onAddElements={() => {}} existingElements={existingElements} />
+        <AIAssistantButton 
+          onAddElements={onOpenAIModal} 
+          existingElements={existingElements} 
+        />
         
         <BrandSettingsSheet />
 
