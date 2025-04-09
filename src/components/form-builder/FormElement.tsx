@@ -70,6 +70,17 @@ const FormElement: React.FC<FormElementProps> = ({
     
     // If we're in editing mode, don't start dragging
     if (isEditing) return;
+
+    // Don't initiate drag if clicking on an input element
+    if (
+      e.target instanceof HTMLInputElement ||
+      e.target instanceof HTMLTextAreaElement ||
+      e.target instanceof HTMLSelectElement ||
+      e.target instanceof HTMLButtonElement ||
+      (e.target as HTMLElement).tagName === 'LABEL'
+    ) {
+      return;
+    }
     
     // Detect if shift key is pressed for multi-select
     const isMultiSelect = e.shiftKey;
@@ -118,6 +129,27 @@ const FormElement: React.FC<FormElementProps> = ({
     element.type === 'number' || 
     element.type === 'select';
 
+  // Handle click on the element
+  const handleElementClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    // Don't select when clicking on input elements
+    if (
+      e.target instanceof HTMLInputElement ||
+      e.target instanceof HTMLTextAreaElement ||
+      e.target instanceof HTMLSelectElement ||
+      e.target instanceof HTMLButtonElement ||
+      (e.target as HTMLElement).tagName === 'LABEL'
+    ) {
+      return;
+    }
+    
+    // Don't deselect when clicking inside while editing
+    if (!isEditing) {
+      onSelect(element.id, e.shiftKey);
+    }
+  };
+
   return (
     <div
       ref={elementRef}
@@ -136,13 +168,7 @@ const FormElement: React.FC<FormElementProps> = ({
         height: element.size.height,
         zIndex: isSelected ? 10 : 1
       }}
-      onClick={(e) => {
-        e.stopPropagation();
-        // Don't deselect when clicking inside while editing
-        if (!isEditing) {
-          onSelect(element.id, e.shiftKey);
-        }
-      }}
+      onClick={handleElementClick}
       onDoubleClick={canShowFloatingToolbar ? handleDoubleClick : undefined}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
