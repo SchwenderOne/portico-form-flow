@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PropertiesTab from "./toolbars/tabs/PropertiesTab";
@@ -148,11 +147,23 @@ const FormToolbar: React.FC<FormToolbarProps> = ({
         </TabsContent>
 
         <TabsContent value="settings" className="m-0 h-full">
-          <SettingsTab />
+          {selectedElement && (
+            <SettingsTab 
+              element={selectedElement}
+              onElementUpdate={onUpdate}
+            />
+          )}
         </TabsContent>
         
         <TabsContent value="compliance" className="m-0 h-full">
-          <ComplianceTab />
+          {selectedElement ? (
+            <ComplianceTab 
+              element={selectedElement}
+              onElementUpdate={onUpdate}
+            />
+          ) : (
+            <ComplianceTab />
+          )}
         </TabsContent>
       </Tabs>
     </div>
