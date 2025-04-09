@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Lightbulb, Forms, List, Star } from "lucide-react";
+import { Sparkles, Lightbulb, FileText, List, Star } from "lucide-react";
 
 interface ExamplePromptsProps {
   onSelectExample: (example: string) => void;
@@ -14,7 +14,7 @@ const examplePrompts = [
   },
   {
     text: "Build a simple contact form with name, email, message",
-    icon: <Forms className="h-4 w-4 mr-2" />
+    icon: <FileText className="h-4 w-4 mr-2" />
   },
   {
     text: "Generate a feedback form with 5-star rating and comment box",

@@ -35,10 +35,9 @@ const AIAssistTab: React.FC<AIAssistTabProps> = ({
     <div className="p-4 h-full flex flex-col">
       <div className="mb-4">
         <AIAssistantButton 
-          label="Open AI Form Generator" 
           size="default" 
           variant="default"
-          existingElements={existingElements} // Pass the prop here
+          existingElements={existingElements} 
           onAddElements={onAddElements}
         />
       </div>

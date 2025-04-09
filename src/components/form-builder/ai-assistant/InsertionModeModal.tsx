@@ -21,18 +21,16 @@ import {
 interface InsertionModeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  elements: FormElement[];
-  onInsert: (replaceExisting: boolean) => void;
+  onSelection: (shouldReplace: boolean) => void;
+  elementsCount: number;
 }
 
 const InsertionModeModal: React.FC<InsertionModeModalProps> = ({
   isOpen,
   onClose,
-  elements,
-  onInsert
+  onSelection,
+  elementsCount
 }) => {
-  if (!elements || elements.length === 0) return null;
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
@@ -44,22 +42,8 @@ const InsertionModeModal: React.FC<InsertionModeModalProps> = ({
 
         <div className="py-2">
           <p className="text-sm text-muted-foreground mb-4">
-            Your AI form with {elements.length} elements is ready. Choose how you want to add it to your canvas:
+            Your AI form with {elementsCount} elements is ready. Choose how you want to add it to your canvas:
           </p>
-
-          <ScrollArea className="h-[200px] border rounded-md p-2 mb-4">
-            <div className="space-y-2">
-              {elements.map((element, index) => (
-                <div key={index} className="text-sm border-b pb-2 last:border-0">
-                  <span className="font-medium">
-                    {element.type === "header" || element.type === "paragraph" ? 
-                      (element.type.charAt(0).toUpperCase() + element.type.slice(1)) : 
-                      `${element.label} (${element.type})`}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
 
           <div className="grid grid-cols-2 gap-4">
             <TooltipProvider>
@@ -68,7 +52,7 @@ const InsertionModeModal: React.FC<InsertionModeModalProps> = ({
                   <Button 
                     variant="outline"
                     className="flex flex-col h-auto py-6 gap-2 border-dashed"
-                    onClick={() => onInsert(false)}
+                    onClick={() => onSelection(false)}
                   >
                     <PlusCircle className="h-10 w-10 text-portico-purple/70" />
                     <span className="font-medium">Insert into current form</span>
@@ -87,7 +71,7 @@ const InsertionModeModal: React.FC<InsertionModeModalProps> = ({
                   <Button 
                     variant="outline"
                     className="flex flex-col h-auto py-6 gap-2 border-dashed"
-                    onClick={() => onInsert(true)}
+                    onClick={() => onSelection(true)}
                   >
                     <Replace className="h-10 w-10 text-portico-purple/70" />
                     <span className="font-medium">Replace current form</span>

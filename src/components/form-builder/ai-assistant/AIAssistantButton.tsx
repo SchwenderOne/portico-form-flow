@@ -7,11 +7,18 @@ import AIAssistantModal from "./AIAssistantModal";
 import { FormElement } from "@/types/form";
 
 interface AIAssistantButtonProps {
-  onAddElements: (elements: FormElement[]) => void;
-  existingElements: FormElement[]; // Add this prop
+  onAddElements?: (elements: FormElement[]) => void;
+  existingElements?: FormElement[];
+  size?: "default" | "sm" | "lg" | "icon";
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
 }
 
-const AIAssistantButton: React.FC<AIAssistantButtonProps> = ({ onAddElements, existingElements }) => {
+const AIAssistantButton: React.FC<AIAssistantButtonProps> = ({ 
+  onAddElements = () => {}, 
+  existingElements = [],
+  size = "default",
+  variant = "default"
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => {
@@ -27,8 +34,8 @@ const AIAssistantButton: React.FC<AIAssistantButtonProps> = ({ onAddElements, ex
       <Tooltip>
         <TooltipTrigger asChild>
           <Button 
-            variant="ghost" 
-            size="sm" 
+            variant={variant} 
+            size={size} 
             className="text-sm flex items-center gap-1 bg-portico-purple/5 hover:bg-portico-purple/10 text-portico-purple" 
             onClick={handleOpenModal}
           >
