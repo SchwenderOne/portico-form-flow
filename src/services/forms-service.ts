@@ -6,15 +6,21 @@ import { toast } from "sonner";
 // Form CRUD operations
 export const createForm = async (title: string, description: string = "") => {
   try {
+    // Get user ID first, then use it in the insert
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData.user?.id;
+    
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+    
     const { data, error } = await supabase
       .from('forms')
-      .insert([
-        { 
-          title, 
-          description,
-          created_by: supabase.auth.getUser().then(res => res.data.user?.id) || ''
-        }
-      ])
+      .insert({
+        title, 
+        description,
+        created_by: userId
+      })
       .select()
       .single();
     
@@ -97,12 +103,10 @@ export const createFormField = async (formId: string, field: Omit<DatabaseFormFi
   try {
     const { data, error } = await supabase
       .from('form_fields')
-      .insert([
-        { 
-          form_id: formId,
-          ...field
-        }
-      ])
+      .insert({
+        form_id: formId,
+        ...field
+      })
       .select()
       .single();
     
@@ -158,14 +162,12 @@ export const createFormVersion = async (formId: string, versionLabel: string, sn
 
     const { data, error } = await supabase
       .from('form_versions')
-      .insert([
-        { 
-          form_id: formId,
-          version_label: versionLabel,
-          created_by: userId,
-          snapshot
-        }
-      ])
+      .insert({
+        form_id: formId,
+        version_label: versionLabel,
+        created_by: userId,
+        snapshot
+      })
       .select()
       .single();
     
@@ -198,12 +200,10 @@ export const submitFormResponse = async (formId: string, responseData: any) => {
   try {
     const { data, error } = await supabase
       .from('form_responses')
-      .insert([
-        { 
-          form_id: formId,
-          response_data: responseData
-        }
-      ])
+      .insert({
+        form_id: formId,
+        response_data: responseData
+      })
       .select()
       .single();
     
@@ -255,7 +255,7 @@ export const convertFieldsToElements = (fields: DatabaseFormField[]): FormElemen
   return fields
     .sort((a, b) => a.order - b.order)
     .map(field => {
-      const settings = field.settings || {};
+      const settings = field.settings as Record<string, any> || {};
       
       return {
         id: field.id,
