@@ -32,7 +32,7 @@ const AIAssistantButton: React.FC<AIAssistantButtonProps> = ({ onAddElements }) 
             onClick={handleOpenModal}
           >
             <Wand2 className="h-4 w-4" />
-            <span className="hidden md:inline">AI Assistant</span>
+            <span className="hidden sm:inline">AI Assistant</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent>Generate forms with AI</TooltipContent>

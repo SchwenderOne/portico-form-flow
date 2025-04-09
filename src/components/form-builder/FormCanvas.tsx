@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import FormElement from "./elements/FormElement";
 import FormToolbar from "./FormToolbar";
@@ -41,35 +40,29 @@ const FormCanvas = () => {
     autoNudgePosition
   } = useSmartGuides(elements, isDragging);
 
-  // Enhanced grouping functionality
   const grouping = useGroupingState(
     elements,
     handleGroupElements,
     handleUngroupElements
   );
 
-  // Handle keyboard shortcuts for undo/redo
   const handleKeyDown = useCallback((e: KeyboardEvent<HTMLDivElement>) => {
-    // Ctrl+Z or Cmd+Z for Undo
     if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
       e.preventDefault();
       toast.info("Undo functionality will be available soon");
     }
     
-    // Ctrl+Shift+Z or Cmd+Shift+Z for Redo
     if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
       e.preventDefault();
       toast.info("Redo functionality will be available soon");
     }
     
-    // Delete or Backspace to delete selected elements
     if ((e.key === 'Delete' || e.key === 'Backspace') && grouping.selectedElements.length > 0) {
       e.preventDefault();
       grouping.selectedElements.forEach(id => handleDeleteElement(id));
       grouping.clearSelection();
     }
     
-    // Ctrl+D or Cmd+D for Duplicate
     if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
       e.preventDefault();
       if (grouping.selectedElements.length === 1) {
@@ -80,7 +73,6 @@ const FormCanvas = () => {
       }
     }
     
-    // Ctrl+G or Cmd+G for Group
     if ((e.ctrlKey || e.metaKey) && e.key === 'g') {
       e.preventDefault();
       if (grouping.selectedElements.length > 1) {
@@ -88,50 +80,50 @@ const FormCanvas = () => {
       }
     }
     
-    // Ctrl+Shift+G or Cmd+Shift+G for Ungroup
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'g') {
       e.preventDefault();
       grouping.ungroupElements();
     }
   }, [grouping, handleDeleteElement, handleDuplicateElement, handleDuplicateGroup]);
 
-  // Handler to update the smart guides when an element is being moved with snapping
   const handleElementMoveWithGuides = (id: string, position: { x: number, y: number }) => {
-    // First calculate the smart guides
     calculateSmartGuides(id, position);
-    
-    // Then apply auto-nudging for snapping
     const nudgedPosition = autoNudgePosition(id, position);
-    
-    // Apply the move with the potentially nudged position
     handleElementMove(id, nudgedPosition);
   };
 
-  // Handler for adding AI-generated elements
-  const handleAddAIElement = (element: FormElementType) => {
-    // Find a good position for the new element (below existing elements)
+  const handleAddAIElements = (elements: FormElementType[]) => {
+    if (!elements || elements.length === 0) return;
+    
     const lowestElementBottom = Math.max(
       ...elements.map(el => el.position.y + el.size.height),
-      50 // Default starting height if no elements
+      50
     );
     
-    // Create a copy of the element with the adjusted position
-    const adjustedElement = {
-      ...element,
-      position: {
-        x: 100, // Standard left alignment
-        y: lowestElementBottom + 30 // 30px padding after the lowest element
-      }
-    };
+    let currentY = lowestElementBottom + 30;
     
-    // Add the element to the canvas
-    addElement(adjustedElement);
+    elements.forEach(element => {
+      const adjustedElement = {
+        ...element,
+        position: {
+          x: 100,
+          y: currentY
+        }
+      };
+      
+      addElement(adjustedElement);
+      
+      currentY += adjustedElement.size.height + 20;
+    });
     
-    // Select the new element
-    handleElementSelect(adjustedElement.id, false);
+    if (elements.length > 0) {
+      const lastElement = elements[elements.length - 1];
+      handleElementSelect(lastElement.id, false);
+    }
+    
+    toast.success(`${elements.length} elements added to canvas`);
   };
 
-  // Sync the element selection between our form elements hook and grouping context
   useEffect(() => {
     grouping.selectElements(selectedElements, true);
   }, [selectedElements]);
@@ -140,9 +132,7 @@ const FormCanvas = () => {
     handleElementSelect(id, isMultiSelect);
   };
 
-  // Handle canvas click to clear selection when clicking on empty space
   const handleCanvasClick = (e: React.MouseEvent) => {
-    // Only clear if clicking directly on canvas, not on elements
     if (e.target === e.currentTarget) {
       grouping.clearSelection();
     }
@@ -160,7 +150,7 @@ const FormCanvas = () => {
       <div 
         className="flex flex-col h-full" 
         onKeyDown={handleKeyDown} 
-        tabIndex={0} // Make the div focusable to capture keyboard events
+        tabIndex={0}
       >
         <FormTopToolbar 
           selectedElement={grouping.selectedElements.length === 1 
@@ -173,6 +163,7 @@ const FormCanvas = () => {
           onRequiredToggle={handleRequiredToggle}
           onGroup={grouping.groupElements}
           onUngroup={grouping.ungroupElements}
+          onAddElements={handleAddAIElements}
         />
         <div className="flex-1 flex">
           <FormElementsPanel onElementDrop={handleElementDrop} />

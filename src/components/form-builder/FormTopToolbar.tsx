@@ -19,11 +19,13 @@ import {
   Check,
   Group,
   Ungroup,
-  CopyPlus
+  CopyPlus,
+  Wand2
 } from "lucide-react";
 import { FormElement } from "@/types/form";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import AIAssistantButton from "./ai-assistant/AIAssistantButton";
 
 interface FormTopToolbarProps {
   selectedElement: FormElement | null;
@@ -33,6 +35,7 @@ interface FormTopToolbarProps {
   onRequiredToggle?: (id: string, required: boolean) => void;
   onGroup?: () => void;
   onUngroup?: () => void;
+  onAddElements?: (elements: FormElement[]) => void;
 }
 
 const FormTopToolbar: React.FC<FormTopToolbarProps> = ({ 
@@ -42,7 +45,8 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
   onDuplicateGroup,
   onRequiredToggle,
   onGroup,
-  onUngroup
+  onUngroup,
+  onAddElements
 }) => {
   const [formName, setFormName] = useState("Untitled Form");
   const [isEditingName, setIsEditingName] = useState(false);
@@ -282,6 +286,14 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
 
       {/* Right section - Global actions */}
       <div className="flex items-center gap-1">
+        {/* AI Assistant Button */}
+        {onAddElements && (
+          <>
+            <AIAssistantButton onAddElements={onAddElements} />
+            <Separator orientation="vertical" className="h-4 mx-1" />
+          </>
+        )}
+        
         <Tooltip>
           <TooltipTrigger asChild>
             <Button variant="ghost" size="icon" onClick={handleUndo}>
