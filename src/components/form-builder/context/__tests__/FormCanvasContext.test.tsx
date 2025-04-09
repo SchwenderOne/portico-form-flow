@@ -35,7 +35,7 @@ vi.mock('@/hooks/use-form-elements', () => ({
   })
 }));
 
-vi.mock('../../../hooks/useSmartGuides', () => ({
+vi.mock('../../hooks/useSmartGuides', () => ({
   useSmartGuides: () => ({
     showSmartGuides: false,
     guideLines: { horizontal: [], vertical: [] },

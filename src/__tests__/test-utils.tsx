@@ -3,6 +3,7 @@ import React, { PropsWithChildren } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { FormCanvasProvider } from '@/components/form-builder/context/FormCanvasContext';
 import { GroupingProvider } from '@/components/form-builder/GroupingContext';
+import { vi } from 'vitest';
 
 // Mock providers wrapper
 const AllProviders = ({ children }: PropsWithChildren<{}>) => {
