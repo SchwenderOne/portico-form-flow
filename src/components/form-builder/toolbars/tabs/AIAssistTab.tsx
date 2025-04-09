@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Wand2, Sparkles, History, Plus } from "lucide-react";
+import { Wand2, Sparkles, History, Plus, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { generateFieldFromPrompt } from "@/services/ai-field-generator";
 import { FormElement } from "@/types/form";
@@ -17,9 +17,11 @@ const AIAssistTab: React.FC<AIAssistTabProps> = ({ onAddElement }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
   const [generatedField, setGeneratedField] = useState<FormElement | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handlePromptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPrompt(e.target.value);
+    setError(null);
   };
 
   const handleGenerateField = async () => {
@@ -29,6 +31,8 @@ const AIAssistTab: React.FC<AIAssistTabProps> = ({ onAddElement }) => {
     }
 
     setIsGenerating(true);
+    setError(null);
+    
     try {
       const field = await generateFieldFromPrompt(prompt);
       setGeneratedField(field);
@@ -42,6 +46,8 @@ const AIAssistTab: React.FC<AIAssistTabProps> = ({ onAddElement }) => {
         description: `Created a ${field.type} field: ${field.label}`
       });
     } catch (error) {
+      console.error("Error generating field:", error);
+      setError(error instanceof Error ? error.message : "Failed to generate field");
       toast.error("Failed to generate field", {
         description: "Please try a different description or try again later."
       });
@@ -96,6 +102,13 @@ const AIAssistTab: React.FC<AIAssistTabProps> = ({ onAddElement }) => {
             )}
           </Button>
         </div>
+        
+        {error && (
+          <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md text-xs text-red-600 flex items-start">
+            <AlertCircle className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
       </div>
 
       {generatedField && (

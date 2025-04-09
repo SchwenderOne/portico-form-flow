@@ -9,11 +9,10 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Wand2, Sparkles, History, Plus, Check, RefreshCw, Lightbulb } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Wand2, Sparkles, History, Plus, Check, RefreshCw, Lightbulb, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { generateFormFromPrompt } from "@/services/ai-form-generator";
 import { FormElement } from "@/types/form";
@@ -34,9 +33,11 @@ const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
   const [history, setHistory] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<string>("prompt");
   const [generatedElements, setGeneratedElements] = useState<FormElement[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setPrompt(e.target.value);
+    setError(null);
   };
 
   const handleGenerateForm = async () => {
@@ -46,8 +47,15 @@ const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
     }
 
     setIsGenerating(true);
+    setError(null);
+    
     try {
       const elements = await generateFormFromPrompt(prompt);
+      
+      if (!elements || elements.length === 0) {
+        throw new Error("Could not generate form fields from your description");
+      }
+      
       setGeneratedElements(elements);
       setActiveTab("preview");
       
@@ -60,7 +68,9 @@ const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
         description: `${elements.length} elements created`
       });
     } catch (error) {
-      toast.error("Failed to generate form", {
+      console.error("Error generating form:", error);
+      setError(error instanceof Error ? error.message : "Failed to generate form");
+      toast.error("Form generation failed", {
         description: "Please try a different description or try again later."
       });
     } finally {
@@ -123,6 +133,7 @@ const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                 <li>• "Create a customer feedback form with name, email, rating, and comment section"</li>
                 <li>• "Make a job application form with personal details, experience, and education"</li>
                 <li>• "Design a simple event registration with attendee info and preferences"</li>
+                <li>• "Create a 5-step onboarding form for HR with name, position, department, consent"</li>
               </ul>
             </div>
 
@@ -135,6 +146,13 @@ const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                 if (e.key === 'Enter' && e.metaKey) handleGenerateForm();
               }}
             />
+
+            {error && (
+              <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-600 flex items-start">
+                <AlertCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
 
             <div className="mt-4 flex justify-end">
               <Button 

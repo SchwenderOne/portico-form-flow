@@ -1,9 +1,31 @@
 
 import { FormElement } from "@/types/form";
 import { generateFieldFromPrompt } from "./ai-field-generator";
+import { generateFormWithOpenRouter } from "./openrouter-service";
 
-// This is a mock implementation for generating a complete form from a prompt
+// This function now uses the OpenRouter API to generate forms
 export const generateFormFromPrompt = async (prompt: string): Promise<FormElement[]> => {
+  try {
+    // Use the OpenRouter service for form generation
+    const elements = await generateFormWithOpenRouter(prompt);
+    
+    // If we got a valid response with elements, return them
+    if (elements && elements.length > 0) {
+      return elements;
+    }
+    
+    // Fallback to the mock implementation if OpenRouter fails or returns empty
+    console.log("Falling back to mock form generation");
+    return fallbackGenerateForm(prompt);
+  } catch (error) {
+    console.error("Error in form generation:", error);
+    // Fallback to mock implementation in case of errors
+    return fallbackGenerateForm(prompt);
+  }
+};
+
+// This is the original mock implementation, now used as fallback
+const fallbackGenerateForm = async (prompt: string): Promise<FormElement[]> => {
   // Simulate API call delay
   await new Promise(resolve => setTimeout(resolve, 1500));
   

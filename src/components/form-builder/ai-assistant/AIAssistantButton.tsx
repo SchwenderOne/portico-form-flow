@@ -28,10 +28,10 @@ const AIAssistantButton: React.FC<AIAssistantButtonProps> = ({ onAddElements }) 
           <Button 
             variant="ghost" 
             size="sm" 
-            className="text-sm flex items-center gap-1" 
+            className="text-sm flex items-center gap-1 bg-portico-purple/5 hover:bg-portico-purple/10 text-portico-purple" 
             onClick={handleOpenModal}
           >
-            <Wand2 className="h-4 w-4 text-portico-purple" />
+            <Wand2 className="h-4 w-4" />
             <span className="hidden md:inline">AI Assistant</span>
           </Button>
         </TooltipTrigger>
