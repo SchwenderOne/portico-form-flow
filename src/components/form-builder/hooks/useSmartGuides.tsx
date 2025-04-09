@@ -6,6 +6,7 @@ import { FormElement as FormElementType } from "@/types/form";
 const SNAP_THRESHOLD = 10;
 const DISTANCE_SHOW_THRESHOLD = 100; // Only show distances for elements close enough
 const EQUAL_SPACING_THRESHOLD = 5; // Threshold for detecting equal spacing
+const OVERLAP_PREVENTION_PADDING = 10; // Padding to prevent overlaps
 
 export const useSmartGuides = (elements: FormElementType[], isDragging: boolean) => {
   const [showSmartGuides, setShowSmartGuides] = useState(false);
@@ -21,7 +22,18 @@ export const useSmartGuides = (elements: FormElementType[], isDragging: boolean)
     vertical: []
   });
 
-  // Function to auto-nudge an element position to snap to guides
+  // Function to check if two elements would overlap
+  const wouldOverlap = (elem1: { x: number, y: number, width: number, height: number }, 
+                        elem2: { x: number, y: number, width: number, height: number }) => {
+    return !(
+      elem1.x + elem1.width + OVERLAP_PREVENTION_PADDING < elem2.x || 
+      elem2.x + elem2.width + OVERLAP_PREVENTION_PADDING < elem1.x ||
+      elem1.y + elem1.height + OVERLAP_PREVENTION_PADDING < elem2.y ||
+      elem2.y + elem2.height + OVERLAP_PREVENTION_PADDING < elem1.y
+    );
+  };
+
+  // Function to auto-nudge an element position to snap to guides and prevent overlaps
   const autoNudgePosition = (id: string, position: { x: number, y: number }) => {
     const movingElement = elements.find(el => el.id === id);
     if (!movingElement) return position;
@@ -40,6 +52,9 @@ export const useSmartGuides = (elements: FormElementType[], isDragging: boolean)
     const horizontalSnapPoints: { position: number, target: number }[] = [];
     const verticalSnapPoints: { position: number, target: number }[] = [];
     
+    // Check for overlaps with other elements
+    let hasOverlap = false;
+    
     elements.forEach(el => {
       if (el.id === id) return;
       
@@ -50,7 +65,34 @@ export const useSmartGuides = (elements: FormElementType[], isDragging: boolean)
       const elCenterX = el.position.x + el.size.width / 2;
       const elCenterY = el.position.y + el.size.height / 2;
       
-      // Check horizontal alignments
+      // Check for potential overlap
+      if (wouldOverlap(
+        { x: position.x, y: position.y, width: movingElement.size.width, height: movingElement.size.height },
+        { x: el.position.x, y: el.position.y, width: el.size.width, height: el.size.height }
+      )) {
+        hasOverlap = true;
+        
+        // If overlapping, find a better position (e.g., align right or below)
+        if (position.y < elBottom && position.y + movingElement.size.height > elTop) {
+          // Horizontal overlap, move element to the right or left
+          if (Math.abs(position.x - elRight) < Math.abs(elLeft - (position.x + movingElement.size.width))) {
+            nudgedPosition.x = elRight + OVERLAP_PREVENTION_PADDING;
+          } else {
+            nudgedPosition.x = elLeft - movingElement.size.width - OVERLAP_PREVENTION_PADDING;
+          }
+        }
+        
+        if (position.x < elRight && position.x + movingElement.size.width > elLeft) {
+          // Vertical overlap, move element below or above
+          if (Math.abs(position.y - elBottom) < Math.abs(elTop - (position.y + movingElement.size.height))) {
+            nudgedPosition.y = elBottom + OVERLAP_PREVENTION_PADDING;
+          } else {
+            nudgedPosition.y = elTop - movingElement.size.height - OVERLAP_PREVENTION_PADDING;
+          }
+        }
+      }
+      
+      // Check horizontal alignments for snapping
       if (Math.abs(movingTop - elTop) < SNAP_THRESHOLD) {
         horizontalSnapPoints.push({ position: movingTop, target: elTop });
       }
@@ -61,7 +103,7 @@ export const useSmartGuides = (elements: FormElementType[], isDragging: boolean)
         horizontalSnapPoints.push({ position: movingBottom, target: elBottom });
       }
       
-      // Check vertical alignments
+      // Check vertical alignments for snapping
       if (Math.abs(movingLeft - elLeft) < SNAP_THRESHOLD) {
         verticalSnapPoints.push({ position: movingLeft, target: elLeft });
       }
@@ -73,28 +115,31 @@ export const useSmartGuides = (elements: FormElementType[], isDragging: boolean)
       }
     });
     
-    // Find closest snap points
-    let closestHorizontal = horizontalSnapPoints.length > 0 
-      ? horizontalSnapPoints.reduce((prev, curr) => 
-          Math.abs(curr.position - curr.target) < Math.abs(prev.position - prev.target) ? curr : prev
-        ) 
-      : null;
-    
-    let closestVertical = verticalSnapPoints.length > 0 
-      ? verticalSnapPoints.reduce((prev, curr) => 
-          Math.abs(curr.position - curr.target) < Math.abs(prev.position - prev.target) ? curr : prev
-        ) 
-      : null;
-    
-    // Apply nudges
-    if (closestHorizontal) {
-      const diff = closestHorizontal.target - closestHorizontal.position;
-      nudgedPosition.y += diff;
-    }
-    
-    if (closestVertical) {
-      const diff = closestVertical.target - closestVertical.position;
-      nudgedPosition.x += diff;
+    // Only apply snapping if we don't have overlaps to resolve
+    if (!hasOverlap) {
+      // Find closest snap points
+      let closestHorizontal = horizontalSnapPoints.length > 0 
+        ? horizontalSnapPoints.reduce((prev, curr) => 
+            Math.abs(curr.position - curr.target) < Math.abs(prev.position - prev.target) ? curr : prev
+          ) 
+        : null;
+      
+      let closestVertical = verticalSnapPoints.length > 0 
+        ? verticalSnapPoints.reduce((prev, curr) => 
+            Math.abs(curr.position - curr.target) < Math.abs(prev.position - prev.target) ? curr : prev
+          ) 
+        : null;
+      
+      // Apply snapping nudges
+      if (closestHorizontal) {
+        const diff = closestHorizontal.target - closestHorizontal.position;
+        nudgedPosition.y += diff;
+      }
+      
+      if (closestVertical) {
+        const diff = closestVertical.target - closestVertical.position;
+        nudgedPosition.x += diff;
+      }
     }
     
     return nudgedPosition;

@@ -1,7 +1,8 @@
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import DragPreview from "./DragPreview";
+import { FormElement } from "@/types/form";
 
 interface CanvasDropZoneProps {
   onDrop: (type: string, position: { x: number, y: number }) => void;
@@ -9,6 +10,7 @@ interface CanvasDropZoneProps {
   setIsDragOver: (isDragOver: boolean) => void;
   children: React.ReactNode;
   onClick?: React.MouseEventHandler<HTMLDivElement>;
+  existingElements?: FormElement[]; // Added to check for overlaps
 }
 
 const CanvasDropZone: React.FC<CanvasDropZoneProps> = ({ 
@@ -16,11 +18,63 @@ const CanvasDropZone: React.FC<CanvasDropZoneProps> = ({
   isDragOver, 
   setIsDragOver, 
   children,
-  onClick
+  onClick,
+  existingElements = []
 }) => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [previewPosition, setPreviewPosition] = useState<{ x: number, y: number } | null>(null);
   const [draggedElementType, setDraggedElementType] = useState<string | null>(null);
+  const [isValidDropPosition, setIsValidDropPosition] = useState(true);
+
+  // Find a valid position that doesn't overlap with existing elements
+  const findValidPosition = (x: number, y: number, elementType: string): { x: number, y: number } => {
+    // Default dimensions based on element type
+    const width = 500;
+    const height = elementType === 'header' || elementType === 'paragraph' ? 60 : 
+                 elementType === 'checkbox' ? 50 : 
+                 elementType === 'file' ? 120 : 80;
+    
+    // Check if the position would cause an overlap
+    const wouldOverlap = existingElements.some(element => {
+      const elemRight = element.position.x + element.size.width;
+      const elemBottom = element.position.y + element.size.height;
+      
+      const newElemRight = x + width;
+      const newElemBottom = y + height;
+      
+      // Check if rectangles overlap
+      return !(
+        x >= elemRight || // New element is to the right of existing element
+        newElemRight <= element.position.x || // New element is to the left of existing element
+        y >= elemBottom || // New element is below existing element
+        newElemBottom <= element.position.y // New element is above existing element
+      );
+    });
+    
+    if (!wouldOverlap) {
+      return { x, y }; // Original position is valid
+    }
+    
+    // Try to find a vertical position below all existing elements
+    const lowestElement = existingElements.reduce((lowest, current) => {
+      const currentBottom = current.position.y + current.size.height;
+      return currentBottom > lowest ? currentBottom : lowest;
+    }, 0);
+    
+    // Find the most common x alignment among existing elements
+    const xPositions = existingElements.map(el => el.position.x);
+    const mostCommonX = xPositions.length > 0 ? 
+      xPositions.sort((a, b) => 
+        xPositions.filter(v => v === a).length - xPositions.filter(v => v === b).length
+      ).pop() : 
+      x;
+    
+    // Add spacing and return the new position
+    return { 
+      x: mostCommonX || x, 
+      y: lowestElement + 25 // Add 25px spacing
+    };
+  };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -37,11 +91,14 @@ const CanvasDropZone: React.FC<CanvasDropZoneProps> = ({
     }
     
     const canvasRect = canvasRef.current.getBoundingClientRect();
-    const x = Math.round((e.clientX - canvasRect.left) / 25) * 25;
-    const y = Math.round((e.clientY - canvasRect.top) / 25) * 25;
+    let x = Math.round((e.clientX - canvasRect.left) / 25) * 25;
+    let y = Math.round((e.clientY - canvasRect.top) / 25) * 25;
     
-    console.log("Calculated position:", { x, y });
-    onDrop(elementType, { x, y });
+    // Find a valid position that doesn't overlap
+    const validPosition = findValidPosition(x, y, elementType);
+    
+    console.log("Calculated position:", validPosition);
+    onDrop(elementType, validPosition);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -56,7 +113,12 @@ const CanvasDropZone: React.FC<CanvasDropZoneProps> = ({
         const canvasRect = canvasRef.current.getBoundingClientRect();
         const x = Math.round((e.clientX - canvasRect.left) / 25) * 25;
         const y = Math.round((e.clientY - canvasRect.top) / 25) * 25;
-        setPreviewPosition({ x, y });
+        
+        // Check if this would be a valid drop position
+        const validPosition = findValidPosition(x, y, elementType);
+        setIsValidDropPosition(validPosition.x === x && validPosition.y === y);
+        
+        setPreviewPosition(validPosition);
         
         // Store the element type if we haven't already
         if (!draggedElementType) {
@@ -97,11 +159,24 @@ const CanvasDropZone: React.FC<CanvasDropZoneProps> = ({
     >
       {children}
       
-      {/* Show drag preview when dragging over the canvas */}
+      {/* Show enhanced drag preview when dragging over the canvas */}
       {previewPosition && draggedElementType && (
         <DragPreview 
           elementType={draggedElementType} 
           position={previewPosition} 
+        />
+      )}
+      
+      {/* Optionally, show a visual indicator if position is invalid */}
+      {previewPosition && !isValidDropPosition && (
+        <div 
+          className="absolute bg-red-500/20 border-2 border-red-500/50 rounded-md z-30 pointer-events-none"
+          style={{
+            left: previewPosition.x,
+            top: previewPosition.y,
+            width: 500,
+            height: 80,
+          }}
         />
       )}
     </div>

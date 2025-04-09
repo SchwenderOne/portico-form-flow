@@ -189,7 +189,7 @@ const FormElement: React.FC<FormElementProps> = ({
         top: element.position.y,
         width: element.size.width,
         height: element.size.height,
-        zIndex: isSelected ? 10 : 1,
+        zIndex: isSelected ? 10 : (isDraggingElement ? 20 : 1),
         transitionProperty: "transform, opacity, box-shadow",
         transitionDuration: "0.1s",
       }}
@@ -208,7 +208,9 @@ const FormElement: React.FC<FormElementProps> = ({
       <ElementContent element={element} isEditing={isEditing} />
       
       {/* Only show drag handle when not editing */}
-      {!isEditing && <ElementDragHandle onMouseDown={handleMouseDown} />}
+      {(!isEditing && (hovered || isSelected)) && 
+        <ElementDragHandle onMouseDown={handleMouseDown} />
+      }
       
       {/* Element toolbar */}
       {isSelected && !isEditing && (

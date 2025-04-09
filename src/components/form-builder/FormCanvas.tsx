@@ -156,6 +156,7 @@ const FormCanvas = () => {
               isDragOver={isDragOver}
               setIsDragOver={setIsDragOver}
               onClick={handleCanvasClick}
+              existingElements={elements}
             >
               {showSmartGuides && 
                 <SmartGuides 

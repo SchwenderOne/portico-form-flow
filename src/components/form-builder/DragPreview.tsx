@@ -9,7 +9,7 @@ interface DragPreviewProps {
 }
 
 const DragPreview: React.FC<DragPreviewProps> = ({ elementType, position }) => {
-  // Create a temporary element preview based on the type
+  // Create a more comprehensive temporary element preview based on the type
   const previewElement: FormElement = {
     id: `preview-${elementType}`,
     type: elementType,
@@ -41,20 +41,23 @@ const DragPreview: React.FC<DragPreviewProps> = ({ elementType, position }) => {
     previewElement.label = 'Email Address';
     previewElement.placeholder = 'example@domain.com';
     (previewElement as any).validation = 'email';
+  } else if (elementType === 'phone') {
+    previewElement.label = 'Phone Number';
+    previewElement.placeholder = '(123) 456-7890';
   }
 
   return (
     <div 
-      className="absolute border-2 border-dashed border-portico-purple/50 bg-white/90 rounded-md p-4 pointer-events-none shadow-lg"
+      className="absolute border-2 border-dashed border-portico-purple/50 bg-white rounded-md p-4 pointer-events-none shadow-lg"
       style={{
         left: position.x,
         top: position.y,
         width: previewElement.size.width,
-        height: previewElement.size.height,
+        height: 'auto', // Allow height to adapt to content
         zIndex: 100,
         opacity: 0.9,
         transition: 'transform 0.1s ease-out, opacity 0.2s ease-out',
-        animation: 'scale-in 0.2s ease-out'
+        animation: 'pulse 2s infinite ease-in-out'
       }}
     >
       <ElementContent element={previewElement} isEditing={false} />
