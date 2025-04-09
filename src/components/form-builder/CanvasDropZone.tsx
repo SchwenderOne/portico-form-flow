@@ -7,13 +7,15 @@ interface CanvasDropZoneProps {
   isDragOver: boolean;
   setIsDragOver: (isDragOver: boolean) => void;
   children: React.ReactNode;
+  onClick?: React.MouseEventHandler<HTMLDivElement>; // Added onClick prop
 }
 
 const CanvasDropZone: React.FC<CanvasDropZoneProps> = ({ 
   onDrop, 
   isDragOver, 
   setIsDragOver, 
-  children 
+  children,
+  onClick  // Added onClick prop
 }) => {
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -58,6 +60,7 @@ const CanvasDropZone: React.FC<CanvasDropZoneProps> = ({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      onClick={onClick} // Added onClick handler
     >
       {children}
     </div>
