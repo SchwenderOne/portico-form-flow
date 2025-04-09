@@ -1,4 +1,3 @@
-
 import { FormElement } from "@/types/form";
 import { BrandSettings } from "@/types/brand";
 import { format as formatDate } from "date-fns";
@@ -44,8 +43,18 @@ const mockResponses: FormResponse[] = [
   }
 ];
 
-// Fields that contain personal information and should be anonymized
-const sensitiveFields = ["fullName", "email", "address", "phone", "ssn"];
+// Comprehensive list of fields that contain personal information and should be anonymized
+const sensitiveFields = [
+  "fullName", "name", "firstName", "lastName", "middleName", 
+  "email", "emailAddress", 
+  "address", "streetAddress", "city", "state", "country", "zipCode", "postalCode",
+  "phone", "phoneNumber", "mobileNumber", "cellPhone", 
+  "ssn", "socialSecurity", "socialSecurityNumber", "taxId", "passport",
+  "dob", "dateOfBirth", "birthDate", "birthplace",
+  "creditCard", "cardNumber", "cvv", "ccv", "cvc",
+  "bankAccount", "accountNumber", "routingNumber",
+  "license", "licenseNumber", "driversLicense"
+];
 
 // Function to determine if a field is sensitive
 const isSensitiveField = (fieldName: string): boolean => {
@@ -63,10 +72,26 @@ const anonymizeData = (data: Record<string, any>): Record<string, any> => {
       if (typeof anonymized[key] === 'string') {
         if (key.toLowerCase().includes('email')) {
           // Special handling for email to maintain format
-          anonymized[key] = "user_" + Math.random().toString(36).substring(2, 8) + "@example.com";
+          const username = "user_" + Math.random().toString(36).substring(2, 8);
+          const domain = anonymized[key].split('@')[1] || "example.com";
+          anonymized[key] = `${username}@${domain}`;
+        } else if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('ssn') || key.toLowerCase().includes('license')) {
+          // Maintain format for numbers by replacing with X's but keeping separators
+          anonymized[key] = anonymized[key].replace(/\d/g, 'X');
         } else {
           // Replace with [REDACTED]
           anonymized[key] = "[REDACTED]";
+        }
+      } else if (typeof anonymized[key] === 'number') {
+        // For numeric fields like age, credit scores, etc.
+        if (key.toLowerCase().includes('age')) {
+          // Keep age range but not exact age
+          const age = anonymized[key];
+          const ageRange = Math.floor(age / 10) * 10;
+          anonymized[key] = `${ageRange}-${ageRange + 9}`;
+        } else {
+          // Other numbers get randomized
+          anonymized[key] = Math.floor(Math.random() * 100);
         }
       }
     }
@@ -181,8 +206,49 @@ export const preparePdfExport = (
   brandSettings: BrandSettings,
   includeBranding: boolean,
   anonymize: boolean
-): string => {
-  // In a real app, this would generate the actual PDF
-  // For now, we'll return a message that would be shown to the user
-  return "PDF generation would be implemented with a library like jsPDF or react-pdf";
+): object => {
+  // Get data
+  let responses = getFormResponses();
+  
+  if (anonymize) {
+    responses = responses.map(response => ({
+      ...response,
+      data: anonymizeData(response.data)
+    }));
+  }
+  
+  // Prepare metadata for PDF generation
+  const pdfData = {
+    title: "Form Responses Export",
+    date: new Date().toISOString(),
+    formElements,
+    responses,
+    branding: includeBranding ? {
+      logo: brandSettings.identity.logoUrl,
+      primaryColor: brandSettings.colors.primary,
+      fontFamily: brandSettings.typography.fontFamily,
+      brandName: brandSettings.identity.brandName
+    } : null
+  };
+  
+  // In a real app, this would generate the actual PDF using a library
+  // For this demo, we'll return the data that would be used to generate the PDF
+  return pdfData;
+};
+
+// Test the anonymization with sample data
+export const testAnonymization = () => {
+  const testData = {
+    fullName: "John Smith",
+    email: "john.smith@example.com",
+    phone: "555-123-4567",
+    ssn: "123-45-6789",
+    age: 42,
+    feedback: "This is a test comment"
+  };
+  
+  console.log("Original data:", testData);
+  console.log("Anonymized data:", anonymizeData(testData));
+  
+  return anonymizeData(testData);
 };

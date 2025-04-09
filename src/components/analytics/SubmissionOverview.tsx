@@ -3,8 +3,6 @@ import React from "react";
 import { FormAnalytics } from "@/types/analytics";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDistanceStrict } from "date-fns";
-import { ChartContainer, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
-import { Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Clock, BarChart2, Percent, Users } from "lucide-react";
 
 interface SubmissionOverviewProps {
@@ -15,28 +13,28 @@ const SubmissionOverview: React.FC<SubmissionOverviewProps> = ({ analytics }) =>
   const formattedTime = formatDistanceStrict(0, analytics.averageCompletionTimeSeconds * 1000);
   
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card>
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      <Card className="bg-white shadow-sm hover:shadow transition-shadow">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Submissions</CardTitle>
-          <Users className="h-4 w-4 text-muted-foreground" />
+          <Users className="h-4 w-4 text-primary" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{analytics.totalSubmissions}</div>
-          <p className="text-xs text-muted-foreground">
-            Entries: {analytics.totalSubmissions}
+          <p className="text-xs text-muted-foreground mt-1">
+            Form responses received
           </p>
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className="bg-white shadow-sm hover:shadow transition-shadow">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
-          <Percent className="h-4 w-4 text-muted-foreground" />
+          <Percent className="h-4 w-4 text-primary" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{(analytics.completionRate * 100).toFixed(1)}%</div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground mt-1">
             {analytics.dropOffRate > 0.3 
               ? "High drop-off rate" 
               : analytics.dropOffRate > 0.1 
@@ -46,27 +44,27 @@ const SubmissionOverview: React.FC<SubmissionOverviewProps> = ({ analytics }) =>
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className="bg-white shadow-sm hover:shadow transition-shadow">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Average Time</CardTitle>
-          <Clock className="h-4 w-4 text-muted-foreground" />
+          <Clock className="h-4 w-4 text-primary" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{formattedTime}</div>
-          <p className="text-xs text-muted-foreground">
-            Per submission
+          <p className="text-xs text-muted-foreground mt-1">
+            Per form submission
           </p>
         </CardContent>
       </Card>
       
-      <Card>
+      <Card className="bg-white shadow-sm hover:shadow transition-shadow">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Drop-off Rate</CardTitle>
-          <BarChart2 className="h-4 w-4 text-muted-foreground" />
+          <BarChart2 className="h-4 w-4 text-primary" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{(analytics.dropOffRate * 100).toFixed(1)}%</div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground mt-1">
             Users who abandoned
           </p>
         </CardContent>

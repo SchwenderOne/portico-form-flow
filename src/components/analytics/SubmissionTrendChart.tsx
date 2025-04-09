@@ -2,7 +2,7 @@
 import React from "react";
 import { FormAnalytics } from "@/types/analytics";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
+import { ChartContainer, ChartLegend } from "@/components/ui/chart";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { format } from "date-fns";
 
@@ -18,7 +18,7 @@ const SubmissionTrendChart: React.FC<SubmissionTrendChartProps> = ({ analytics }
   }));
 
   return (
-    <Card className="col-span-4">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Submission Trend</CardTitle>
         <CardDescription>
@@ -41,7 +41,7 @@ const SubmissionTrendChart: React.FC<SubmissionTrendChartProps> = ({ analytics }
                 top: 5,
                 right: 10,
                 left: 10,
-                bottom: 5,
+                bottom: 20,
               }}
             >
               <XAxis 
@@ -50,13 +50,17 @@ const SubmissionTrendChart: React.FC<SubmissionTrendChartProps> = ({ analytics }
                 axisLine={false}
                 tickMargin={10}
                 tickFormatter={(value) => value}
+                height={40}
               />
               <YAxis
                 tickLine={false}
                 axisLine={false}
                 tickMargin={10}
               />
-              <Tooltip />
+              <Tooltip 
+                formatter={(value) => [`${value}`, "Submissions"]}
+                labelFormatter={(label) => `Date: ${label}`}
+              />
               <Line
                 type="monotone"
                 dataKey="count"

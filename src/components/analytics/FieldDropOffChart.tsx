@@ -10,18 +10,20 @@ interface FieldDropOffChartProps {
 }
 
 const FieldDropOffChart: React.FC<FieldDropOffChartProps> = ({ fields }) => {
-  // Sort fields by abandonment rate (highest first)
+  // Sort fields by abandonment rate (highest first) and take top 5
   const topFields = [...fields]
     .sort((a, b) => b.abandonmentRate - a.abandonmentRate)
     .slice(0, 5);
 
+  // Ensure labels are short enough to display well
   const chartData = topFields.map(field => ({
-    name: field.fieldLabel,
+    name: field.fieldLabel.length > 15 ? field.fieldLabel.substring(0, 12) + '...' : field.fieldLabel,
     rate: parseFloat((field.abandonmentRate * 100).toFixed(1)),
+    originalName: field.fieldLabel // Keep original for tooltip
   }));
 
   return (
-    <Card className="col-span-2">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Top Drop-off Fields</CardTitle>
         <CardDescription>
@@ -43,8 +45,8 @@ const FieldDropOffChart: React.FC<FieldDropOffChartProps> = ({ fields }) => {
               layout="vertical"
               margin={{
                 top: 5,
-                right: 30,
-                left: 20,
+                right: 10,
+                left: 10,
                 bottom: 5,
               }}
             >
@@ -67,7 +69,12 @@ const FieldDropOffChart: React.FC<FieldDropOffChartProps> = ({ fields }) => {
               />
               <Tooltip
                 formatter={(value) => [`${value}%`, "Abandonment Rate"]}
-                labelFormatter={(label) => `Field: ${label}`}
+                labelFormatter={(label, data) => {
+                  if (data && data[0]) {
+                    return `Field: ${data[0].payload.originalName}`;
+                  }
+                  return `Field: ${label}`;
+                }}
               />
               <Bar
                 dataKey="rate"

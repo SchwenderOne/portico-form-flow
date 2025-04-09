@@ -26,10 +26,22 @@ const EmptyState: React.FC<EmptyStateProps> = ({ onCreateAutomation }) => {
             Automations let you perform actions when specific events occur in your forms.
             For example, send an email when a form is submitted or tag submissions based on responses.
           </p>
+          <div className="mt-6 p-4 bg-muted/50 rounded-md">
+            <h4 className="font-medium mb-2">Possible automations:</h4>
+            <ul className="text-left list-disc list-inside">
+              <li>Send confirmation emails on form submission</li>
+              <li>Trigger notifications when specific fields are filled</li>
+              <li>Send data to external systems via webhooks</li>
+              <li>Tag and categorize submissions based on responses</li>
+            </ul>
+          </div>
         </div>
       </CardContent>
       <CardFooter className="flex justify-center pb-6">
-        <Button onClick={onCreateAutomation}>Create Automation</Button>
+        <Button onClick={onCreateAutomation} className="gap-2">
+          <Zap className="h-4 w-4" />
+          Create Automation
+        </Button>
       </CardFooter>
     </Card>
   );

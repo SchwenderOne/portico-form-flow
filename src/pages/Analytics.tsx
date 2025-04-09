@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 import { getFormAnalytics } from "@/services/analytics-service";
 import { FormAnalytics } from "@/types/analytics";
@@ -14,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import FieldDropOffChart from "@/components/analytics/FieldDropOffChart";
 import CompletionPieChart from "@/components/analytics/CompletionPieChart";
+import { Card, CardContent } from "@/components/ui/card";
 
 const AnalyticsPage: React.FC = () => {
   const [analytics, setAnalytics] = useState<FormAnalytics | null>(null);
@@ -65,11 +65,20 @@ const AnalyticsPage: React.FC = () => {
             </div>
           </div>
         ) : analytics && analytics.totalSubmissions > 0 ? (
-          <div className="grid grid-cols-4 gap-4">
+          <div className="space-y-6">
+            {/* Overview Metrics - Full Width */}
             <SubmissionOverview analytics={analytics} />
-            <SubmissionTrendChart analytics={analytics} />
-            <FieldDropOffChart fields={analytics.fieldStats} />
-            <CompletionPieChart analytics={analytics} />
+            
+            {/* Charts Section - Two Column Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <SubmissionTrendChart analytics={analytics} />
+              <div className="grid grid-cols-1 gap-6">
+                <CompletionPieChart analytics={analytics} />
+                <FieldDropOffChart fields={analytics.fieldStats} />
+              </div>
+            </div>
+            
+            {/* Field Performance Table - Full Width */}
             <FieldPerformanceTable fields={analytics.fieldStats} />
           </div>
         ) : (

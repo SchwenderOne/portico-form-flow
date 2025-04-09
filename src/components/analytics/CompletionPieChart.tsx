@@ -2,7 +2,7 @@
 import React from "react";
 import { FormAnalytics } from "@/types/analytics";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
+import { ChartContainer } from "@/components/ui/chart";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
 interface CompletionPieChartProps {
@@ -16,7 +16,7 @@ const CompletionPieChart: React.FC<CompletionPieChartProps> = ({ analytics }) =>
   ];
 
   return (
-    <Card className="col-span-2">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Completion Rate</CardTitle>
         <CardDescription>
@@ -37,13 +37,14 @@ const CompletionPieChart: React.FC<CompletionPieChartProps> = ({ analytics }) =>
           }}
         >
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+            <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
               <Pie
                 data={data}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                outerRadius={80}
+                outerRadius={90}
+                innerRadius={30}
                 fill="#8884d8"
                 dataKey="value"
                 nameKey="name"
@@ -53,8 +54,10 @@ const CompletionPieChart: React.FC<CompletionPieChartProps> = ({ analytics }) =>
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => `${value}%`} />
-              <ChartLegend payload={data} />
+              <Tooltip 
+                formatter={(value) => [`${value}%`, ""]}
+                labelFormatter={(label) => `${label}`}
+              />
             </PieChart>
           </ResponsiveContainer>
         </ChartContainer>
