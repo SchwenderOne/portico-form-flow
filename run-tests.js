@@ -26,6 +26,9 @@ if (withCoverage) {
   cmdArgs.push('run');
 }
 
+console.log('Starting Vitest tests...');
+console.log(`Command: ${vitestBin} ${cmdArgs.join(' ')}`);
+
 // Spawn vitest process
 const testProcess = spawn(vitestBin, cmdArgs, {
   stdio: 'inherit',
@@ -33,5 +36,6 @@ const testProcess = spawn(vitestBin, cmdArgs, {
 });
 
 testProcess.on('close', (code) => {
+  console.log(`Tests completed with exit code: ${code}`);
   process.exit(code);
 });
