@@ -11,7 +11,9 @@ import EmailField from "./fields/EmailField";
 import DateField from "./fields/DateField";
 import NumberField from "./fields/NumberField";
 import ParagraphField from "./fields/ParagraphField";
+import GDPRConsentField from "./fields/GDPRConsentField";
 import { InfoIcon, AlertTriangle } from "lucide-react";
+import { useCompliance } from "@/context/ComplianceContext";
 
 interface ElementContentProps {
   element: FormElement;
@@ -24,6 +26,10 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
   const [selectValue, setSelectValue] = useState('');
   const [checkboxValue, setCheckboxValue] = useState(false);
   const [dateValue, setDateValue] = useState<Date | undefined>(undefined);
+  const [gdprConsentValue, setGdprConsentValue] = useState(false);
+  
+  // Get compliance context for GDPR field
+  const { complianceSettings } = useCompliance();
 
   const renderField = () => {
     switch (element.type) {
@@ -58,6 +64,17 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
             isEditing={isEditing} 
             checked={checkboxValue}
             onCheckedChange={setCheckboxValue}
+          />
+        );
+      case 'gdpr-consent':
+        return (
+          <GDPRConsentField 
+            id={element.id}
+            checked={gdprConsentValue}
+            onCheckedChange={setGdprConsentValue}
+            isEditing={isEditing}
+            privacyPolicyUrl={complianceSettings.privacyPolicyUrl}
+            termsAndConditionsUrl={complianceSettings.termsAndConditionsUrl}
           />
         );
       case 'radio':

@@ -50,4 +50,9 @@ export interface FormSettings {
   redirectUrl?: string;
   showProgressBar: boolean;
   thankYouMessage?: string;
+  gdprConsent?: boolean;
+  privacyPolicyUrl?: string;
+  termsAndConditionsUrl?: string;
+  dataAnonymization?: boolean;
+  dataRetentionPeriod?: number;
 }

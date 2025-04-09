@@ -6,10 +6,18 @@ import ValidationTab from "./toolbars/tabs/ValidationTab";
 import AppearanceTab from "./toolbars/tabs/AppearanceTab";
 import AIAssistTab from "./toolbars/tabs/AIAssistTab";
 import SettingsTab from "./toolbars/tabs/SettingsTab";
+import ComplianceTab from "./toolbars/tabs/ComplianceTab";
 import MultipleSelectionPanel from "./toolbars/MultipleSelectionPanel";
 import NoSelectionPanel from "./toolbars/NoSelectionPanel";
 import { FormElement } from "@/types/form";
-import { Settings, Wand, Paintbrush, ListChecks, SlidersHorizontal } from "lucide-react";
+import { 
+  Settings, 
+  Wand, 
+  Paintbrush, 
+  ListChecks, 
+  SlidersHorizontal,
+  Shield
+} from "lucide-react";
 
 interface FormToolbarProps {
   selectedElement: FormElement | null;
@@ -95,6 +103,13 @@ const FormToolbar: React.FC<FormToolbarProps> = ({
               <Settings className="h-4 w-4 mr-2" />
               Settings
             </TabsTrigger>
+            <TabsTrigger
+              value="compliance"
+              className="data-[state=active]:bg-background rounded-none data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
+            >
+              <Shield className="h-4 w-4 mr-2" />
+              Compliance
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -134,6 +149,10 @@ const FormToolbar: React.FC<FormToolbarProps> = ({
 
         <TabsContent value="settings" className="m-0 h-full">
           <SettingsTab />
+        </TabsContent>
+        
+        <TabsContent value="compliance" className="m-0 h-full">
+          <ComplianceTab />
         </TabsContent>
       </Tabs>
     </div>
