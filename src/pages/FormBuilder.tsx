@@ -7,14 +7,19 @@ import { FormMetadataProvider } from "@/context/FormMetadataContext";
 import { BrandSettingsSheet } from "@/components/form-builder/BrandSettingsSheet";
 import { BrandSettingsProvider } from "@/context/BrandSettingsContext";
 import { ComplianceProvider } from "@/context/ComplianceContext";
-import VersionHistorySheet from "@/components/form-builder/version-history/VersionHistorySheet";
 import { TeamManagementSheet } from "@/components/team/TeamManagementSheet";
 import { TeamProvider } from "@/context/TeamContext";
+import { FormCanvasProvider } from "@/components/form-builder/context/FormCanvasContext";
+import { CollaborationProvider } from "@/context/CollaborationContext";
+
+// Import the standalone version history sheet
+import VersionHistorySheet from "@/components/form-builder/version-history/VersionHistorySheet";
 
 const FormBuilder = () => {
   const [metadataSheetOpen, setMetadataSheetOpen] = useState(false);
   const [brandSheetOpen, setBrandSheetOpen] = useState(false);
   const [teamSheetOpen, setTeamSheetOpen] = useState(false);
+  const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
 
   // Register controls for the metadata sheet
   useEffect(() => {
@@ -25,6 +30,20 @@ const FormBuilder = () => {
     
     return () => {
       registerFormMetadataSheetControls(null, null);
+    };
+  }, []);
+
+  // Register controls for version history
+  useEffect(() => {
+    const openSheet = () => setVersionHistoryOpen(true);
+    const closeSheet = () => setVersionHistoryOpen(false);
+    
+    // Register the version history controls
+    const { registerVersionHistoryControls } = require('@/components/form-builder/version-history/VersionHistorySheet');
+    registerVersionHistoryControls(openSheet, closeSheet);
+    
+    return () => {
+      registerVersionHistoryControls(null, null);
     };
   }, []);
 
@@ -48,7 +67,12 @@ const FormBuilder = () => {
                   onOpenChange={setBrandSheetOpen}
                 />
                 
-                <VersionHistorySheet showTrigger={false} />
+                {/* Use the standalone VersionHistorySheet */}
+                <VersionHistorySheet 
+                  showTrigger={false}
+                  open={versionHistoryOpen}
+                  onOpenChange={setVersionHistoryOpen}
+                />
                 
                 <TeamManagementSheet
                   open={teamSheetOpen}

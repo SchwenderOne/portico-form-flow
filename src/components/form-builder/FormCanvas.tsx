@@ -8,7 +8,6 @@ import AIAssistantModal from "./ai-assistant/AIAssistantModal";
 import { FormCanvasProvider, useFormCanvas } from "./context/FormCanvasContext";
 import SmartGuides from "./SmartGuides";
 import { CollaboratorAvatars, EditorCursor, CollaborationProvider } from "@/context/CollaborationContext";
-import VersionHistorySheet, { registerVersionHistoryControls } from "./version-history/VersionHistorySheet";
 import { useFormMetadata } from "@/context/FormMetadataContext";
 
 declare global {
@@ -19,7 +18,6 @@ declare global {
 
 const FormCanvasContent = () => {
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-  const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const { metadata } = useFormMetadata();
   
   const {
@@ -69,13 +67,6 @@ const FormCanvasContent = () => {
       handleRequiredToggle(id, !element.required);
     }
   };
-
-  useEffect(() => {
-    registerVersionHistoryControls(
-      () => setIsVersionHistoryOpen(true),
-      () => setIsVersionHistoryOpen(false)
-    );
-  }, []);
 
   useEffect(() => {
     const handleAddElementsEvent = (event: CustomEvent<{elements: FormElement[]}>) => {
@@ -195,12 +186,6 @@ const FormCanvasContent = () => {
         onClose={handleCloseAIModal}
         onAddElements={handleAddAIElements}
         existingElements={elements}
-      />
-      
-      <VersionHistorySheet 
-        open={isVersionHistoryOpen}
-        onOpenChange={setIsVersionHistoryOpen}
-        showTrigger={false}
       />
     </div>
   );

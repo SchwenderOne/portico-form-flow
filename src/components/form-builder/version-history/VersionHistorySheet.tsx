@@ -61,8 +61,18 @@ const VersionHistorySheet: React.FC<VersionHistorySheetProps> = ({
   const [versionLabel, setVersionLabel] = useState<string>("");
   
   const { metadata } = useFormMetadata();
-  const { elements } = useFormCanvas();
   const { user } = useAuth();
+  
+  // Safely use the form canvas context with a fallback
+  let formCanvasContext = { elements: [] as FormElement[] };
+  try {
+    formCanvasContext = useFormCanvas();
+  } catch (error) {
+    // If useFormCanvas fails, continue with empty elements array
+    console.log("VersionHistorySheet: FormCanvasProvider not available");
+  }
+  
+  const { elements } = formCanvasContext;
 
   // Fetch versions when component mounts or form ID changes
   useEffect(() => {
@@ -153,6 +163,9 @@ const VersionHistorySheet: React.FC<VersionHistorySheetProps> = ({
     setCompareVersion(version);
   };
 
+  // Determine if we're in a context where we can save versions (requires FormCanvasProvider)
+  const canSaveVersions = Array.isArray(elements) && elements.length > 0;
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       {showTrigger && (
@@ -169,23 +182,29 @@ const VersionHistorySheet: React.FC<VersionHistorySheetProps> = ({
         </SheetHeader>
         
         <div className="flex flex-col gap-4 py-4">
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              placeholder="Version label (optional)"
-              className="flex-1 px-3 py-2 border rounded-md text-sm"
-              value={versionLabel}
-              onChange={(e) => setVersionLabel(e.target.value)}
-            />
-            <Button 
-              onClick={handleSaveVersion}
-              disabled={isSaving}
-              className="gap-2"
-            >
-              <Save className="h-4 w-4" />
-              Save Version
-            </Button>
-          </div>
+          {canSaveVersions ? (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="Version label (optional)"
+                className="flex-1 px-3 py-2 border rounded-md text-sm"
+                value={versionLabel}
+                onChange={(e) => setVersionLabel(e.target.value)}
+              />
+              <Button 
+                onClick={handleSaveVersion}
+                disabled={isSaving}
+                className="gap-2"
+              >
+                <Save className="h-4 w-4" />
+                Save Version
+              </Button>
+            </div>
+          ) : (
+            <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-md">
+              Version saving is only available in the form editor.
+            </div>
+          )}
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
