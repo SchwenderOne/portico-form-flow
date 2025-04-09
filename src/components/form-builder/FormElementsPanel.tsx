@@ -14,7 +14,7 @@ import {
   FileText,
   AlertCircle,
   Heading,
-  Paragraph,
+  Text,
   ListOrdered,
   Menu,
   GripVertical,
@@ -48,7 +48,7 @@ const formFields = [
 
 const textElements = [
   { type: "header", name: "Header", icon: Heading },
-  { type: "paragraph", name: "Paragraph", icon: Paragraph },
+  { type: "paragraph", name: "Paragraph", icon: Text },
   { type: "list", name: "Bullet List", icon: ListOrdered },
 ];
 
