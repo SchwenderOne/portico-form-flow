@@ -18,6 +18,7 @@ import Compliance from "./pages/Compliance";
 import FormMetadata from "./pages/FormMetadata";
 import Analytics from "./pages/Analytics";
 import Automations from "./pages/Automations";
+import Distribute from "./pages/Distribute";
 import Auth from "./pages/Auth";
 import RequireAuth from "./components/auth/RequireAuth";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
@@ -52,7 +53,7 @@ const App = () => (
                       <Route path="/auth" element={<Auth />} />
                       <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
                       <Route path="/templates" element={<RequireAuth><Templates /></RequireAuth>} />
-                      <Route path="/distribute" element={<RequireAuth><NotFound /></RequireAuth>} />
+                      <Route path="/distribute" element={<RequireAuth><Distribute /></RequireAuth>} />
                       <Route path="/analytics" element={<RequireAuth><Analytics /></RequireAuth>} />
                       <Route path="/automations" element={<RequireAuth><Automations /></RequireAuth>} />
                       <Route path="/branding" element={<RequireAuth><Index /></RequireAuth>} /> {/* Redirects to Index but will open Brand Settings panel */}
