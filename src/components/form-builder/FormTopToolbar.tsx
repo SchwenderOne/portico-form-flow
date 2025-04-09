@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import ExportFormDropdown from "./ExportFormDropdown";
@@ -53,7 +52,6 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
   const { queueAutoSaveEvent } = useAutoSave({ elements: existingElements });
   const [isSaving, setIsSaving] = React.useState(false);
 
-  // Temporary mock functions for undo/redo until implemented
   const undoOperation = () => toast.info("Undo functionality will be available soon");
   const redoOperation = () => toast.info("Redo functionality will be available soon");
   const canUndo = false;
@@ -62,20 +60,14 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      // Save form metadata
       await saveMetadata();
-      
-      // Save form elements to database
       await saveFormState(
         metadata.id,
         metadata.name,
         metadata.description || '',
         existingElements
       );
-      
-      // Queue an auto-save event when manually saving
       queueAutoSaveEvent(AutoSaveEvent.PUBLISH);
-      
       toast.success("Form saved successfully");
     } catch (error) {
       console.error("Save error:", error);
@@ -287,7 +279,7 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
           </Tooltip>
         </TooltipProvider>
         
-        <ExportFormDropdown elements={existingElements} />
+        <ExportFormDropdown formElements={existingElements} />
       </div>
       
       <FormMetadataSheet showTrigger={false} />
