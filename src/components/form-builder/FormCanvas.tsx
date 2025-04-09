@@ -52,18 +52,26 @@ const FormCanvas = () => {
   };
 
   const handleElementDrop = (type: string, position: { x: number, y: number }) => {
+    // Create new element based on type
     const newElement: FormElementType = {
       id: `${type}-${Date.now()}`,
       type,
       position,
-      size: { width: 500, height: type === 'header' ? 60 : 80 },
+      size: { width: 500, height: type === 'header' || type === 'paragraph' ? 60 : 80 },
       label: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
       placeholder: `Enter ${type}...`,
       required: false
     };
 
+    // Special handling for certain element types
     if (type === 'header') {
       (newElement as any).content = 'New Form Header';
+    } else if (type === 'paragraph') {
+      (newElement as any).content = 'Add your paragraph text here...';
+    } else if (type === 'checkbox' || type === 'radio') {
+      (newElement as any).options = ['Option 1', 'Option 2', 'Option 3'];
+    } else if (type === 'select') {
+      (newElement as any).options = ['Select an option', 'Option 1', 'Option 2', 'Option 3'];
     }
 
     setElements([...elements, newElement]);
