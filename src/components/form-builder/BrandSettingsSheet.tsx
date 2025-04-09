@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Sheet, 
   SheetContent, 
@@ -15,24 +15,51 @@ import { BrandSettingsProvider } from "@/context/BrandSettingsContext";
 
 interface BrandSettingsSheetProps {
   className?: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  showTrigger?: boolean;
 }
 
-export function BrandSettingsSheet({ className }: BrandSettingsSheetProps) {
-  const [open, setOpen] = useState(false);
+export function BrandSettingsSheet({ 
+  className, 
+  open: externalOpen, 
+  onOpenChange: externalOnOpenChange,
+  showTrigger = true
+}: BrandSettingsSheetProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  // Determine if we're using internal or external state
+  const isControlled = externalOpen !== undefined;
+  const open = isControlled ? externalOpen : internalOpen;
+  
+  const onOpenChange = (newOpen: boolean) => {
+    if (!isControlled) {
+      setInternalOpen(newOpen);
+    }
+    externalOnOpenChange?.(newOpen);
+  };
+
+  useEffect(() => {
+    if (isControlled) {
+      setInternalOpen(externalOpen);
+    }
+  }, [externalOpen, isControlled]);
 
   return (
     <BrandSettingsProvider>
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className={className}
-          >
-            <Palette className="h-4 w-4 mr-2" />
-            Brand Settings
-          </Button>
-        </SheetTrigger>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        {showTrigger && (
+          <SheetTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className={className}
+            >
+              <Palette className="h-4 w-4 mr-2" />
+              Brand Settings
+            </Button>
+          </SheetTrigger>
+        )}
         <SheetContent className="sm:max-w-md overflow-auto" side="right">
           <SheetHeader>
             <SheetTitle>Brand Settings</SheetTitle>
@@ -48,3 +75,22 @@ export function BrandSettingsSheet({ className }: BrandSettingsSheetProps) {
     </BrandSettingsProvider>
   );
 }
+
+// Export a function to create and manage the sheet globally
+let openBrandSettingsSheet: (() => void) | null = null;
+let closeBrandSettingsSheet: (() => void) | null = null;
+
+export const registerBrandSettingsSheetControls = (
+  open: () => void,
+  close: () => void
+) => {
+  openBrandSettingsSheet = open;
+  closeBrandSettingsSheet = close;
+};
+
+export const useBrandSettingsSheet = () => {
+  return {
+    open: () => openBrandSettingsSheet?.(),
+    close: () => closeBrandSettingsSheet?.()
+  };
+};

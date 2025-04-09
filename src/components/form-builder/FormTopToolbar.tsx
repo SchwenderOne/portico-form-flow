@@ -11,7 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { BrandSettingsSheet } from "./BrandSettingsSheet";
 import AIAssistantButton from "./ai-assistant/AIAssistantButton";
 import { FormElement } from "@/types/form";
 
@@ -99,8 +98,6 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
           onAddElements={onOpenAIModal} 
           existingElements={existingElements} 
         />
-        
-        <BrandSettingsSheet />
 
         <Button
           variant="ghost"

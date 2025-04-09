@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -26,10 +26,27 @@ import {
   Shield
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { BrandSettingsSheet } from "@/components/form-builder/BrandSettingsSheet";
 
 const AppSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isBrandSettingsOpen, setIsBrandSettingsOpen] = useState(false);
+
+  // Effect to handle opening brand settings when the URL is /branding
+  useEffect(() => {
+    if (location.pathname === "/branding") {
+      setIsBrandSettingsOpen(true);
+    }
+  }, [location.pathname]);
+
+  const handleMenuItemClick = (path: string) => {
+    if (path === "/branding") {
+      setIsBrandSettingsOpen(true);
+    } else {
+      navigate(path);
+    }
+  };
 
   const menuItems = [
     { icon: LayoutGrid, title: "Templates", path: "/templates" },
@@ -43,53 +60,63 @@ const AppSidebar = () => {
   ];
 
   return (
-    <Sidebar>
-      <SidebarHeader className="flex items-center px-4 py-2">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-portico-purple rounded-md flex items-center justify-center">
-            <span className="text-white font-bold">P</span>
+    <>
+      <Sidebar>
+        <SidebarHeader className="flex items-center px-4 py-2">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-portico-purple rounded-md flex items-center justify-center">
+              <span className="text-white font-bold">P</span>
+            </div>
+            <span className="font-bold text-xl">Portico</span>
           </div>
-          <span className="font-bold text-xl">Portico</span>
-        </div>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>WORKSPACE</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    className={cn(
-                      location.pathname === item.path && "bg-sidebar-accent text-portico-purple font-medium"
-                    )}
-                    onClick={() => navigate(item.path)}
-                  >
-                    <item.icon className="mr-2 h-5 w-5" />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter>
-        <div className="px-4 py-2">
-          <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-sidebar-accent cursor-pointer">
-            <Award className="h-5 w-5 text-portico-purple" />
-            <div className="flex flex-col">
-              <span className="text-xs font-medium">Free Plan</span>
-              <span className="text-xs text-muted-foreground">Upgrade to Pro</span>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>WORKSPACE</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {menuItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton 
+                      className={cn(
+                        (location.pathname === item.path || (item.path === "/branding" && isBrandSettingsOpen)) && 
+                        "bg-sidebar-accent text-portico-purple font-medium"
+                      )}
+                      onClick={() => handleMenuItemClick(item.path)}
+                    >
+                      <item.icon className="mr-2 h-5 w-5" />
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>
+          <div className="px-4 py-2">
+            <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-sidebar-accent cursor-pointer">
+              <Award className="h-5 w-5 text-portico-purple" />
+              <div className="flex flex-col">
+                <span className="text-xs font-medium">Free Plan</span>
+                <span className="text-xs text-muted-foreground">Upgrade to Pro</span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-sidebar-accent cursor-pointer mt-2">
+              <HelpCircle className="h-5 w-5" />
+              <span className="text-sm">Help & Support</span>
             </div>
           </div>
-          <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-sidebar-accent cursor-pointer mt-2">
-            <HelpCircle className="h-5 w-5" />
-            <span className="text-sm">Help & Support</span>
-          </div>
-        </div>
-      </SidebarFooter>
-    </Sidebar>
+        </SidebarFooter>
+      </Sidebar>
+
+      {/* Brand Settings Sheet */}
+      <BrandSettingsSheet 
+        open={isBrandSettingsOpen} 
+        onOpenChange={setIsBrandSettingsOpen}
+        showTrigger={false}
+      />
+    </>
   );
 };
 
