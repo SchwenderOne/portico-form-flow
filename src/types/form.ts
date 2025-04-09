@@ -24,3 +24,30 @@ export interface FormElement {
   options?: string[];
   value?: any;
 }
+
+// Export additional form-related types for better organization
+export interface FormPosition {
+  x: number;
+  y: number;
+}
+
+export interface FormSize {
+  width: number;
+  height: number;
+}
+
+export interface FormTheme {
+  primaryColor: string;
+  backgroundColor: string;
+  textColor: string;
+  borderRadius: string;
+  fontFamily: string;
+}
+
+export interface FormSettings {
+  theme: FormTheme;
+  submitButtonText: string;
+  redirectUrl?: string;
+  showProgressBar: boolean;
+  thankYouMessage?: string;
+}

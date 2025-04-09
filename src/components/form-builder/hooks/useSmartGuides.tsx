@@ -1,273 +1,245 @@
 
-import { useState, useEffect } from "react";
-import { FormElement as FormElementType } from "@/types/form";
+import { useCallback, useState, useEffect } from "react";
+import { FormElement } from "@/types/form";
 
-// Define threshold distances for snapping
+interface SmartGuideParams {
+  orientation: 'horizontal' | 'vertical';
+  position: number;
+}
+
+interface DistanceParams {
+  elementId: string;
+  distance: number;
+  orientation: 'horizontal' | 'vertical';
+}
+
+// Threshold for snapping (in pixels)
 const SNAP_THRESHOLD = 10;
-const DISTANCE_SHOW_THRESHOLD = 100; // Only show distances for elements close enough
-const EQUAL_SPACING_THRESHOLD = 5; // Threshold for detecting equal spacing
-const OVERLAP_PREVENTION_PADDING = 10; // Padding to prevent overlaps
 
-export const useSmartGuides = (elements: FormElementType[], isDragging: boolean) => {
+export const useSmartGuides = (elements: FormElement[], isDragging: boolean) => {
   const [showSmartGuides, setShowSmartGuides] = useState(false);
-  const [guideLines, setGuideLines] = useState<{horizontal: number[], vertical: number[]}>({
-    horizontal: [],
-    vertical: []
-  });
-  const [distances, setDistances] = useState<{
-    horizontal: { position: number; distance: number }[];
-    vertical: { position: number; distance: number }[];
-  }>({
-    horizontal: [],
-    vertical: []
-  });
-
-  // Function to check if two elements would overlap
-  const wouldOverlap = (elem1: { x: number, y: number, width: number, height: number }, 
-                        elem2: { x: number, y: number, width: number, height: number }) => {
-    return !(
-      elem1.x + elem1.width + OVERLAP_PREVENTION_PADDING < elem2.x || 
-      elem2.x + elem2.width + OVERLAP_PREVENTION_PADDING < elem1.x ||
-      elem1.y + elem1.height + OVERLAP_PREVENTION_PADDING < elem2.y ||
-      elem2.y + elem2.height + OVERLAP_PREVENTION_PADDING < elem1.y
-    );
-  };
-
-  // Function to auto-nudge an element position to snap to guides and prevent overlaps
-  const autoNudgePosition = (id: string, position: { x: number, y: number }) => {
-    const movingElement = elements.find(el => el.id === id);
-    if (!movingElement) return position;
-    
-    let nudgedPosition = { ...position };
-    
-    // Calculate key positions for the moving element
-    const movingLeft = position.x;
-    const movingRight = position.x + movingElement.size.width;
-    const movingTop = position.y;
-    const movingBottom = position.y + movingElement.size.height;
-    const movingCenterX = position.x + movingElement.size.width / 2;
-    const movingCenterY = position.y + movingElement.size.height / 2;
-    
-    // Collect all potential snap points
-    const horizontalSnapPoints: { position: number, target: number }[] = [];
-    const verticalSnapPoints: { position: number, target: number }[] = [];
-    
-    // Check for overlaps with other elements
-    let hasOverlap = false;
-    
-    elements.forEach(el => {
-      if (el.id === id) return;
-      
-      const elLeft = el.position.x;
-      const elRight = el.position.x + el.size.width;
-      const elTop = el.position.y;
-      const elBottom = el.position.y + el.size.height;
-      const elCenterX = el.position.x + el.size.width / 2;
-      const elCenterY = el.position.y + el.size.height / 2;
-      
-      // Check for potential overlap
-      if (wouldOverlap(
-        { x: position.x, y: position.y, width: movingElement.size.width, height: movingElement.size.height },
-        { x: el.position.x, y: el.position.y, width: el.size.width, height: el.size.height }
-      )) {
-        hasOverlap = true;
-        
-        // If overlapping, find a better position (e.g., align right or below)
-        if (position.y < elBottom && position.y + movingElement.size.height > elTop) {
-          // Horizontal overlap, move element to the right or left
-          if (Math.abs(position.x - elRight) < Math.abs(elLeft - (position.x + movingElement.size.width))) {
-            nudgedPosition.x = elRight + OVERLAP_PREVENTION_PADDING;
-          } else {
-            nudgedPosition.x = elLeft - movingElement.size.width - OVERLAP_PREVENTION_PADDING;
-          }
-        }
-        
-        if (position.x < elRight && position.x + movingElement.size.width > elLeft) {
-          // Vertical overlap, move element below or above
-          if (Math.abs(position.y - elBottom) < Math.abs(elTop - (position.y + movingElement.size.height))) {
-            nudgedPosition.y = elBottom + OVERLAP_PREVENTION_PADDING;
-          } else {
-            nudgedPosition.y = elTop - movingElement.size.height - OVERLAP_PREVENTION_PADDING;
-          }
-        }
-      }
-      
-      // Check horizontal alignments for snapping
-      if (Math.abs(movingTop - elTop) < SNAP_THRESHOLD) {
-        horizontalSnapPoints.push({ position: movingTop, target: elTop });
-      }
-      if (Math.abs(movingCenterY - elCenterY) < SNAP_THRESHOLD) {
-        horizontalSnapPoints.push({ position: movingCenterY, target: elCenterY });
-      }
-      if (Math.abs(movingBottom - elBottom) < SNAP_THRESHOLD) {
-        horizontalSnapPoints.push({ position: movingBottom, target: elBottom });
-      }
-      
-      // Check vertical alignments for snapping
-      if (Math.abs(movingLeft - elLeft) < SNAP_THRESHOLD) {
-        verticalSnapPoints.push({ position: movingLeft, target: elLeft });
-      }
-      if (Math.abs(movingCenterX - elCenterX) < SNAP_THRESHOLD) {
-        verticalSnapPoints.push({ position: movingCenterX, target: elCenterX });
-      }
-      if (Math.abs(movingRight - elRight) < SNAP_THRESHOLD) {
-        verticalSnapPoints.push({ position: movingRight, target: elRight });
-      }
-    });
-    
-    // Only apply snapping if we don't have overlaps to resolve
-    if (!hasOverlap) {
-      // Find closest snap points
-      let closestHorizontal = horizontalSnapPoints.length > 0 
-        ? horizontalSnapPoints.reduce((prev, curr) => 
-            Math.abs(curr.position - curr.target) < Math.abs(prev.position - prev.target) ? curr : prev
-          ) 
-        : null;
-      
-      let closestVertical = verticalSnapPoints.length > 0 
-        ? verticalSnapPoints.reduce((prev, curr) => 
-            Math.abs(curr.position - curr.target) < Math.abs(prev.position - prev.target) ? curr : prev
-          ) 
-        : null;
-      
-      // Apply snapping nudges
-      if (closestHorizontal) {
-        const diff = closestHorizontal.target - closestHorizontal.position;
-        nudgedPosition.y += diff;
-      }
-      
-      if (closestVertical) {
-        const diff = closestVertical.target - closestVertical.position;
-        nudgedPosition.x += diff;
-      }
-    }
-    
-    return nudgedPosition;
-  };
-
-  const calculateSmartGuides = (movingId: string, position: { x: number, y: number }) => {
-    const movingElement = elements.find(el => el.id === movingId);
-    if (!movingElement) return;
-    
-    const horizontalGuides: number[] = [];
-    const verticalGuides: number[] = [];
-    const horizontalDistances: { position: number; distance: number }[] = [];
-    const verticalDistances: { position: number; distance: number }[] = [];
-    
-    const movingLeft = position.x;
-    const movingRight = position.x + movingElement.size.width;
-    const movingTop = position.y;
-    const movingBottom = position.y + movingElement.size.height;
-    const movingCenterX = position.x + movingElement.size.width / 2;
-    const movingCenterY = position.y + movingElement.size.height / 2;
-    
-    // For detecting equal spacing
-    const horizontalGaps: number[] = [];
-    const verticalGaps: number[] = [];
-    
-    elements.forEach(el => {
-      if (el.id === movingId) return;
-      
-      const elLeft = el.position.x;
-      const elRight = el.position.x + el.size.width;
-      const elTop = el.position.y;
-      const elBottom = el.position.y + el.size.height;
-      const elCenterX = el.position.x + el.size.width / 2;
-      const elCenterY = el.position.y + el.size.height / 2;
-      
-      // Edge alignments
-      if (Math.abs(movingTop - elTop) < SNAP_THRESHOLD) horizontalGuides.push(elTop);
-      if (Math.abs(movingBottom - elBottom) < SNAP_THRESHOLD) horizontalGuides.push(elBottom);
-      if (Math.abs(movingLeft - elLeft) < SNAP_THRESHOLD) verticalGuides.push(elLeft);
-      if (Math.abs(movingRight - elRight) < SNAP_THRESHOLD) verticalGuides.push(elRight);
-      
-      // Center alignments
-      if (Math.abs(movingCenterY - elCenterY) < SNAP_THRESHOLD) horizontalGuides.push(elCenterY);
-      if (Math.abs(movingCenterX - elCenterX) < SNAP_THRESHOLD) verticalGuides.push(elCenterX);
-      
-      // Calculate horizontal distances
-      if (Math.abs(movingLeft - elRight) < DISTANCE_SHOW_THRESHOLD) {
-        horizontalDistances.push({
-          position: (elRight + movingLeft) / 2,
-          distance: Math.abs(movingLeft - elRight)
-        });
-        horizontalGaps.push(Math.abs(movingLeft - elRight));
-      }
-      
-      if (Math.abs(elLeft - movingRight) < DISTANCE_SHOW_THRESHOLD) {
-        horizontalDistances.push({
-          position: (movingRight + elLeft) / 2,
-          distance: Math.abs(elLeft - movingRight)
-        });
-        horizontalGaps.push(Math.abs(elLeft - movingRight));
-      }
-      
-      // Calculate vertical distances
-      if (Math.abs(movingTop - elBottom) < DISTANCE_SHOW_THRESHOLD) {
-        verticalDistances.push({
-          position: (elBottom + movingTop) / 2,
-          distance: Math.abs(movingTop - elBottom)
-        });
-        verticalGaps.push(Math.abs(movingTop - elBottom));
-      }
-      
-      if (Math.abs(elTop - movingBottom) < DISTANCE_SHOW_THRESHOLD) {
-        verticalDistances.push({
-          position: (movingBottom + elTop) / 2,
-          distance: Math.abs(elTop - movingBottom)
-        });
-        verticalGaps.push(Math.abs(elTop - movingBottom));
-      }
-    });
-    
-    // Check for equal spacing between three or more elements
-    if (horizontalGaps.length >= 2) {
-      for (let i = 0; i < horizontalGaps.length; i++) {
-        for (let j = i + 1; j < horizontalGaps.length; j++) {
-          if (Math.abs(horizontalGaps[i] - horizontalGaps[j]) < EQUAL_SPACING_THRESHOLD) {
-            // Found equal spacing, highlight it specially
-            const equalSpacingDistance = (horizontalGaps[i] + horizontalGaps[j]) / 2;
-            horizontalDistances.push({
-              position: (position.x + position.x + movingElement.size.width) / 2,
-              distance: equalSpacingDistance
-            });
-          }
-        }
-      }
-    }
-    
-    if (verticalGaps.length >= 2) {
-      for (let i = 0; i < verticalGaps.length; i++) {
-        for (let j = i + 1; j < verticalGaps.length; j++) {
-          if (Math.abs(verticalGaps[i] - verticalGaps[j]) < EQUAL_SPACING_THRESHOLD) {
-            // Found equal spacing, highlight it specially
-            const equalSpacingDistance = (verticalGaps[i] + verticalGaps[j]) / 2;
-            verticalDistances.push({
-              position: (position.y + position.y + movingElement.size.height) / 2,
-              distance: equalSpacingDistance
-            });
-          }
-        }
-      }
-    }
-    
-    setGuideLines({ horizontal: horizontalGuides, vertical: verticalGuides });
-    setDistances({ horizontal: horizontalDistances, vertical: verticalDistances });
-    setShowSmartGuides(
-      horizontalGuides.length > 0 || 
-      verticalGuides.length > 0 || 
-      horizontalDistances.length > 0 || 
-      verticalDistances.length > 0
-    );
-  };
-
+  const [guideLines, setGuideLines] = useState<SmartGuideParams[]>([]);
+  const [distances, setDistances] = useState<DistanceParams[]>([]);
+  
+  // Hide guides when not dragging
   useEffect(() => {
     if (!isDragging) {
       setShowSmartGuides(false);
-      setGuideLines({ horizontal: [], vertical: [] });
-      setDistances({ horizontal: [], vertical: [] });
+      setGuideLines([]);
+      setDistances([]);
     }
   }, [isDragging]);
+
+  // Calculate smart guides when an element is moved
+  const calculateSmartGuides = useCallback((movingElementId: string, position: { x: number, y: number }) => {
+    const movingElement = elements.find(el => el.id === movingElementId);
+    if (!movingElement) return;
+    
+    const newGuides: SmartGuideParams[] = [];
+    const newDistances: DistanceParams[] = [];
+    
+    // Get the boundaries of the moving element
+    const movingLeft = position.x;
+    const movingRight = position.x + movingElement.size.width;
+    const movingTop = position.y;
+    const movingBottom = position.y + movingElement.size.height;
+    const movingCenterX = position.x + movingElement.size.width / 2;
+    const movingCenterY = position.y + movingElement.size.height / 2;
+    
+    // Check against each other element
+    elements.forEach(otherElement => {
+      if (otherElement.id === movingElementId) return;
+      
+      // Get the boundaries of the other element
+      const otherLeft = otherElement.position.x;
+      const otherRight = otherElement.position.x + otherElement.size.width;
+      const otherTop = otherElement.position.y;
+      const otherBottom = otherElement.position.y + otherElement.size.height;
+      const otherCenterX = otherElement.position.x + otherElement.size.width / 2;
+      const otherCenterY = otherElement.position.y + otherElement.size.height / 2;
+      
+      // Vertical alignments (left, center, right)
+      const leftDistance = Math.abs(movingLeft - otherLeft);
+      if (leftDistance < SNAP_THRESHOLD) {
+        newGuides.push({ orientation: 'vertical', position: otherLeft });
+        newDistances.push({ elementId: otherElement.id, distance: leftDistance, orientation: 'vertical' });
+      }
+      
+      const rightDistance = Math.abs(movingRight - otherRight);
+      if (rightDistance < SNAP_THRESHOLD) {
+        newGuides.push({ orientation: 'vertical', position: otherRight });
+        newDistances.push({ elementId: otherElement.id, distance: rightDistance, orientation: 'vertical' });
+      }
+      
+      const centerXDistance = Math.abs(movingCenterX - otherCenterX);
+      if (centerXDistance < SNAP_THRESHOLD) {
+        newGuides.push({ orientation: 'vertical', position: otherCenterX });
+        newDistances.push({ elementId: otherElement.id, distance: centerXDistance, orientation: 'vertical' });
+      }
+      
+      // Additional vertical alignment: right to left and left to right
+      const rightToLeftDistance = Math.abs(movingRight - otherLeft);
+      if (rightToLeftDistance < SNAP_THRESHOLD) {
+        newGuides.push({ orientation: 'vertical', position: otherLeft });
+        newDistances.push({ elementId: otherElement.id, distance: rightToLeftDistance, orientation: 'vertical' });
+      }
+      
+      const leftToRightDistance = Math.abs(movingLeft - otherRight);
+      if (leftToRightDistance < SNAP_THRESHOLD) {
+        newGuides.push({ orientation: 'vertical', position: otherRight });
+        newDistances.push({ elementId: otherElement.id, distance: leftToRightDistance, orientation: 'vertical' });
+      }
+      
+      // Horizontal alignments (top, center, bottom)
+      const topDistance = Math.abs(movingTop - otherTop);
+      if (topDistance < SNAP_THRESHOLD) {
+        newGuides.push({ orientation: 'horizontal', position: otherTop });
+        newDistances.push({ elementId: otherElement.id, distance: topDistance, orientation: 'horizontal' });
+      }
+      
+      const bottomDistance = Math.abs(movingBottom - otherBottom);
+      if (bottomDistance < SNAP_THRESHOLD) {
+        newGuides.push({ orientation: 'horizontal', position: otherBottom });
+        newDistances.push({ elementId: otherElement.id, distance: bottomDistance, orientation: 'horizontal' });
+      }
+      
+      const centerYDistance = Math.abs(movingCenterY - otherCenterY);
+      if (centerYDistance < SNAP_THRESHOLD) {
+        newGuides.push({ orientation: 'horizontal', position: otherCenterY });
+        newDistances.push({ elementId: otherElement.id, distance: centerYDistance, orientation: 'horizontal' });
+      }
+      
+      // Additional horizontal alignment: bottom to top and top to bottom
+      const bottomToTopDistance = Math.abs(movingBottom - otherTop);
+      if (bottomToTopDistance < SNAP_THRESHOLD) {
+        newGuides.push({ orientation: 'horizontal', position: otherTop });
+        newDistances.push({ elementId: otherElement.id, distance: bottomToTopDistance, orientation: 'horizontal' });
+      }
+      
+      const topToBottomDistance = Math.abs(movingTop - otherBottom);
+      if (topToBottomDistance < SNAP_THRESHOLD) {
+        newGuides.push({ orientation: 'horizontal', position: otherBottom });
+        newDistances.push({ elementId: otherElement.id, distance: topToBottomDistance, orientation: 'horizontal' });
+      }
+    });
+    
+    // Also align to grid (multiples of 25px)
+    const horizontalGridDistance = position.y % 25;
+    if (horizontalGridDistance < SNAP_THRESHOLD || 25 - horizontalGridDistance < SNAP_THRESHOLD) {
+      const gridY = Math.round(position.y / 25) * 25;
+      newGuides.push({ orientation: 'horizontal', position: gridY });
+      newDistances.push({ 
+        elementId: 'grid', 
+        distance: Math.min(horizontalGridDistance, 25 - horizontalGridDistance), 
+        orientation: 'horizontal' 
+      });
+    }
+    
+    const verticalGridDistance = position.x % 25;
+    if (verticalGridDistance < SNAP_THRESHOLD || 25 - verticalGridDistance < SNAP_THRESHOLD) {
+      const gridX = Math.round(position.x / 25) * 25;
+      newGuides.push({ orientation: 'vertical', position: gridX });
+      newDistances.push({ 
+        elementId: 'grid', 
+        distance: Math.min(verticalGridDistance, 25 - verticalGridDistance), 
+        orientation: 'vertical' 
+      });
+    }
+    
+    // Update state
+    setShowSmartGuides(newGuides.length > 0);
+    setGuideLines(newGuides);
+    setDistances(newDistances);
+    
+  }, [elements]);
+
+  // Auto-nudge position based on guides
+  const autoNudgePosition = useCallback((movingElementId: string, position: { x: number, y: number }) => {
+    const movingElement = elements.find(el => el.id === movingElementId);
+    if (!movingElement) return position;
+    
+    let { x, y } = position;
+    
+    // Apply nudging based on closest guide
+    if (guideLines.length > 0) {
+      // Group distances by orientation
+      const horizontalDistances = distances
+        .filter(d => d.orientation === 'horizontal')
+        .sort((a, b) => a.distance - b.distance);
+      
+      const verticalDistances = distances
+        .filter(d => d.orientation === 'vertical')
+        .sort((a, b) => a.distance - b.distance);
+      
+      // Apply horizontal nudging
+      if (horizontalDistances.length > 0) {
+        const closestHorizontal = horizontalDistances[0];
+        const matchingGuide = guideLines.find(
+          g => g.orientation === 'horizontal' && 
+          Math.abs(g.position - (closestHorizontal.elementId === 'grid' 
+            ? Math.round(y / 25) * 25 
+            : g.position)) < 1
+        );
+        
+        if (matchingGuide) {
+          // Calculate how to snap based on what part of the element is close to the guide
+          const movingTop = y;
+          const movingBottom = y + movingElement.size.height;
+          const movingCenterY = y + movingElement.size.height / 2;
+          
+          // Determine which part is closest to the guide
+          const topDistance = Math.abs(movingTop - matchingGuide.position);
+          const bottomDistance = Math.abs(movingBottom - matchingGuide.position);
+          const centerDistance = Math.abs(movingCenterY - matchingGuide.position);
+          
+          const minDistance = Math.min(topDistance, bottomDistance, centerDistance);
+          
+          if (minDistance === topDistance) {
+            y = matchingGuide.position; // Snap top edge
+          } else if (minDistance === bottomDistance) {
+            y = matchingGuide.position - movingElement.size.height; // Snap bottom edge
+          } else {
+            y = matchingGuide.position - movingElement.size.height / 2; // Snap center
+          }
+        }
+      }
+      
+      // Apply vertical nudging
+      if (verticalDistances.length > 0) {
+        const closestVertical = verticalDistances[0];
+        const matchingGuide = guideLines.find(
+          g => g.orientation === 'vertical' && 
+          Math.abs(g.position - (closestVertical.elementId === 'grid' 
+            ? Math.round(x / 25) * 25 
+            : g.position)) < 1
+        );
+        
+        if (matchingGuide) {
+          // Calculate how to snap based on what part of the element is close to the guide
+          const movingLeft = x;
+          const movingRight = x + movingElement.size.width;
+          const movingCenterX = x + movingElement.size.width / 2;
+          
+          // Determine which part is closest to the guide
+          const leftDistance = Math.abs(movingLeft - matchingGuide.position);
+          const rightDistance = Math.abs(movingRight - matchingGuide.position);
+          const centerDistance = Math.abs(movingCenterX - matchingGuide.position);
+          
+          const minDistance = Math.min(leftDistance, rightDistance, centerDistance);
+          
+          if (minDistance === leftDistance) {
+            x = matchingGuide.position; // Snap left edge
+          } else if (minDistance === rightDistance) {
+            x = matchingGuide.position - movingElement.size.width; // Snap right edge
+          } else {
+            x = matchingGuide.position - movingElement.size.width / 2; // Snap center
+          }
+        }
+      }
+    }
+    
+    return { x, y };
+  }, [elements, guideLines, distances]);
 
   return {
     showSmartGuides,
