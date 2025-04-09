@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import FormElement from "./elements/FormElement";
 import FormToolbar from "./FormToolbar";
@@ -207,7 +208,7 @@ const FormCanvas = () => {
           onUpdate={updateElement}
           onGroup={grouping.groupElements}
           onUngroup={grouping.ungroupElements}
-          onAddElement={handleAddAIElement}
+          onAddElements={handleAddAIElements}
         />
       </div>
     </GroupingProvider>
