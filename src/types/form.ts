@@ -15,6 +15,7 @@ export interface FormElement {
   required?: boolean;
   options?: string[];
   content?: string;
+  groupId: string | null;
 }
 
 export interface Form {

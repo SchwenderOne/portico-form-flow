@@ -1,17 +1,19 @@
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FormElement as FormElementType } from "@/types/form";
 import { cn } from "@/lib/utils";
-import { Grip, Trash2, Copy, Settings } from "lucide-react";
+import { Grip, Trash2, Copy, Settings, Group, Ungroup } from "lucide-react";
+import { useGrouping } from "./GroupingContext";
 
 interface FormElementProps {
   element: FormElementType;
   isSelected: boolean;
-  onSelect: (id: string) => void;
+  onSelect: (id: string, isMultiSelect: boolean) => void;
   onMove: (id: string, position: { x: number, y: number }) => void;
   onDelete: (id: string) => void;
   onDuplicate: (id: string) => void;
   setIsDragging: (isDragging: boolean) => void;
+  allElements?: FormElementType[];
 }
 
 const FormElement: React.FC<FormElementProps> = ({ 
@@ -21,12 +23,34 @@ const FormElement: React.FC<FormElementProps> = ({
   onMove, 
   onDelete,
   onDuplicate,
-  setIsDragging
+  setIsDragging,
+  allElements = []
 }) => {
   const elementRef = useRef<HTMLDivElement>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [hovered, setHovered] = useState(false);
+  const grouping = useGrouping();
+
+  // Check if this element is part of a group
+  const isGrouped = element.groupId !== null;
+  const isGroupSelected = isGrouped && grouping.selectedElements.some(id => {
+    const selectedElement = allElements.find(el => el.id === id);
+    return selectedElement && selectedElement.groupId === element.groupId;
+  });
+
+  // Find all elements in the same group
+  const groupElements = isGrouped 
+    ? allElements.filter(el => el.groupId === element.groupId)
+    : [];
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    // Prevent default to stop text selection during drag
+    e.preventDefault();
+    
+    // Detect if shift key is pressed for multi-select
+    const isMultiSelect = e.shiftKey;
+    onSelect(element.id, isMultiSelect);
+    
     if (elementRef.current) {
       const rect = elementRef.current.getBoundingClientRect();
       setDragOffset({
@@ -67,6 +91,12 @@ const FormElement: React.FC<FormElementProps> = ({
           <h2 className="text-2xl font-bold">
             {(element as any).content || 'Header'}
           </h2>
+        );
+      case 'paragraph':
+        return (
+          <p className="text-base">
+            {(element as any).content || 'Paragraph text'}
+          </p>
         );
       case 'text':
         return (
@@ -151,8 +181,11 @@ const FormElement: React.FC<FormElementProps> = ({
     <div
       ref={elementRef}
       className={cn(
-        "form-element absolute p-4 bg-white border rounded-md shadow-sm group",
-        isSelected && "selected"
+        "form-element absolute p-4 bg-white border rounded-md transition-shadow",
+        isSelected && "ring-2 ring-portico-purple z-10",
+        isGrouped && "border-dashed",
+        isGroupSelected && !isSelected && "ring-1 ring-portico-purple-light",
+        hovered && !isSelected && "shadow-lg"
       )}
       style={{
         left: element.position.x,
@@ -161,8 +194,20 @@ const FormElement: React.FC<FormElementProps> = ({
         height: element.size.height,
         zIndex: isSelected ? 10 : 1
       }}
-      onClick={() => onSelect(element.id)}
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelect(element.id, e.shiftKey);
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
+      {/* Group indicator */}
+      {isGrouped && (
+        <div className="absolute -top-2 -left-2 bg-portico-purple text-white text-xs px-1 rounded-sm z-20">
+          Group
+        </div>
+      )}
+      
       {renderElementContent()}
       
       {/* Drag handle */}
@@ -178,19 +223,54 @@ const FormElement: React.FC<FormElementProps> = ({
         <div className="form-element-toolbar visible opacity-100">
           <button 
             className="toolbar-button toolbar-button-secondary p-1"
-            onClick={() => onDuplicate(element.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDuplicate(element.id);
+            }}
           >
             <Copy className="h-3 w-3" />
           </button>
+          
+          {grouping.selectedElements.length > 1 && (
+            <button 
+              className="toolbar-button toolbar-button-secondary p-1"
+              onClick={(e) => {
+                e.stopPropagation();
+                grouping.groupElements();
+              }}
+            >
+              <Group className="h-3 w-3" />
+            </button>
+          )}
+          
+          {isGrouped && (
+            <button 
+              className="toolbar-button toolbar-button-secondary p-1"
+              onClick={(e) => {
+                e.stopPropagation();
+                grouping.ungroupElements();
+              }}
+            >
+              <Ungroup className="h-3 w-3" />
+            </button>
+          )}
+          
           <button 
             className="toolbar-button toolbar-button-secondary p-1"
-            onClick={() => onSelect(element.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect(element.id, false);
+            }}
           >
             <Settings className="h-3 w-3" />
           </button>
+          
           <button 
             className="toolbar-button toolbar-button-secondary p-1"
-            onClick={() => onDelete(element.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(element.id);
+            }}
           >
             <Trash2 className="h-3 w-3" />
           </button>

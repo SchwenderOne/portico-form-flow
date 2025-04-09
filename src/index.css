@@ -103,7 +103,7 @@
 }
 
 .form-element {
-  @apply transition-all duration-100 ease-in-out cursor-move hover:ring-2 hover:ring-portico-purple-light hover:ring-opacity-50;
+  @apply transition-all duration-100 ease-in-out cursor-move hover:shadow-md;
 }
 
 .form-element.selected {
@@ -129,5 +129,21 @@
 
 .form-element-toolbar {
   @apply absolute -top-10 left-1/2 transform -translate-x-1/2 bg-white shadow-md rounded-md p-1 
-  flex items-center space-x-1 border border-border invisible group-hover:visible transition-opacity;
+  flex items-center space-x-1 border border-border invisible opacity-0 
+  group-hover:visible group-hover:opacity-100 transition-all duration-200;
+}
+
+/* Animation for smart guides */
+@keyframes guideAppear {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* CSS variables for Portico colors */
+:root {
+  --portico-purple: #9b87f5;
+  --portico-purple-light: #D6BCFA;
+  --portico-purple-dark: #6b46c1;
+  --portico-gray-soft: #F1F0FB;
+  --portico-gray-dark: #1A1F2C;
 }

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FormElement } from "@/types/form";
@@ -8,14 +7,23 @@ import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Box, Type, Palette, Settings as SettingsIcon, Wand2 } from "lucide-react";
+import { Box, Type, Palette, Settings as SettingsIcon, Wand2, Group, Ungroup } from "lucide-react";
 
 interface FormToolbarProps {
   selectedElement: FormElement | null;
+  selectedCount: number;
   onUpdate: (element: FormElement) => void;
+  onGroup: () => void;
+  onUngroup: () => void;
 }
 
-const FormToolbar: React.FC<FormToolbarProps> = ({ selectedElement, onUpdate }) => {
+const FormToolbar: React.FC<FormToolbarProps> = ({ 
+  selectedElement, 
+  selectedCount,
+  onUpdate,
+  onGroup,
+  onUngroup
+}) => {
   const [element, setElement] = useState<FormElement | null>(null);
 
   useEffect(() => {
@@ -40,6 +48,104 @@ const FormToolbar: React.FC<FormToolbarProps> = ({ selectedElement, onUpdate }) 
       onUpdate(updatedElement);
     }
   };
+
+  if (selectedCount > 1) {
+    return (
+      <div className="h-64 border-t border-border p-4 bg-muted/20">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-medium">{selectedCount} elements selected</h3>
+            <p className="text-xs text-muted-foreground mt-1">You can group these elements to move them together</p>
+          </div>
+          <div className="flex space-x-2">
+            <Button size="sm" onClick={onGroup}>
+              <Group className="h-4 w-4 mr-2" />
+              Group Elements
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (element && element.groupId) {
+    return (
+      <div className="h-64 border-t border-border">
+        <Tabs defaultValue="properties">
+          <div className="flex items-center px-4 pt-2 border-b">
+            <p className="text-sm font-medium mr-4">
+              Editing: <span className="text-portico-purple">{element.type.charAt(0).toUpperCase() + element.type.slice(1)}</span>
+              <span className="text-xs ml-2 bg-portico-purple/10 text-portico-purple px-1 rounded">Grouped</span>
+            </p>
+            <TabsList>
+              <TabsTrigger value="properties" className="text-xs">
+                <Box className="h-3 w-3 mr-1" />
+                Properties
+              </TabsTrigger>
+              <TabsTrigger value="group" className="text-xs">
+                <Group className="h-3 w-3 mr-1" />
+                Group
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="properties">
+            {element.type === 'header' ? (
+              <div className="space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="content">Header Text</Label>
+                  <Textarea
+                    id="content"
+                    value={(element as any).content || ''}
+                    onChange={(e) => handleChange('content', e.target.value)}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="label">Field Label</Label>
+                  <Input
+                    id="label"
+                    value={element.label || ''}
+                    onChange={(e) => handleChange('label', e.target.value)}
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="placeholder">Placeholder Text</Label>
+                  <Input
+                    id="placeholder"
+                    value={element.placeholder || ''}
+                    onChange={(e) => handleChange('placeholder', e.target.value)}
+                  />
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="required"
+                    checked={element.required || false}
+                    onCheckedChange={(checked) => handleChange('required', checked)}
+                  />
+                  <Label htmlFor="required">Required Field</Label>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="group" className="p-4">
+            <div className="space-y-4">
+              <p className="text-sm">This element is part of a group. You can ungroup to edit elements individually.</p>
+              <Button size="sm" onClick={onUngroup}>
+                <Ungroup className="h-4 w-4 mr-2" />
+                Ungroup Elements
+              </Button>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  }
 
   if (!element) {
     return (
