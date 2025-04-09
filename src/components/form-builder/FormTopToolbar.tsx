@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ExportFormDropdown } from "./ExportFormDropdown";
+import ExportFormDropdown from "./ExportFormDropdown";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
   Save,
@@ -9,14 +9,14 @@ import {
   History, 
   LayoutGrid, 
   Group, 
-  Ungroup, 
-  Toggle, 
+  Ungroup,
+  ToggleLeft, 
   Undo, 
   Redo,
   Wand2
 } from "lucide-react";
 import { FormElement } from "@/types/form";
-import { FormMetadataSheet, openFormMetadataSheet } from "./FormMetadataSheet";
+import { FormMetadataSheet, useFormMetadataSheet } from "./FormMetadataSheet";
 import { toast } from "sonner";
 import { useFormCanvas } from "./context/FormCanvasContext";
 import { useFormMetadata } from "@/context/FormMetadataContext";
@@ -49,10 +49,15 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
   existingElements,
   onOpenVersionHistory
 }) => {
-  const { undoOperation, redoOperation, canUndo, canRedo } = useFormCanvas();
   const { metadata, saveMetadata } = useFormMetadata();
   const { queueAutoSaveEvent } = useAutoSave({ elements: existingElements });
   const [isSaving, setIsSaving] = React.useState(false);
+
+  // Temporary mock functions for undo/redo until implemented
+  const undoOperation = () => toast.info("Undo functionality will be available soon");
+  const redoOperation = () => toast.info("Redo functionality will be available soon");
+  const canUndo = false;
+  const canRedo = false;
 
   const handleSave = async () => {
     try {
@@ -79,6 +84,8 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
       setIsSaving(false);
     }
   };
+
+  const { open: openFormMetadataSheet } = useFormMetadataSheet();
 
   const handleOpenMetadata = () => {
     openFormMetadataSheet();
@@ -197,7 +204,7 @@ const FormTopToolbar: React.FC<FormTopToolbarProps> = ({
                     className="h-8 w-8"
                     onClick={() => onRequiredToggle(selectedElement.id)}
                   >
-                    <Toggle className="h-4 w-4" />
+                    <ToggleLeft className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>

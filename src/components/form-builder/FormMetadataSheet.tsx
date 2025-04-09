@@ -53,20 +53,20 @@ export function FormMetadataSheet({
 }
 
 // Export control functions for the sheet
-let openFormMetadataSheet: (() => void) | null = null;
-let closeFormMetadataSheet: (() => void) | null = null;
+let openFormMetadataSheetFn: (() => void) | null = null;
+let closeFormMetadataSheetFn: (() => void) | null = null;
 
 export const registerFormMetadataSheetControls = (
   open: (() => void) | null,
   close: (() => void) | null
 ) => {
-  openFormMetadataSheet = open;
-  closeFormMetadataSheet = close;
+  openFormMetadataSheetFn = open;
+  closeFormMetadataSheetFn = close;
 };
 
 export const useFormMetadataSheet = () => {
   return {
-    open: () => openFormMetadataSheet?.(),
-    close: () => closeFormMetadataSheet?.(),
+    open: () => openFormMetadataSheetFn?.(),
+    close: () => closeFormMetadataSheetFn?.(),
   };
 };

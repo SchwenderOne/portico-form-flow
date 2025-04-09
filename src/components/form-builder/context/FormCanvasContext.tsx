@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { FormElement } from "@/types/form";
 import { useFormElements } from "@/hooks/use-form-elements";
 import { useSmartGuides } from "../hooks/useSmartGuides";
@@ -42,6 +42,10 @@ type FormCanvasContextType = {
   };
   handleDuplicateGroup: (ids: string[]) => void;
   handleOpenAIModal: () => void;
+  undoOperation: () => void;
+  redoOperation: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 };
 
 // Create the context with a default undefined value
@@ -86,15 +90,45 @@ export const FormCanvasProvider: React.FC<{
     handleUngroupElements
   );
 
+  // Add event listener for version restore
+  useEffect(() => {
+    const handleVersionRestore = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail && Array.isArray(customEvent.detail.elements)) {
+        setElements(customEvent.detail.elements);
+        grouping.clearSelection();
+        toast.success("Form version restored successfully");
+      }
+    };
+
+    document.addEventListener('version-restore', handleVersionRestore);
+    
+    return () => {
+      document.removeEventListener('version-restore', handleVersionRestore);
+    };
+  }, [setElements, grouping]);
+
+  // Mock undo/redo functions until fully implemented
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+
+  const undoOperation = () => {
+    toast.info("Undo functionality will be available soon");
+  };
+
+  const redoOperation = () => {
+    toast.info("Redo functionality will be available soon");
+  };
+
   const handleKeyDown = useCallback((e: KeyboardEvent<HTMLDivElement>) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
       e.preventDefault();
-      toast.info("Undo functionality will be available soon");
+      undoOperation();
     }
     
     if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
       e.preventDefault();
-      toast.info("Redo functionality will be available soon");
+      redoOperation();
     }
     
     if ((e.key === 'Delete' || e.key === 'Backspace') && grouping.selectedElements.length > 0) {
@@ -223,7 +257,11 @@ export const FormCanvasProvider: React.FC<{
     distances,
     grouping,
     handleDuplicateGroup,
-    handleOpenAIModal
+    handleOpenAIModal,
+    undoOperation,
+    redoOperation,
+    canUndo,
+    canRedo
   };
 
   return (

@@ -32,6 +32,19 @@ import { TeamManagementSheet } from "@/components/team/TeamManagementSheet";
 import { useBrandSettings } from "@/context/BrandSettingsContext";
 import { openVersionHistory } from "@/components/form-builder/version-history/VersionHistorySheet";
 
+// Create a SidebarHeader component since it's missing
+const SidebarHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ 
+  className, 
+  children, 
+  ...props 
+}) => {
+  return (
+    <div className={cn("py-4", className)} {...props}>
+      {children}
+    </div>
+  );
+};
+
 const AppSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();

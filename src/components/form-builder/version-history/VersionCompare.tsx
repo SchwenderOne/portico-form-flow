@@ -46,6 +46,15 @@ type ElementDiff = {
   element2?: FormElement;
 };
 
+interface SnapshotData {
+  elements: FormElement[];
+  metadata: {
+    title: string;
+    description: string;
+    status: string;
+  };
+}
+
 const VersionCompare: React.FC<VersionCompareProps> = ({
   selectedVersion,
   compareVersion,
@@ -64,11 +73,33 @@ const VersionCompare: React.FC<VersionCompareProps> = ({
     }
   };
 
+  const getSnapshotData = (version: DatabaseFormVersion): SnapshotData => {
+    // First convert the unknown snapshot to the expected format
+    const snapshot = version.snapshot as Record<string, any>;
+    
+    if (!snapshot || !Array.isArray(snapshot.elements)) {
+      // Return a default empty snapshot if the structure is invalid
+      return {
+        elements: [],
+        metadata: {
+          title: '',
+          description: '',
+          status: ''
+        }
+      };
+    }
+    
+    return snapshot as SnapshotData;
+  };
+
   const getDifferences = useMemo(() => {
     if (!compareVersion) return [];
 
-    const v1Elements = (selectedVersion.snapshot as any)?.elements || [];
-    const v2Elements = (compareVersion.snapshot as any)?.elements || [];
+    const v1Data = getSnapshotData(selectedVersion);
+    const v2Data = getSnapshotData(compareVersion);
+    
+    const v1Elements = v1Data.elements || [];
+    const v2Elements = v2Data.elements || [];
     
     const differences: ElementDiff[] = [];
     const v1Map = new Map(v1Elements.map((el: FormElement) => [el.id, el]));

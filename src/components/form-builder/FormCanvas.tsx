@@ -128,6 +128,20 @@ const FormCanvasInner = () => {
     queueAutoSaveEvent(AutoSaveEvent.FIELD_DELETION);
   };
 
+  // Create adapter functions for the functions with mismatched parameters
+  const handleDuplicateGroupAdapter = () => {
+    if (grouping.selectedElements.length > 0) {
+      handleDuplicateGroup(grouping.selectedElements);
+    }
+  };
+
+  const handleRequiredToggleAdapter = (id: string) => {
+    const element = elements.find(el => el.id === id);
+    if (element) {
+      handleRequiredToggle(id, !element.required);
+    }
+  };
+
   return (
     <GroupingProvider value={{
       selectedElements: grouping.selectedElements,
@@ -149,8 +163,8 @@ const FormCanvasInner = () => {
           }
           selectedCount={grouping.selectedElements.length}
           onDuplicate={handleDuplicateElement}
-          onDuplicateGroup={handleDuplicateGroup}
-          onRequiredToggle={handleRequiredToggle}
+          onDuplicateGroup={handleDuplicateGroupAdapter}
+          onRequiredToggle={handleRequiredToggleAdapter}
           onGroup={grouping.groupElements}
           onUngroup={grouping.ungroupElements}
           onOpenAIModal={handleOpenAIModal}

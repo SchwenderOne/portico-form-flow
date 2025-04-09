@@ -37,6 +37,16 @@ interface VersionHistorySheetProps {
   showTrigger?: boolean;
 }
 
+// Interface for the snapshot structure
+interface SnapshotData {
+  elements: FormElement[];
+  metadata: {
+    title: string;
+    description: string;
+    status: string;
+  };
+}
+
 const VersionHistorySheet: React.FC<VersionHistorySheetProps> = ({
   open,
   onOpenChange,
@@ -51,7 +61,7 @@ const VersionHistorySheet: React.FC<VersionHistorySheetProps> = ({
   const [versionLabel, setVersionLabel] = useState<string>("");
   
   const { metadata } = useFormMetadata();
-  const { elements, setElements } = useFormCanvas();
+  const { elements } = useFormCanvas();
   const { user } = useAuth();
 
   // Fetch versions when component mounts or form ID changes
@@ -110,20 +120,23 @@ const VersionHistorySheet: React.FC<VersionHistorySheetProps> = ({
 
   const handleRestoreVersion = (version: DatabaseFormVersion) => {
     try {
-      // Extract elements from snapshot
-      const snapshot = version.snapshot as { elements: FormElement[], metadata: any };
+      // Convert snapshot to the expected format first
+      const snapshotRaw = version.snapshot as Record<string, any>;
       
-      if (!snapshot || !snapshot.elements) {
-        toast.error("Invalid version snapshot");
+      if (!snapshotRaw || !Array.isArray(snapshotRaw.elements)) {
+        toast.error("Invalid version snapshot structure");
         return;
       }
       
-      // Update canvas with elements from snapshot
-      setElements(snapshot.elements);
+      const snapshot = snapshotRaw as SnapshotData;
       
-      // Optionally update metadata if needed
-      // updateMetadata({ name: snapshot.metadata.title, ... });
+      // Create a custom event to notify the FormCanvas that we need to update elements
+      const event = new CustomEvent('version-restore', { 
+        detail: { elements: snapshot.elements } 
+      });
+      document.dispatchEvent(event);
       
+      // Notify user
       toast.success(`Restored to version: ${version.version_label}`);
     } catch (error) {
       console.error("Failed to restore version:", error);
