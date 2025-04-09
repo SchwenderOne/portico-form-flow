@@ -4,6 +4,7 @@ import { FormElement as FormElementType } from "@/types/form";
 import { cn } from "@/lib/utils";
 import { Grip, Trash2, Copy, Settings, Group, Ungroup } from "lucide-react";
 import { useGrouping } from "./GroupingContext";
+import FloatingToolbar from "./FloatingToolbar";
 
 interface FormElementProps {
   element: FormElementType;
@@ -30,6 +31,8 @@ const FormElement: React.FC<FormElementProps> = ({
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [hovered, setHovered] = useState(false);
   const grouping = useGrouping();
+  const [showFloatingToolbar, setShowFloatingToolbar] = useState(false);
+  const [elementRect, setElementRect] = useState<DOMRect | null>(null);
 
   // Check if this element is part of a group
   const isGrouped = element.groupId !== null;
@@ -42,6 +45,31 @@ const FormElement: React.FC<FormElementProps> = ({
   const groupElements = isGrouped 
     ? allElements.filter(el => el.groupId === element.groupId)
     : [];
+
+  useEffect(() => {
+    // Update element rect when selected
+    if (isSelected && elementRef.current) {
+      setElementRect(elementRef.current.getBoundingClientRect());
+    }
+  }, [isSelected]);
+
+  useEffect(() => {
+    // Show floating toolbar when element is double-clicked
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        elementRef.current && 
+        !elementRef.current.contains(event.target as Node) &&
+        showFloatingToolbar
+      ) {
+        setShowFloatingToolbar(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showFloatingToolbar]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     // Prevent default to stop text selection during drag
@@ -82,6 +110,39 @@ const FormElement: React.FC<FormElementProps> = ({
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
     }
+  };
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    // Only show floating toolbar for text elements (header, paragraph, etc.)
+    if (
+      element.type === 'header' || 
+      element.type === 'paragraph' || 
+      element.type === 'text' || 
+      element.type === 'textarea'
+    ) {
+      setShowFloatingToolbar(true);
+      
+      if (elementRef.current) {
+        setElementRect(elementRef.current.getBoundingClientRect());
+      }
+    }
+  };
+
+  const handleBold = () => {
+    console.log('Bold applied to element:', element.id);
+    // Implement formatting logic here
+  };
+
+  const handleItalic = () => {
+    console.log('Italic applied to element:', element.id);
+    // Implement formatting logic here
+  };
+
+  const handleLink = () => {
+    console.log('Link applied to element:', element.id);
+    // Implement link adding logic here
   };
 
   const renderElementContent = () => {
@@ -198,6 +259,7 @@ const FormElement: React.FC<FormElementProps> = ({
         e.stopPropagation();
         onSelect(element.id, e.shiftKey);
       }}
+      onDoubleClick={handleDoubleClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -275,6 +337,19 @@ const FormElement: React.FC<FormElementProps> = ({
             <Trash2 className="h-3 w-3" />
           </button>
         </div>
+      )}
+      
+      {/* Floating toolbar */}
+      {showFloatingToolbar && elementRect && (
+        <FloatingToolbar
+          elementId={element.id}
+          elementRect={elementRect}
+          onBold={handleBold}
+          onItalic={handleItalic}
+          onLink={handleLink}
+          onDuplicate={onDuplicate}
+          onDelete={onDelete}
+        />
       )}
     </div>
   );
