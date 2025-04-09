@@ -112,16 +112,21 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
         </Tooltip>
         
         <Popover>
-          <TooltipTrigger asChild>
-            <PopoverTrigger asChild>
-              <button 
-                className="p-1.5 rounded-md hover:bg-portico-gray-soft text-portico-gray-dark hover:text-portico-purple transition-colors"
-                aria-label="Add Link"
-              >
-                <Link size={16} />
-              </button>
-            </PopoverTrigger>
-          </TooltipTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <button 
+                  className="p-1.5 rounded-md hover:bg-portico-gray-soft text-portico-gray-dark hover:text-portico-purple transition-colors"
+                  aria-label="Add Link"
+                >
+                  <Link size={16} />
+                </button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-xs">Add Link</p>
+            </TooltipContent>
+          </Tooltip>
           <PopoverContent className="w-64 p-3">
             <form onSubmit={handleLinkSubmit} className="space-y-3">
               <div className="space-y-1">
@@ -142,9 +147,6 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
               </div>
             </form>
           </PopoverContent>
-          <TooltipContent>
-            <p className="text-xs">Add Link</p>
-          </TooltipContent>
         </Popover>
         
         <div className="w-px h-4 bg-border mx-0.5" />
