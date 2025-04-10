@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, Building2, Shield } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
@@ -21,6 +21,7 @@ interface Plan {
   features: PlanFeature[];
   highlight?: boolean;
   badge?: string;
+  icon?: React.ReactNode;
 }
 
 export const SubscriptionPlans = () => {
@@ -80,6 +81,25 @@ export const SubscriptionPlans = () => {
         { name: "AI form generation", included: true },
         { name: "Advanced analytics", included: true },
       ]
+    },
+    {
+      id: "government",
+      name: "Government",
+      price: 49,
+      interval: "month",
+      description: "Compliant features for government agencies and public sector",
+      features: [
+        { name: "Unlimited forms", included: true },
+        { name: "5,000 responses per form", included: true },
+        { name: "Government templates", included: true },
+        { name: "Dedicated support", included: true },
+        { name: "Advanced branding", included: true },
+        { name: "Custom domains", included: true },
+        { name: "AI form generation", included: true },
+        { name: "Compliance certifications", included: true },
+      ],
+      badge: "GDPR Compliant",
+      icon: <Shield className="h-4 w-4 text-primary absolute top-4 left-4" />
     }
   ];
 
@@ -127,7 +147,7 @@ export const SubscriptionPlans = () => {
   const currentPlanId = getCurrentPlanId();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {plans.map((plan) => (
         <Card 
           key={plan.id} 
@@ -141,6 +161,7 @@ export const SubscriptionPlans = () => {
               {plan.badge}
             </Badge>
           )}
+          {plan.icon}
           <CardHeader>
             <CardTitle>{plan.name}</CardTitle>
             <CardDescription>{plan.description}</CardDescription>

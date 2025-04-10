@@ -145,7 +145,10 @@ const AppSidebar = () => {
                 <span className="text-xs text-muted-foreground">Upgrade to Pro</span>
               </div>
             </div>
-            <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-sidebar-accent cursor-pointer mt-2">
+            <div 
+              className="flex items-center space-x-2 p-2 rounded-md hover:bg-sidebar-accent cursor-pointer mt-2"
+              onClick={() => navigate("/help-support")}
+            >
               <HelpCircle className="h-5 w-5" />
               <span className="text-sm">Help & Support</span>
             </div>
