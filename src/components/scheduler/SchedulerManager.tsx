@@ -34,8 +34,28 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarClock, Plus, Clock, User, CalendarDays, Pencil, Trash } from "lucide-react";
 import { toast } from "sonner";
 
+// Define the Appointment interface with correct status types
+interface Appointment {
+  id: number;
+  name: string;
+  date: string;
+  time: string;
+  attendees: number;
+  bookedBy: string;
+  status: "upcoming" | "completed" | "cancelled";
+}
+
+// Define the TimeSlot interface
+interface TimeSlot {
+  id: number;
+  day: string;
+  startTime: string;
+  endTime: string;
+  available: boolean;
+}
+
 // Mock data for scheduled appointments
-const mockAppointments = [
+const mockAppointments: Appointment[] = [
   { 
     id: 1, 
     name: "Initial Consultation", 
@@ -85,24 +105,6 @@ const mockTimeSlots = [
   { id: 7, day: "Sunday", startTime: "10:00", endTime: "14:00", available: false },
 ];
 
-interface Appointment {
-  id: number;
-  name: string;
-  date: string;
-  time: string;
-  attendees: number;
-  bookedBy: string;
-  status: "upcoming" | "completed" | "cancelled";
-}
-
-interface TimeSlot {
-  id: number;
-  day: string;
-  startTime: string;
-  endTime: string;
-  available: boolean;
-}
-
 const SchedulerManager = () => {
   const [activeTab, setActiveTab] = useState("appointments");
   const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
@@ -137,13 +139,13 @@ const SchedulerManager = () => {
 
   const handleCancelAppointment = (id: number) => {
     setAppointments(appointments.map(app => 
-      app.id === id ? { ...app, status: "cancelled" } : app
+      app.id === id ? { ...app, status: "cancelled" as const } : app
     ));
     
     toast.success("Appointment cancelled successfully");
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: "upcoming" | "completed" | "cancelled") => {
     switch (status) {
       case "upcoming":
         return <Badge variant="default" className="bg-blue-500">Upcoming</Badge>;

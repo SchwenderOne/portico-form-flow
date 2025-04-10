@@ -29,8 +29,17 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ClipboardList, Eye, Download, Search } from "lucide-react";
 
-// Mock data for submissions
-const mockSubmissions = [
+// Define the Submission interface with correct status types
+interface Submission {
+  id: string;
+  formName: string;
+  submittedBy: string;
+  submittedAt: string;
+  status: "complete" | "incomplete" | "pending";
+}
+
+// Mock data for submissions with explicitly typed status values
+const mockSubmissions: Submission[] = [
   { 
     id: "S-1001", 
     formName: "Patient Registration", 
@@ -68,14 +77,6 @@ const mockSubmissions = [
   },
 ];
 
-interface Submission {
-  id: string;
-  formName: string;
-  submittedBy: string;
-  submittedAt: string;
-  status: "complete" | "incomplete" | "pending";
-}
-
 const SubmissionsManager = () => {
   const [submissions] = useState<Submission[]>(mockSubmissions);
   const [searchTerm, setSearchTerm] = useState("");
@@ -105,7 +106,7 @@ const SubmissionsManager = () => {
     // In a real app, this would trigger a download
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: "complete" | "incomplete" | "pending") => {
     switch (status) {
       case "complete":
         return <Badge variant="default" className="bg-green-500">Complete</Badge>;
