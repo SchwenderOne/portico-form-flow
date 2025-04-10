@@ -1,450 +1,314 @@
 
 import React, { useState } from "react";
 import { 
-  Table, 
-  TableBody, 
-  TableCaption, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
+  Calendar, 
+  Clock, 
+  Plus, 
+  Filter, 
+  ChevronLeft, 
+  ChevronRight 
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
-} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { CalendarClock, Plus, Clock, User, CalendarDays, Pencil, Trash } from "lucide-react";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
-// Define the Appointment interface with correct status types
-interface Appointment {
-  id: number;
-  name: string;
-  date: string;
-  time: string;
-  attendees: number;
-  bookedBy: string;
-  status: "upcoming" | "completed" | "cancelled";
-}
-
-// Define the TimeSlot interface
-interface TimeSlot {
-  id: number;
-  day: string;
-  startTime: string;
-  endTime: string;
-  available: boolean;
-}
-
-// Mock data for scheduled appointments
-const mockAppointments: Appointment[] = [
-  { 
-    id: 1, 
-    name: "Initial Consultation", 
-    date: "2024-04-15", 
-    time: "09:00 - 10:00", 
-    attendees: 1,
-    bookedBy: "john.doe@example.com",
-    status: "upcoming" 
+// Mock data for booked slots
+const mockBookings = [
+  {
+    id: "1",
+    title: "Patient Consultation",
+    date: "2024-04-11T10:00:00Z",
+    duration: 30,
+    status: "upcoming",
+    attendee: "John Smith",
+    email: "john.smith@example.com"
   },
-  { 
-    id: 2, 
-    name: "Project Review", 
-    date: "2024-04-16", 
-    time: "14:00 - 15:30", 
-    attendees: 3,
-    bookedBy: "team@example.org",
-    status: "upcoming" 
+  {
+    id: "2",
+    title: "Follow-up Meeting",
+    date: "2024-04-11T14:30:00Z",
+    duration: 45,
+    status: "upcoming",
+    attendee: "Sarah Johnson",
+    email: "sarah.j@example.com"
   },
-  { 
-    id: 3, 
-    name: "Feedback Session", 
-    date: "2024-04-10", 
-    time: "10:30 - 11:00", 
-    attendees: 2,
-    bookedBy: "sarah.smith@example.com",
-    status: "completed" 
+  {
+    id: "3",
+    title: "Intake Assessment",
+    date: "2024-04-12T09:15:00Z",
+    duration: 60,
+    status: "upcoming",
+    attendee: "Michael Brown",
+    email: "mbrown@example.com"
   },
-  { 
-    id: 4, 
-    name: "Strategy Meeting", 
-    date: "2024-04-08", 
-    time: "16:00 - 17:00", 
-    attendees: 4,
-    bookedBy: "project.lead@example.com",
-    status: "cancelled" 
+  {
+    id: "4",
+    title: "Project Review",
+    date: "2024-04-09T11:00:00Z",
+    duration: 30,
+    status: "completed",
+    attendee: "Emma Wilson",
+    email: "e.wilson@example.com"
   },
+  {
+    id: "5",
+    title: "Technical Support",
+    date: "2024-04-08T15:45:00Z",
+    duration: 20,
+    status: "completed",
+    attendee: "David Miller",
+    email: "dmiller@example.com"
+  }
 ];
 
-// Mock data for available slots
-const mockTimeSlots = [
-  { id: 1, day: "Monday", startTime: "09:00", endTime: "17:00", available: true },
-  { id: 2, day: "Tuesday", startTime: "09:00", endTime: "17:00", available: true },
-  { id: 3, day: "Wednesday", startTime: "09:00", endTime: "17:00", available: true },
-  { id: 4, day: "Thursday", startTime: "09:00", endTime: "17:00", available: true },
-  { id: 5, day: "Friday", startTime: "09:00", endTime: "17:00", available: true },
-  { id: 6, day: "Saturday", startTime: "10:00", endTime: "14:00", available: false },
-  { id: 7, day: "Sunday", startTime: "10:00", endTime: "14:00", available: false },
+// Mock data for available slots/booking types
+const mockAvailableSlots = [
+  {
+    id: "slot1",
+    title: "15-min Quick Consultation",
+    description: "A brief meeting to discuss basic questions",
+    duration: 15,
+    availability: "Mon-Fri, 9AM-5PM"
+  },
+  {
+    id: "slot2",
+    title: "30-min Standard Meeting",
+    description: "Standard consultation for most needs",
+    duration: 30,
+    availability: "Mon-Fri, 9AM-5PM"
+  },
+  {
+    id: "slot3",
+    title: "60-min Extended Session",
+    description: "In-depth consultation for complex matters",
+    duration: 60,
+    availability: "Tue/Thu, 10AM-3PM"
+  }
 ];
 
 const SchedulerManager = () => {
-  const [activeTab, setActiveTab] = useState("appointments");
-  const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(mockTimeSlots);
-  const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
-  const [isSlotDialogOpen, setIsSlotDialogOpen] = useState(false);
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [currentTab, setCurrentTab] = useState("upcoming");
+  const [selectedMonth, setSelectedMonth] = useState("April 2024");
+  
+  const filteredBookings = mockBookings.filter(booking => 
+    booking.status === currentTab
+  );
 
-  const handleSlotAvailability = (slot: TimeSlot) => {
-    setTimeSlots(timeSlots.map(s => 
-      s.id === slot.id ? { ...s, available: !s.available } : s
-    ));
-    
-    toast.success(`${slot.day} ${slot.available ? "blocked" : "made available"}`);
+  const handleCreateBookingSlot = () => {
+    toast.success("Creating new booking slot type");
   };
 
-  const handleEditSlot = (slot: TimeSlot) => {
-    setSelectedSlot(slot);
-    setIsSlotDialogOpen(true);
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    }).format(date);
   };
 
-  const handleSaveSlot = () => {
-    if (!selectedSlot) return;
-    
-    setTimeSlots(timeSlots.map(s => 
-      s.id === selectedSlot.id ? selectedSlot : s
-    ));
-    
-    setIsSlotDialogOpen(false);
-    toast.success("Time slot updated successfully");
-  };
-
-  const handleCancelAppointment = (id: number) => {
-    setAppointments(appointments.map(app => 
-      app.id === id ? { ...app, status: "cancelled" as const } : app
-    ));
-    
-    toast.success("Appointment cancelled successfully");
-  };
-
-  const getStatusBadge = (status: "upcoming" | "completed" | "cancelled") => {
-    switch (status) {
+  const getStatusColor = (status: string) => {
+    switch(status) {
       case "upcoming":
-        return <Badge variant="default" className="bg-blue-500">Upcoming</Badge>;
+        return "bg-blue-100 text-blue-800 hover:bg-blue-100";
       case "completed":
-        return <Badge variant="secondary" className="bg-green-500">Completed</Badge>;
+        return "bg-green-100 text-green-800 hover:bg-green-100";
       case "cancelled":
-        return <Badge variant="outline" className="text-destructive">Cancelled</Badge>;
+        return "bg-red-100 text-red-800 hover:bg-red-100";
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return "";
     }
   };
 
   return (
     <div className="space-y-6">
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="appointments">
-            <CalendarClock className="h-4 w-4 mr-2" />
-            Appointments
-          </TabsTrigger>
-          <TabsTrigger value="availability">
-            <Clock className="h-4 w-4 mr-2" />
-            Availability
-          </TabsTrigger>
-          <TabsTrigger value="calendar">
-            <CalendarDays className="h-4 w-4 mr-2" />
-            Calendar View
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="appointments" className="mt-6">
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h4 className="text-base font-medium">Your Scheduled Appointments</h4>
-              <Select defaultValue="all">
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Appointments</SelectItem>
-                  <SelectItem value="upcoming">Upcoming</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {appointments.length > 0 ? (
-              <Table>
-                <TableCaption>Your scheduled appointments</TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Appointment</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Booked By</TableHead>
-                    <TableHead>Attendees</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {appointments.map((appointment) => (
-                    <TableRow key={appointment.id}>
-                      <TableCell className="font-medium">{appointment.name}</TableCell>
-                      <TableCell>{appointment.date}</TableCell>
-                      <TableCell>{appointment.time}</TableCell>
-                      <TableCell>{appointment.bookedBy}</TableCell>
-                      <TableCell className="text-center">{appointment.attendees}</TableCell>
-                      <TableCell>{getStatusBadge(appointment.status)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          {appointment.status === "upcoming" && (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleCancelAppointment(appointment.id)}
-                            >
-                              Cancel
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <div className="text-center py-12 border rounded-md bg-muted/20">
-                <CalendarClock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">No appointments scheduled</h3>
-                <p className="text-muted-foreground mb-4">
-                  You don't have any appointments scheduled yet
-                </p>
-              </div>
-            )}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h2 className="text-xl font-semibold">Meeting Scheduler</h2>
+          <p className="text-muted-foreground">Manage your bookings and availability</p>
+        </div>
+        <Button onClick={handleCreateBookingSlot}>
+          <Plus className="mr-2 h-4 w-4" />
+          New Booking Type
+        </Button>
+      </div>
+
+      <Tabs defaultValue="upcoming" onValueChange={setCurrentTab} className="w-full">
+        <div className="flex justify-between items-center">
+          <TabsList>
+            <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+            <TabsTrigger value="completed">Completed</TabsTrigger>
+            <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
+          </TabsList>
+          
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Select defaultValue={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select Month" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="April 2024">April 2024</SelectItem>
+                <SelectItem value="May 2024">May 2024</SelectItem>
+                <SelectItem value="June 2024">June 2024</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm">
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
-        </TabsContent>
-        
-        <TabsContent value="availability" className="mt-6">
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h4 className="text-base font-medium">Your Availability</h4>
-              <Button onClick={() => {
-                setSelectedSlot({
-                  id: Math.max(0, ...timeSlots.map(s => s.id)) + 1,
-                  day: "Monday",
-                  startTime: "09:00",
-                  endTime: "17:00",
-                  available: true
-                });
-                setIsSlotDialogOpen(true);
-              }}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Time Slot
+        </div>
+
+        <TabsContent value="upcoming" className="mt-4">
+          {filteredBookings.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredBookings.map(booking => (
+                <Card key={booking.id}>
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">{booking.title}</CardTitle>
+                        <CardDescription>{booking.attendee}</CardDescription>
+                      </div>
+                      <Badge className={getStatusColor(booking.status)}>
+                        {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center mb-2">
+                      <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <span>{formatDate(booking.date)}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <span>{booking.duration} minutes</span>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Button variant="outline" size="sm" onClick={() => toast.success(`Rescheduled ${booking.title}`)}>
+                      Reschedule
+                    </Button>
+                    <Button variant="secondary" size="sm" onClick={() => toast.success(`Joined meeting with ${booking.attendee}`)}>
+                      Join
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center p-8 border rounded-md">
+              <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-1">No upcoming bookings</h3>
+              <p className="text-muted-foreground mb-4">You don't have any scheduled meetings for this period.</p>
+              <Button onClick={() => toast.success("Viewing availability settings")}>
+                Manage Availability
               </Button>
             </div>
-            
-            <Table>
-              <TableCaption>Configure your availability for appointments</TableCaption>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Day</TableHead>
-                  <TableHead>Start Time</TableHead>
-                  <TableHead>End Time</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {timeSlots.map((slot) => (
-                  <TableRow key={slot.id}>
-                    <TableCell className="font-medium">{slot.day}</TableCell>
-                    <TableCell>{slot.startTime}</TableCell>
-                    <TableCell>{slot.endTime}</TableCell>
-                    <TableCell>
-                      <Badge variant={slot.available ? "default" : "secondary"} className={slot.available ? "bg-green-500" : ""}>
-                        {slot.available ? "Available" : "Blocked"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="icon"
-                          onClick={() => handleEditSlot(slot)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant={slot.available ? "destructive" : "default"}
-                          size="sm"
-                          onClick={() => handleSlotAvailability(slot)}
-                        >
-                          {slot.available ? "Block" : "Make Available"}
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          
-          {/* Edit time slot dialog */}
-          <Dialog open={isSlotDialogOpen} onOpenChange={setIsSlotDialogOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  {selectedSlot && selectedSlot.id > timeSlots.length ? "Add Time Slot" : "Edit Time Slot"}
-                </DialogTitle>
-                <DialogDescription>
-                  Configure the time slot for scheduling appointments
-                </DialogDescription>
-              </DialogHeader>
-              
-              {selectedSlot && (
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="day">Day of Week</Label>
-                    <Select 
-                      value={selectedSlot.day}
-                      onValueChange={(value) => setSelectedSlot({...selectedSlot, day: value})}
-                    >
-                      <SelectTrigger id="day">
-                        <SelectValue placeholder="Select day" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Monday">Monday</SelectItem>
-                        <SelectItem value="Tuesday">Tuesday</SelectItem>
-                        <SelectItem value="Wednesday">Wednesday</SelectItem>
-                        <SelectItem value="Thursday">Thursday</SelectItem>
-                        <SelectItem value="Friday">Friday</SelectItem>
-                        <SelectItem value="Saturday">Saturday</SelectItem>
-                        <SelectItem value="Sunday">Sunday</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="start-time">Start Time</Label>
-                      <Input 
-                        id="start-time" 
-                        type="time"
-                        value={selectedSlot.startTime}
-                        onChange={(e) => setSelectedSlot({...selectedSlot, startTime: e.target.value})}
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="end-time">End Time</Label>
-                      <Input 
-                        id="end-time" 
-                        type="time"
-                        value={selectedSlot.endTime}
-                        onChange={(e) => setSelectedSlot({...selectedSlot, endTime: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="available"
-                      checked={selectedSlot.available}
-                      onChange={(e) => setSelectedSlot({...selectedSlot, available: e.target.checked})}
-                      className="rounded border-gray-300 text-primary focus:ring-primary"
-                    />
-                    <Label htmlFor="available" className="text-sm font-normal">
-                      Available for booking
-                    </Label>
-                  </div>
-                </div>
-              )}
-              
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsSlotDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleSaveSlot}>
-                  Save
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          )}
         </TabsContent>
-        
-        <TabsContent value="calendar" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <h4 className="text-base font-medium mb-4">Calendar View</h4>
-              <div className="border rounded-md p-4">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  className="mx-auto"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="text-base font-medium mb-4">
-                {date ? date.toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                }) : "Select a date"}
-              </h4>
-              
-              <div className="border rounded-md p-4 h-full flex flex-col">
-                {date ? (
-                  <div className="space-y-4 flex-1">
-                    <p className="text-sm text-muted-foreground">
-                      Appointments for the selected date will appear here.
-                    </p>
-                    
-                    <div className="flex items-center justify-center flex-1">
-                      <div className="text-center">
-                        <User className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground">
-                          No appointments scheduled for this date
-                        </p>
+
+        <TabsContent value="completed" className="mt-4">
+          {mockBookings.filter(b => b.status === "completed").length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {mockBookings.filter(b => b.status === "completed").map(booking => (
+                <Card key={booking.id}>
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">{booking.title}</CardTitle>
+                        <CardDescription>{booking.attendee}</CardDescription>
                       </div>
+                      <Badge className={getStatusColor(booking.status)}>
+                        {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                      </Badge>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <p className="text-muted-foreground">
-                      Please select a date to view appointments
-                    </p>
-                  </div>
-                )}
-              </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center mb-2">
+                      <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <span>{formatDate(booking.date)}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <span>{booking.duration} minutes</span>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="outline" size="sm" className="w-full" onClick={() => toast.success(`Sent follow up to ${booking.attendee}`)}>
+                      Send Follow-up
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
             </div>
+          ) : (
+            <div className="text-center p-8 border rounded-md">
+              <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium">No completed bookings</h3>
+              <p className="text-muted-foreground">There are no completed meetings in this period.</p>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="cancelled" className="mt-4">
+          <div className="text-center p-8 border rounded-md">
+            <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium">No cancelled bookings</h3>
+            <p className="text-muted-foreground">There are no cancelled meetings in this period.</p>
           </div>
         </TabsContent>
       </Tabs>
+
+      <div className="mt-8">
+        <h3 className="text-lg font-medium mb-4">Your Booking Types</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {mockAvailableSlots.map(slot => (
+            <Card key={slot.id}>
+              <CardHeader>
+                <CardTitle>{slot.title}</CardTitle>
+                <CardDescription>{slot.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center mb-2">
+                  <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span>{slot.duration} minutes</span>
+                </div>
+                <div className="flex items-center">
+                  <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span>{slot.availability}</span>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button variant="outline" size="sm" className="w-full" onClick={() => toast.success(`Editing ${slot.title}`)}>
+                  Edit
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
