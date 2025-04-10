@@ -7,6 +7,7 @@ import { Code, Copy, Download, Plus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBrandSettings } from "@/context/BrandSettingsContext";
 import { toast } from "sonner";
+import { LayoutGrid } from "lucide-react"; // Importing LayoutGrid icon instead of Blocks
 
 interface BlocksLibraryCanvasProps {
   selectedBlock: BlockItem | null;
@@ -33,7 +34,7 @@ export const BlocksLibraryCanvas: React.FC<BlocksLibraryCanvasProps> = ({ select
     return (
       <div className="flex-1 flex items-center justify-center bg-muted/30">
         <div className="text-center max-w-md p-6">
-          <Blocks className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <LayoutGrid className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <h2 className="text-xl font-semibold mb-2">Select a Block</h2>
           <p className="text-muted-foreground">
             Choose a block or component from the sidebar to view its details, preview, and add it to your form.
