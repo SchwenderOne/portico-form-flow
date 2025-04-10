@@ -7,7 +7,6 @@ import { Calendar, Copy, Eye, Building, Clock, ImageOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useBrandSettings } from "@/context/BrandSettingsContext";
 import { useSelectedTemplate } from "@/context/SelectedTemplateContext";
-import { useFormCanvas } from "@/components/form-builder/context/FormCanvasContext";
 import { templatesData } from "@/data/templates";
 
 interface Template {
@@ -33,7 +32,6 @@ export const TemplateListItem: React.FC<TemplateListItemProps> = ({ template }) 
   const { toast } = useToast();
   const { brandSettings } = useBrandSettings();
   const { setSelectedTemplate } = useSelectedTemplate();
-  const formCanvas = useFormCanvas();
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -50,9 +48,6 @@ export const TemplateListItem: React.FC<TemplateListItemProps> = ({ template }) 
         
         // Set in global context
         setSelectedTemplate(fullTemplate);
-        
-        // Also directly set in form canvas for immediate use
-        formCanvas.setElements(templateElements);
         
         toast({
           title: "Template Selected",

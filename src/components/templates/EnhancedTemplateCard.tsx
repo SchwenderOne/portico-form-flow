@@ -16,7 +16,6 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useBrandSettings } from "@/context/BrandSettingsContext";
 import { useSelectedTemplate } from "@/context/SelectedTemplateContext";
-import { useFormCanvas } from "@/components/form-builder/context/FormCanvasContext";
 import { templatesData } from "@/data/templates";
 
 interface Template {
@@ -42,7 +41,6 @@ export const EnhancedTemplateCard: React.FC<EnhancedTemplateCardProps> = ({ temp
   const { toast } = useToast();
   const { brandSettings } = useBrandSettings();
   const { setSelectedTemplate } = useSelectedTemplate();
-  const formCanvas = useFormCanvas();
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -59,9 +57,6 @@ export const EnhancedTemplateCard: React.FC<EnhancedTemplateCardProps> = ({ temp
         
         // Set in global context
         setSelectedTemplate(fullTemplate);
-        
-        // Also directly set in form canvas for immediate use
-        formCanvas.setElements(templateElements);
         
         toast({
           title: "Template Selected",
