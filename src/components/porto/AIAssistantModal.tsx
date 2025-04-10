@@ -16,8 +16,10 @@ import {
   AlignLeft,
   Calendar,
   Mail,
-  Checkbox,
-  ListCheck
+  Check, // Changed from Checkbox to Check
+  ListCheck,
+  Heading, // Added correctly for headings
+  TextCursor
 } from "lucide-react";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -46,7 +48,7 @@ export const AIAssistantModal: React.FC<{
     { name: "Full Name", type: "text", icon: <AlignLeft className="h-4 w-4" /> },
     { name: "Email Address", type: "email", icon: <Mail className="h-4 w-4" /> },
     { name: "Date of Birth", type: "date", icon: <Calendar className="h-4 w-4" /> },
-    { name: "Terms Acceptance", type: "checkbox", icon: <Checkbox className="h-4 w-4" /> },
+    { name: "Terms Acceptance", type: "checkbox", icon: <Check className="h-4 w-4" /> }, // Changed from Checkbox to Check
     { name: "Survey Questions", type: "radio", icon: <ListCheck className="h-4 w-4" /> }
   ];
 
@@ -225,11 +227,11 @@ export const AIAssistantModal: React.FC<{
                       {generatedElements.map((element, index) => (
                         <li key={index} className="flex items-center text-sm">
                           {element.type === 'header' ? (
-                            <Heading1 className="h-4 w-4 mr-2 text-blue-500" />
+                            <Heading className="h-4 w-4 mr-2 text-blue-500" /> // Changed from Heading1 to Heading
                           ) : element.type === 'paragraph' ? (
                             <AlignLeft className="h-4 w-4 mr-2 text-blue-500" />
                           ) : element.type === 'text' ? (
-                            <AlignLeft className="h-4 w-4 mr-2 text-purple-500" />
+                            <TextCursor className="h-4 w-4 mr-2 text-purple-500" /> // Changed to TextCursor for text type
                           ) : element.type === 'email' ? (
                             <Mail className="h-4 w-4 mr-2 text-purple-500" />
                           ) : (
