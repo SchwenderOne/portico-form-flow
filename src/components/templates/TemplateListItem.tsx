@@ -1,9 +1,9 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Copy, Eye, Building, Clock } from "lucide-react";
+import { Calendar, Copy, Eye, Building, Clock, ImageOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useBrandSettings } from "@/context/BrandSettingsContext";
 import { useSelectedTemplate } from "@/context/SelectedTemplateContext";
@@ -34,8 +34,12 @@ export const TemplateListItem: React.FC<TemplateListItemProps> = ({ template }) 
   const { brandSettings } = useBrandSettings();
   const { setSelectedTemplate } = useSelectedTemplate();
   const formCanvas = useFormCanvas();
+  const [imageError, setImageError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleUseTemplate = () => {
+    setIsLoading(true);
+    
     // Find the full template with elements from the templatesData
     const fullTemplate = templatesData.find(t => t.id === template.id);
     
@@ -63,6 +67,7 @@ export const TemplateListItem: React.FC<TemplateListItemProps> = ({ template }) 
           description: "Unable to load template. Please try again.",
           variant: "destructive"
         });
+        setIsLoading(false);
       }
     } else {
       toast({
@@ -70,6 +75,7 @@ export const TemplateListItem: React.FC<TemplateListItemProps> = ({ template }) 
         description: "Unable to load template. Please try again.",
         variant: "destructive"
       });
+      setIsLoading(false);
     }
   };
 
@@ -103,12 +109,19 @@ export const TemplateListItem: React.FC<TemplateListItemProps> = ({ template }) 
       className="flex items-center border rounded-lg p-4 hover:bg-muted/50 cursor-pointer group transition-colors"
       onClick={handleUseTemplate}
     >
-      <div className="h-16 w-16 rounded-md overflow-hidden flex-shrink-0">
-        <img 
-          src={template.image} 
-          alt={template.title}
-          className="w-full h-full object-cover object-center"
-        />
+      <div className="h-16 w-16 rounded-md overflow-hidden flex-shrink-0 bg-muted">
+        {imageError ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <ImageOff className="h-6 w-6 text-muted-foreground/50" />
+          </div>
+        ) : (
+          <img 
+            src={template.image} 
+            alt={template.title}
+            className="w-full h-full object-cover object-center"
+            onError={() => setImageError(true)}
+          />
+        )}
       </div>
       
       <div className="ml-4 flex-grow overflow-hidden">
@@ -155,6 +168,7 @@ export const TemplateListItem: React.FC<TemplateListItemProps> = ({ template }) 
           variant="ghost"
           onClick={handlePreview}
           className="opacity-0 group-hover:opacity-100 transition-opacity"
+          disabled={isLoading}
         >
           <Eye className="h-4 w-4" />
         </Button>
@@ -163,6 +177,7 @@ export const TemplateListItem: React.FC<TemplateListItemProps> = ({ template }) 
           variant="ghost"
           onClick={handleDuplicate}
           className="opacity-0 group-hover:opacity-100 transition-opacity"
+          disabled={isLoading}
         >
           <Copy className="h-4 w-4" />
         </Button>
@@ -173,8 +188,9 @@ export const TemplateListItem: React.FC<TemplateListItemProps> = ({ template }) 
             handleUseTemplate();
           }}
           style={{ backgroundColor: brandSettings.colors.primary }}
+          disabled={isLoading}
         >
-          Use
+          {isLoading ? "Loading..." : "Use"}
         </Button>
       </div>
     </div>
