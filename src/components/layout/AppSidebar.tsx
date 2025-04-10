@@ -27,7 +27,8 @@ import {
   Zap,
   Clipboard,
   KeyRound,
-  CreditCard
+  CreditCard,
+  Blocks
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TeamManagementSheet } from "@/components/team/TeamManagementSheet";
@@ -78,6 +79,7 @@ const AppSidebar = () => {
     { icon: LayoutGrid, title: "Templates", path: "/templates" },
     { icon: FileEdit, title: "Forms", path: "/" },
     { icon: Clipboard, title: "Porto", path: "/porto", highlight: true },
+    { icon: Blocks, title: "Blocks / Components Library", path: "/blocks-library" },
     { icon: Send, title: "Distribute", path: "/distribute" },
     { icon: BarChart, title: "Analytics", path: "/analytics" },
     { icon: Zap, title: "Automations", path: "/automations" },

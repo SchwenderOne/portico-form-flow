@@ -30,6 +30,7 @@ import ErrorBoundary from "@/components/common/ErrorBoundary";
 import Porto from "./pages/Porto";
 import Subscription from "./pages/Subscription";
 import HelpSupport from "./pages/HelpSupport";
+import BlocksLibrary from "./pages/BlocksLibrary";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient({
@@ -74,6 +75,7 @@ const App = () => (
                         <Route path="/security" element={<RequireAuth><Security /></RequireAuth>} />
                         <Route path="/form-builder" element={<RequireAuth><FormBuilder /></RequireAuth>} />
                         <Route path="/porto" element={<RequireAuth><Porto /></RequireAuth>} />
+                        <Route path="/blocks-library" element={<RequireAuth><BlocksLibrary /></RequireAuth>} />
                         <Route path="/subscription" element={<RequireAuth><Subscription /></RequireAuth>} />
                         <Route path="/help-support" element={<RequireAuth><HelpSupport /></RequireAuth>} />
                         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
