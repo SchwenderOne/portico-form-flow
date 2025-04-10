@@ -1,7 +1,7 @@
 
 import React from "react";
 import AppLayout from "@/components/layout/AppLayout";
-import { ProjectsManager } from "@/components/projects/ProjectsManager";
+import ProjectsManager from "@/components/projects/ProjectsManager";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Projects = () => {
