@@ -10,6 +10,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { 
@@ -27,7 +28,14 @@ import {
   Zap,
   Clipboard,
   KeyRound,
-  CreditCard
+  CreditCard,
+  Folders,
+  MessageSquare,
+  CalendarClock,
+  PenTool,
+  Sparkles,
+  TestTube,
+  Component,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TeamManagementSheet } from "@/components/team/TeamManagementSheet";
@@ -74,20 +82,62 @@ const AppSidebar = () => {
     }
   };
 
-  const menuItems = [
+  // Menu sections based on the proposed structure
+  const createSection = [
     { icon: LayoutGrid, title: "Templates", path: "/templates" },
     { icon: FileEdit, title: "Forms", path: "/" },
+    { icon: Component, title: "Components", path: "/blocks-library" },
     { icon: Clipboard, title: "Porto", path: "/porto", highlight: true },
+  ];
+
+  const distributeSection = [
     { icon: Send, title: "Distribute", path: "/distribute" },
-    { icon: BarChart, title: "Analytics", path: "/analytics" },
+    { icon: MessageSquare, title: "Submissions", path: "/submissions" },
     { icon: Zap, title: "Automations", path: "/automations" },
-    { icon: Palette, title: "Branding", path: "/branding", usesBrandColor: true },
-    { icon: History, title: "History", path: "/history" },
-    { icon: Shield, title: "Compliance", path: "/compliance" },
+    { icon: CalendarClock, title: "Scheduler", path: "/scheduler" },
+  ];
+
+  const analyzeSection = [
+    { icon: BarChart, title: "Analytics", path: "/analytics" },
+    // Future items commented out for now
+    // { icon: TestTube, title: "A/B Testing", path: "/ab-testing", disabled: true },
+    // { icon: Sparkles, title: "AI Suggestions", path: "/ai-suggestions", disabled: true },
+  ];
+
+  const collaborateSection = [
     { icon: Users, title: "Team", path: "/team" },
+    { icon: History, title: "History", path: "/history" },
+    { icon: Folders, title: "Projects", path: "/projects" },
+  ];
+
+  const controlSection = [
+    { icon: Palette, title: "Branding", path: "/branding", usesBrandColor: true },
+    { icon: Shield, title: "Compliance", path: "/compliance" },
     { icon: Settings, title: "Settings", path: "/settings" },
     { icon: KeyRound, title: "Security", path: "/security" },
   ];
+
+  const renderMenuItems = (items: any[]) => {
+    return items.map((item) => (
+      <SidebarMenuItem key={item.title}>
+        <SidebarMenuButton 
+          className={cn(
+            (location.pathname === item.path) && 
+            (item.usesBrandColor 
+              ? "bg-[var(--brand-primary)] text-white font-medium" 
+              : "bg-sidebar-accent text-foreground font-medium"),
+            item.highlight && "border-l-2 border-primary",
+            item.disabled && "opacity-50 cursor-not-allowed"
+          )}
+          onClick={() => !item.disabled && handleMenuItemClick(item.path)}
+          disabled={item.disabled}
+        >
+          <item.icon className="mr-2 h-5 w-5" />
+          <span>{item.title}</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    ));
+  };
 
   return (
     <>
@@ -108,27 +158,60 @@ const AppSidebar = () => {
           </div>
         </SidebarHeader>
         <SidebarContent>
+          {/* Create Section */}
           <SidebarGroup>
-            <SidebarGroupLabel>WORKSPACE</SidebarGroupLabel>
+            <SidebarGroupLabel>CREATE</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {menuItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton 
-                      className={cn(
-                        (location.pathname === item.path) && 
-                        (item.usesBrandColor 
-                          ? "bg-[var(--brand-primary)] text-white font-medium" 
-                          : "bg-sidebar-accent text-foreground font-medium"),
-                        item.highlight && "border-l-2 border-primary"
-                      )}
-                      onClick={() => handleMenuItemClick(item.path)}
-                    >
-                      <item.icon className="mr-2 h-5 w-5" />
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {renderMenuItems(createSection)}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarSeparator className="my-1 mx-3" />
+
+          {/* Distribute Section */}
+          <SidebarGroup>
+            <SidebarGroupLabel>DISTRIBUTE</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {renderMenuItems(distributeSection)}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarSeparator className="my-1 mx-3" />
+
+          {/* Analyze Section */}
+          <SidebarGroup>
+            <SidebarGroupLabel>ANALYZE</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {renderMenuItems(analyzeSection)}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarSeparator className="my-1 mx-3" />
+
+          {/* Collaborate Section */}
+          <SidebarGroup>
+            <SidebarGroupLabel>COLLABORATE</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {renderMenuItems(collaborateSection)}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarSeparator className="my-1 mx-3" />
+
+          {/* Brand & Control Section */}
+          <SidebarGroup>
+            <SidebarGroupLabel>BRAND & CONTROL</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {renderMenuItems(controlSection)}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
