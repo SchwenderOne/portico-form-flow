@@ -12,13 +12,16 @@ import { PortoPreview } from "./PortoPreview";
 import { AIAssistantModal } from "@/components/porto/AIAssistantModal";
 import { PortoFormTemplates } from "./PortoFormTemplates";
 import { PortoSettings } from "./PortoSettings";
+import { toast } from "sonner";
 
 export const PortoEditor: React.FC = () => {
   const { 
     activeSection, 
     previewMode, 
     setFormElements, 
-    formElements 
+    formElements,
+    isEdited,
+    lastSaved
   } = usePorto();
   
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
@@ -30,6 +33,35 @@ export const PortoEditor: React.FC = () => {
       setFormElements(formCanvas.elements);
     }
   }, [formCanvas.elements, setFormElements]);
+
+  // Auto-save notification
+  useEffect(() => {
+    if (lastSaved) {
+      // Only show this once when saved changes occur
+      const lastSavedTime = lastSaved.toLocaleTimeString();
+      toast.info(`Changes auto-saved at ${lastSavedTime}`, {
+        duration: 2000,
+        id: "auto-save" // Prevents duplicate toasts
+      });
+    }
+  }, [lastSaved]);
+
+  // Prompt before leaving if there are unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isEdited) {
+        const message = "You have unsaved changes. Are you sure you want to leave?";
+        e.returnValue = message;
+        return message;
+      }
+    };
+    
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isEdited]);
 
   const handleAddElement = (element: FormElement) => {
     if (formCanvas && formCanvas.addElement) {
