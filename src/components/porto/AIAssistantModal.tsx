@@ -42,19 +42,23 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
     setError(null);
 
     try {
+      console.log("Starting form generation with prompt:", prompt);
       // Use the OpenRouter service to generate form elements
       const generatedElements = await generateFormWithOpenRouter(prompt);
       
-      if (generatedElements.length > 0) {
+      if (generatedElements && generatedElements.length > 0) {
+        console.log("Generated elements:", generatedElements);
         handleAddAIElements(generatedElements);
         toast.success("Form generated successfully");
         setPrompt("");
         onClose();
       } else {
+        console.error("No elements generated from prompt:", prompt);
         setError("Failed to generate form elements. Please try a different prompt.");
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Something went wrong";
+      console.error("Error in AI form generation:", errorMessage);
       setError(errorMessage);
       toast.error("Failed to generate form");
     } finally {
@@ -72,6 +76,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
 
   const handleUseExamplePrompt = (examplePrompt: string) => {
     setPrompt(examplePrompt);
+    setError(null); // Clear any previous errors
   };
 
   return (

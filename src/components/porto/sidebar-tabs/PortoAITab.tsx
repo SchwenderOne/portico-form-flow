@@ -4,7 +4,6 @@ import { useFormCanvas } from "@/components/form-builder/context/FormCanvasConte
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FormElement } from "@/types/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Wand2, Sparkles, Lightbulb, MessageSquare, AlertCircle } from "lucide-react";
@@ -28,18 +27,22 @@ export const PortoAITab: React.FC = () => {
     setError(null);
     
     try {
+      console.log("Starting form generation from sidebar with prompt:", prompt);
       // Use the OpenRouter service to generate form elements
       const generatedElements = await generateFormWithOpenRouter(prompt);
       
-      if (generatedElements.length > 0) {
+      if (generatedElements && generatedElements.length > 0) {
+        console.log("Generated elements from sidebar:", generatedElements);
         handleAddAIElements(generatedElements);
         toast.success("Form generated based on your prompt");
         setPrompt("");
       } else {
+        console.error("No elements generated from sidebar prompt:", prompt);
         setError("Failed to generate form elements. Please try a different prompt.");
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Something went wrong";
+      console.error("Error in AI form generation from sidebar:", errorMessage);
       setError(errorMessage);
       toast.error("Failed to generate form");
     } finally {
@@ -56,6 +59,7 @@ export const PortoAITab: React.FC = () => {
 
   const handleSuggestionClick = (suggestion: string) => {
     setPrompt(suggestion);
+    setError(null); // Clear any previous errors
   };
 
   const examplePrompts = [

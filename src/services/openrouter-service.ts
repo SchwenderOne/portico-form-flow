@@ -2,8 +2,8 @@
 import { FormElement } from "@/types/form";
 import { toast } from "sonner";
 
-// Use environment variable for API key in a real production app
-// For this demo, we're using the provided key directly
+// The API key should ideally be stored in a secure environment variable
+// For this demo, we're using a valid API key directly
 const OPENROUTER_API_KEY = "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";
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -20,6 +20,8 @@ interface OpenRouterResponse {
 
 export async function generateFormWithOpenRouter(prompt: string): Promise<FormElement[]> {
   try {
+    console.log("Generating form with OpenRouter, prompt:", prompt);
+    
     // Enhanced system prompt for form generation
     const systemPrompt = `
 You are an AI assistant specialized in creating form schemas for a form builder application.
@@ -49,6 +51,14 @@ Example format:
 ]
 `;
 
+    // Check if API key is available
+    if (!OPENROUTER_API_KEY) {
+      console.error("OpenRouter API key is missing");
+      throw new Error("API credentials are not configured");
+    }
+
+    console.log("Sending request to OpenRouter API...");
+    
     const response = await fetch(OPENROUTER_API_URL, {
       method: "POST",
       headers: {
@@ -70,10 +80,13 @@ Example format:
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.error("OpenRouter API error response:", errorData);
       throw new Error(errorData.error?.message || "Failed to connect to AI service");
     }
 
     const data = await response.json() as OpenRouterResponse;
+    console.log("OpenRouter API response received:", data);
+    
     const aiResponse = data.choices?.[0]?.message?.content || "";
 
     // Extract the JSON part from the response
@@ -82,15 +95,22 @@ Example format:
     // If no direct match, look for JSON with backticks or code blocks
     if (!jsonMatch) {
       jsonMatch = aiResponse.match(/```(?:json)?\s*(\[\s*\{.*\}\s*\])\s*```/s);
+      if (jsonMatch) {
+        jsonMatch[0] = jsonMatch[1]; // Use the captured group
+      }
     }
     
     if (!jsonMatch) {
+      console.error("Could not parse AI response:", aiResponse);
       throw new Error("Could not parse AI response into valid form fields");
     }
     
     // Parse the JSON and convert to FormElement format
     const jsonString = jsonMatch[0].replace(/```(?:json)?|```/g, '').trim();
+    console.log("Extracted JSON:", jsonString);
+    
     const fields = JSON.parse(jsonString);
+    console.log("Parsed fields:", fields);
     
     // Convert the AI response format to our FormElement format
     return convertToFormElements(fields);
