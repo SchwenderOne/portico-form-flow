@@ -10,8 +10,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { Camera, Blocks, Settings, Key, User, Bell } from "lucide-react";
+import { 
+  Camera, 
+  Blocks, 
+  Settings, 
+  Key, 
+  User, 
+  Bell, 
+  FolderKanban, 
+  ClipboardList, 
+  CalendarClock 
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import ProjectsManager from "@/components/projects/ProjectsManager";
+import SubmissionsManager from "@/components/submissions/SubmissionsManager";
+import SchedulerManager from "@/components/scheduler/SchedulerManager";
 
 const Profile = () => {
   const { user, profile } = useAuth();
@@ -238,8 +251,97 @@ const Profile = () => {
                       </p>
                     </div>
                     
-                    {/* Additional tools can be added here in the future */}
+                    <div className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => setActiveTab("projects")}>
+                      <div className="flex items-center gap-3 mb-2">
+                        <FolderKanban className="h-5 w-5 text-primary" />
+                        <h4 className="font-medium">Projects & Folders</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Manage your projects and organize forms into folders
+                      </p>
+                    </div>
+                    
+                    <div className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => setActiveTab("submissions")}>
+                      <div className="flex items-center gap-3 mb-2">
+                        <ClipboardList className="h-5 w-5 text-primary" />
+                        <h4 className="font-medium">Submissions & Responses</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        View and manage form submissions and user responses
+                      </p>
+                    </div>
+                    
+                    <div className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => setActiveTab("scheduler")}>
+                      <div className="flex items-center gap-3 mb-2">
+                        <CalendarClock className="h-5 w-5 text-primary" />
+                        <h4 className="font-medium">Scheduler & Booking</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Manage appointment scheduling and booking features
+                      </p>
+                    </div>
                   </div>
+                </div>
+              </TabsContent>
+              
+              {/* New tab contents for Projects, Submissions, and Scheduler */}
+              <TabsContent value="projects" className="mt-0">
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="text-lg font-medium">Projects & Folders</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Organize your forms into projects and folders
+                      </p>
+                    </div>
+                    <Button onClick={() => setActiveTab("tools")}>
+                      Back to Tools
+                    </Button>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <ProjectsManager />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="submissions" className="mt-0">
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="text-lg font-medium">Submissions & Responses</h3>
+                      <p className="text-sm text-muted-foreground">
+                        View and analyze form submissions and responses
+                      </p>
+                    </div>
+                    <Button onClick={() => setActiveTab("tools")}>
+                      Back to Tools
+                    </Button>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <SubmissionsManager />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="scheduler" className="mt-0">
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="text-lg font-medium">Scheduler & Booking</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Manage appointments and booking slots
+                      </p>
+                    </div>
+                    <Button onClick={() => setActiveTab("tools")}>
+                      Back to Tools
+                    </Button>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <SchedulerManager />
                 </div>
               </TabsContent>
             </CardContent>
