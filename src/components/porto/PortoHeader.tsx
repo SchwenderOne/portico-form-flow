@@ -1,29 +1,38 @@
 
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePorto } from "./context/PortoContext";
+import { Button } from "@/components/ui/button";
 import { 
-  LayoutTemplate, 
-  Settings, 
-  Pencil, 
-  Eye, 
   Save, 
-  Globe, 
-  Moon, 
-  Sun,
+  Undo, 
+  Redo, 
+  Eye, 
+  Grid, 
+  Settings, 
+  Download, 
+  Plus, 
+  ChevronDown,
   Wand2,
-  MoreHorizontal 
+  Ghost,
+  FileText,
+  History,
+  LayoutTemplate
 } from "lucide-react";
 import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 
 interface PortoHeaderProps {
   onOpenAIModal: () => void;
@@ -33,7 +42,7 @@ export const PortoHeader: React.FC<PortoHeaderProps> = ({ onOpenAIModal }) => {
   const { 
     formTitle, 
     setFormTitle, 
-    isPublished,
+    isPublished, 
     publishForm,
     unpublishForm,
     isDarkMode,
@@ -42,143 +51,178 @@ export const PortoHeader: React.FC<PortoHeaderProps> = ({ onOpenAIModal }) => {
     setActiveSection,
     previewMode,
     togglePreviewMode,
-    saveForm
+    saveForm,
+    isEdited,
+    exportForm,
+    saveFormAsTemplate
   } = usePorto();
   
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [tempTitle, setTempTitle] = useState(formTitle);
-  
-  const handleTitleChange = () => {
-    setFormTitle(tempTitle);
-    setIsEditingTitle(false);
-    toast.success("Form title updated");
+
+  const handleTitleClick = () => {
+    setTempTitle(formTitle);
+    setIsEditingTitle(true);
   };
-  
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTempTitle(e.target.value);
+  };
+
+  const handleTitleSave = () => {
+    if (tempTitle.trim() !== "") {
+      setFormTitle(tempTitle.trim());
+    }
+    setIsEditingTitle(false);
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      handleTitleChange();
+      handleTitleSave();
     } else if (e.key === "Escape") {
-      setTempTitle(formTitle);
       setIsEditingTitle(false);
+      setTempTitle(formTitle);
+    }
+  };
+
+  const handlePublishToggle = () => {
+    if (isPublished) {
+      unpublishForm();
+    } else {
+      publishForm();
     }
   };
 
   return (
-    <div className="h-14 border-b flex items-center justify-between px-4 bg-background">
-      <div className="flex items-center">
-        {isEditingTitle ? (
-          <div className="flex items-center">
-            <Input
-              value={tempTitle}
-              onChange={(e) => setTempTitle(e.target.value)}
-              onBlur={handleTitleChange}
-              onKeyDown={handleKeyDown}
-              className="w-64 h-8"
-              autoFocus
-            />
+    <div className="border-b h-14 px-4 flex items-center justify-between bg-background">
+      <div className="flex items-center space-x-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          className={activeSection === "templates" ? "bg-accent" : ""}
+          onClick={() => setActiveSection("templates")}
+        >
+          <LayoutTemplate className="h-4 w-4 mr-1" />
+          Templates
+        </Button>
+        <div>
+          {isEditingTitle ? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleTitleSave();
+              }}
+              className="flex items-center"
+            >
+              <Input
+                value={tempTitle}
+                onChange={handleTitleChange}
+                onBlur={handleTitleSave}
+                onKeyDown={handleTitleKeyDown}
+                autoFocus
+                className="h-8 min-w-[200px] max-w-[300px]"
+                maxLength={50}
+              />
+            </form>
+          ) : (
+            <h2
+              className="font-medium text-lg cursor-pointer hover:underline"
+              onClick={handleTitleClick}
+            >
+              {formTitle}
+            </h2>
+          )}
+          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+            {isEdited && <span className="italic">Unsaved changes</span>}
+            {isPublished && (
+              <Badge variant="success" className="text-[10px] h-5">
+                Published
+              </Badge>
+            )}
           </div>
-        ) : (
-          <div 
-            className="flex items-center cursor-pointer" 
-            onClick={() => setIsEditingTitle(true)}
-          >
-            <h2 className="text-lg font-medium mr-2">{formTitle}</h2>
-            <Pencil className="h-4 w-4 text-muted-foreground" />
-          </div>
-        )}
+        </div>
       </div>
 
       <div className="flex items-center space-x-2">
-        <Tabs
-          value={activeSection}
-          onValueChange={setActiveSection}
-          className="mr-4"
-        >
-          <TabsList>
-            <TabsTrigger value="editor" className="flex items-center gap-1">
-              <Pencil className="h-4 w-4" />
-              <span className="hidden sm:inline">Editor</span>
-            </TabsTrigger>
-            <TabsTrigger value="templates" className="flex items-center gap-1">
-              <LayoutTemplate className="h-4 w-4" />
-              <span className="hidden sm:inline">Templates</span>
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-1">
-              <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Settings</span>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onOpenAIModal}
+              >
+                <Wand2 className="h-4 w-4 mr-1" />
+                AI Assistant
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Generate forms with AI</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={togglePreviewMode}
-          className="flex items-center gap-1"
+          className={previewMode ? "bg-accent" : ""}
         >
-          {previewMode ? (
-            <>
-              <Pencil className="h-4 w-4" />
-              <span className="hidden sm:inline">Edit</span>
-            </>
-          ) : (
-            <>
-              <Eye className="h-4 w-4" />
-              <span className="hidden sm:inline">Preview</span>
-            </>
-          )}
-        </Button>
-
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={onOpenAIModal}
-          className="flex items-center gap-1"
-        >
-          <Wand2 className="h-4 w-4" />
-          <span className="hidden sm:inline">AI Assist</span>
+          <Eye className="h-4 w-4 mr-1" />
+          Preview
         </Button>
 
         <Button
-          variant="default"
+          variant="ghost"
           size="sm"
-          onClick={saveForm}
-          className="flex items-center gap-1"
+          onClick={() => setActiveSection("settings")}
+          className={activeSection === "settings" ? "bg-accent" : ""}
         >
-          <Save className="h-4 w-4" />
-          <span className="hidden sm:inline">Save</span>
+          <Settings className="h-4 w-4 mr-1" />
+          Settings
         </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon">
-              <MoreHorizontal className="h-4 w-4" />
+            <Button variant="ghost" size="sm">
+              <Download className="h-4 w-4 mr-1" />
+              Export
+              <ChevronDown className="h-3 w-3 ml-1 opacity-70" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={isPublished ? unpublishForm : publishForm}>
-              <Globe className="h-4 w-4 mr-2" />
-              {isPublished ? "Unpublish" : "Publish"}
+            <DropdownMenuItem onClick={() => exportForm('json')}>
+              <FileText className="h-4 w-4 mr-2" />
+              Export as JSON
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={toggleDarkMode}>
-              {isDarkMode ? (
-                <>
-                  <Sun className="h-4 w-4 mr-2" />
-                  Light Mode
-                </>
-              ) : (
-                <>
-                  <Moon className="h-4 w-4 mr-2" />
-                  Dark Mode
-                </>
-              )}
+            <DropdownMenuItem onClick={() => exportForm('pdf')}>
+              <FileText className="h-4 w-4 mr-2" />
+              Export as PDF
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => exportForm('html')}>
+              <FileText className="h-4 w-4 mr-2" />
+              Export as HTML
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => toast.info("Exporting form...")}>
-              Export Form
+            <DropdownMenuItem onClick={saveFormAsTemplate}>
+              <LayoutTemplate className="h-4 w-4 mr-2" />
+              Save as Template
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <Button onClick={saveForm} size="sm" disabled={!isEdited}>
+          <Save className="h-4 w-4 mr-1" />
+          Save
+        </Button>
+
+        <Button 
+          variant={isPublished ? "outline" : "default"} 
+          size="sm" 
+          onClick={handlePublishToggle}
+        >
+          {isPublished ? "Unpublish" : "Publish"}
+        </Button>
       </div>
     </div>
   );

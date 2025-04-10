@@ -73,6 +73,7 @@ type PortoContextType = {
   collaborators: string[];
   addCollaborator: (email: string) => void;
   removeCollaborator: (email: string) => void;
+  saveFormAsTemplate: () => void;
 };
 
 const defaultTheme: ThemeSettings = {
@@ -145,6 +146,7 @@ const defaultContext: PortoContextType = {
   collaborators: [],
   addCollaborator: () => {},
   removeCollaborator: () => {},
+  saveFormAsTemplate: () => {},
 };
 
 const PortoContext = createContext<PortoContextType>(defaultContext);
@@ -175,6 +177,25 @@ export const PortoProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [formElements]);
 
+  // When template is applied, update form title and description
+  useEffect(() => {
+    if (currentTemplate) {
+      // In a real implementation, this would fetch the template details
+      // For now, we'll just update the form title based on the template ID
+      if (currentTemplate === "contact-form") {
+        setFormTitle("Contact Form");
+        setFormDescription("A simple contact form for your website");
+      } else if (currentTemplate === "feedback-form") {
+        setFormTitle("Feedback Form");
+        setFormDescription("Collect valuable feedback from your customers");
+      } else {
+        // Generic template update
+        setFormTitle(`Form from Template (${currentTemplate})`);
+        setFormDescription("Form created from a template");
+      }
+    }
+  }, [currentTemplate]);
+
   const publishForm = () => {
     setIsPublished(true);
     saveForm();
@@ -198,6 +219,7 @@ export const PortoProvider = ({ children }: { children: ReactNode }) => {
   const saveForm = () => {
     setLastSaved(new Date());
     setIsEdited(false);
+    incrementVersion();
     toast.success("Form saved successfully!");
   };
 
@@ -234,6 +256,16 @@ export const PortoProvider = ({ children }: { children: ReactNode }) => {
   const removeCollaborator = (email: string) => {
     setCollaborators(prev => prev.filter(e => e !== email));
     toast.success(`${email} removed from collaborators`);
+  };
+  
+  const saveFormAsTemplate = () => {
+    // In a real implementation, this would save the current form as a template
+    if (formElements.length === 0) {
+      toast.error("Cannot save an empty form as a template");
+      return;
+    }
+    
+    toast.success("Form saved as a template");
   };
 
   // Auto-save functionality
@@ -289,6 +321,7 @@ export const PortoProvider = ({ children }: { children: ReactNode }) => {
         collaborators,
         addCollaborator,
         removeCollaborator,
+        saveFormAsTemplate,
       }}
     >
       {children}

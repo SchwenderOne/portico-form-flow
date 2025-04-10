@@ -7,75 +7,63 @@ import { Textarea } from "@/components/ui/textarea";
 import { FormElement } from "@/types/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Wand2, Sparkles, Lightbulb, MessageSquare } from "lucide-react";
+import { Wand2, Sparkles, Lightbulb, MessageSquare, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-
-// Sample AI-generated elements for demo
-const aiGeneratedElements: FormElement[] = [
-  {
-    id: crypto.randomUUID(),
-    type: "header",
-    label: "Contact Information",
-    content: "Contact Information",
-    position: { x: 100, y: 50 },
-    size: { width: 600, height: 50 },
-    groupId: null,
-  },
-  {
-    id: crypto.randomUUID(),
-    type: "text",
-    label: "Full Name",
-    placeholder: "Enter your full name",
-    required: true,
-    position: { x: 100, y: 120 },
-    size: { width: 400, height: 80 },
-    groupId: null,
-  },
-  {
-    id: crypto.randomUUID(),
-    type: "email",
-    label: "Email Address",
-    placeholder: "Enter your email address",
-    required: true,
-    position: { x: 100, y: 220 },
-    size: { width: 400, height: 80 },
-    groupId: null,
-  },
-];
-
-// Sample form suggestions
-const formSuggestions = [
-  "Add a phone number field for alternative contact",
-  "Include a checkbox for newsletter subscription",
-  "Add a file upload field for attachments",
-  "Include a GDPR consent checkbox",
-];
+import { generateFormWithOpenRouter } from "@/services/openrouter-service";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const PortoAITab: React.FC = () => {
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { handleAddAIElements } = useFormCanvas();
 
-  const handleGenerateForm = () => {
+  const handleGenerateForm = async () => {
     if (!prompt.trim()) {
-      toast.error("Please enter a prompt");
+      setError("Please enter a prompt");
       return;
     }
 
     setIsGenerating(true);
+    setError(null);
     
-    // Simulate AI generation
-    setTimeout(() => {
-      handleAddAIElements(aiGeneratedElements);
+    try {
+      // Use the OpenRouter service to generate form elements
+      const generatedElements = await generateFormWithOpenRouter(prompt);
+      
+      if (generatedElements.length > 0) {
+        handleAddAIElements(generatedElements);
+        toast.success("Form generated based on your prompt");
+        setPrompt("");
+      } else {
+        setError("Failed to generate form elements. Please try a different prompt.");
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Something went wrong";
+      setError(errorMessage);
+      toast.error("Failed to generate form");
+    } finally {
       setIsGenerating(false);
-      setPrompt("");
-      toast.success("Form generated based on your prompt");
-    }, 2000);
+    }
   };
+
+  const formSuggestions = [
+    "Add a phone number field for alternative contact",
+    "Include a checkbox for newsletter subscription",
+    "Add a file upload field for attachments",
+    "Include a GDPR consent checkbox",
+  ];
 
   const handleSuggestionClick = (suggestion: string) => {
     setPrompt(suggestion);
   };
+
+  const examplePrompts = [
+    "Create a contact form with name, email, and message fields",
+    "Design a healthcare patient intake form with medical history",
+    "Build a job application form with education and experience sections",
+    "Generate a feedback survey with rating and comment fields"
+  ];
 
   return (
     <ScrollArea className="h-full">
@@ -85,6 +73,13 @@ export const PortoAITab: React.FC = () => {
           <p className="text-xs text-muted-foreground mb-4">
             Describe the form you want to create and AI will generate it for you.
           </p>
+          
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           
           <div className="space-y-2">
             <Label htmlFor="form-prompt">Your prompt</Label>
@@ -144,27 +139,16 @@ export const PortoAITab: React.FC = () => {
           </div>
           
           <div className="space-y-2">
-            <Button
-              variant="outline"
-              className="w-full justify-start h-auto py-3 text-sm"
-              onClick={() => handleSuggestionClick("Create a contact form with name, email, and message fields")}
-            >
-              Create a contact form with name, email, and message fields
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-start h-auto py-3 text-sm"
-              onClick={() => handleSuggestionClick("Make a survey about customer satisfaction with 5 questions")}
-            >
-              Make a survey about customer satisfaction with 5 questions
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-start h-auto py-3 text-sm"
-              onClick={() => handleSuggestionClick("Build a job application form with education and experience sections")}
-            >
-              Build a job application form with education and experience sections
-            </Button>
+            {examplePrompts.map((examplePrompt, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                className="w-full justify-start h-auto py-3 text-sm"
+                onClick={() => handleSuggestionClick(examplePrompt)}
+              >
+                {examplePrompt}
+              </Button>
+            ))}
           </div>
         </div>
       </div>

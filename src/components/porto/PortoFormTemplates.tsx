@@ -12,9 +12,17 @@ import {
   CardTitle 
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, LayoutTemplate, ArrowLeft, Filter, TagIcon } from "lucide-react";
+import { Search, LayoutTemplate, ArrowLeft, Filter, TagIcon, Eye, AlertTriangle } from "lucide-react";
 import { FormElement } from "@/types/form";
 import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
@@ -24,8 +32,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
-// Sample templates for demonstration
+// Enhanced form templates with proper elements
 const formTemplates = [
   {
     id: "contact-form",
@@ -146,7 +156,46 @@ const formTemplates = [
     tags: ["feedback", "survey", "ratings"],
     thumbnail: "⭐",
     published: true,
-    elements: []
+    elements: [
+      {
+        id: "header-1",
+        type: "header",
+        content: "Customer Feedback",
+        position: { x: 100, y: 50 },
+        size: { width: 600, height: 60 },
+        groupId: null
+      },
+      {
+        id: "text-1",
+        type: "text",
+        label: "Your Name",
+        placeholder: "Enter your name",
+        required: false,
+        position: { x: 100, y: 130 },
+        size: { width: 600, height: 80 },
+        groupId: null
+      },
+      {
+        id: "select-1",
+        type: "select",
+        label: "How would you rate our service?",
+        required: true,
+        position: { x: 100, y: 230 },
+        size: { width: 600, height: 80 },
+        groupId: null,
+        options: ["Excellent", "Good", "Average", "Poor", "Very Poor"]
+      },
+      {
+        id: "textarea-1",
+        type: "textarea",
+        label: "Additional Comments",
+        placeholder: "Please share any additional feedback",
+        required: false,
+        position: { x: 100, y: 330 },
+        size: { width: 600, height: 120 },
+        groupId: null
+      }
+    ]
   },
   {
     id: "event-registration",
@@ -157,7 +206,55 @@ const formTemplates = [
     tags: ["events", "registration", "education"],
     thumbnail: "🎫",
     published: true,
-    elements: []
+    elements: [
+      {
+        id: "header-1",
+        type: "header",
+        content: "Event Registration",
+        position: { x: 100, y: 50 },
+        size: { width: 600, height: 60 },
+        groupId: null
+      },
+      {
+        id: "text-1",
+        type: "text",
+        label: "Full Name",
+        placeholder: "Enter your full name",
+        required: true,
+        position: { x: 100, y: 130 },
+        size: { width: 600, height: 80 },
+        groupId: null
+      },
+      {
+        id: "email-1",
+        type: "email",
+        label: "Email Address",
+        placeholder: "Enter your email address",
+        required: true,
+        position: { x: 100, y: 230 },
+        size: { width: 600, height: 80 },
+        groupId: null
+      },
+      {
+        id: "select-1",
+        type: "select",
+        label: "Event Session",
+        required: true,
+        position: { x: 100, y: 330 },
+        size: { width: 600, height: 80 },
+        groupId: null,
+        options: ["Morning Session", "Afternoon Session", "Evening Session", "All Day"]
+      },
+      {
+        id: "checkbox-1",
+        type: "checkbox",
+        label: "I agree to the terms and conditions",
+        required: true,
+        position: { x: 100, y: 430 },
+        size: { width: 600, height: 60 },
+        groupId: null
+      }
+    ]
   },
   {
     id: "patient-intake",
@@ -168,18 +265,55 @@ const formTemplates = [
     tags: ["medical", "patient", "healthcare"],
     thumbnail: "🏥",
     published: true,
-    elements: []
-  },
-  {
-    id: "grant-application",
-    title: "Grant Application",
-    description: "Form for nonprofits to apply for grants and funding.",
-    category: "Nonprofit",
-    industry: "Nonprofit",
-    tags: ["grants", "application", "nonprofit"],
-    thumbnail: "🏦",
-    published: true,
-    elements: []
+    elements: [
+      {
+        id: "header-1",
+        type: "header",
+        content: "Patient Information",
+        position: { x: 100, y: 50 },
+        size: { width: 600, height: 60 },
+        groupId: null
+      },
+      {
+        id: "text-1",
+        type: "text",
+        label: "Full Name",
+        placeholder: "Enter patient's full name",
+        required: true,
+        position: { x: 100, y: 130 },
+        size: { width: 600, height: 80 },
+        groupId: null
+      },
+      {
+        id: "date-1",
+        type: "date",
+        label: "Date of Birth",
+        required: true,
+        position: { x: 100, y: 230 },
+        size: { width: 600, height: 80 },
+        groupId: null
+      },
+      {
+        id: "text-2",
+        type: "text",
+        label: "Insurance Provider",
+        placeholder: "Enter insurance company name",
+        required: true,
+        position: { x: 100, y: 330 },
+        size: { width: 600, height: 80 },
+        groupId: null
+      },
+      {
+        id: "textarea-1",
+        type: "textarea",
+        label: "Medical History",
+        placeholder: "Briefly describe relevant medical history",
+        required: true,
+        position: { x: 100, y: 430 },
+        size: { width: 600, height: 120 },
+        groupId: null
+      }
+    ]
   },
   {
     id: "job-application",
@@ -190,7 +324,136 @@ const formTemplates = [
     tags: ["job", "application", "career"],
     thumbnail: "👔",
     published: true,
-    elements: []
+    elements: [
+      {
+        id: "header-1",
+        type: "header",
+        content: "Job Application",
+        position: { x: 100, y: 50 },
+        size: { width: 600, height: 60 },
+        groupId: null
+      },
+      {
+        id: "text-1",
+        type: "text",
+        label: "Full Name",
+        placeholder: "Enter your full name",
+        required: true,
+        position: { x: 100, y: 130 },
+        size: { width: 600, height: 80 },
+        groupId: null
+      },
+      {
+        id: "email-1",
+        type: "email",
+        label: "Email Address",
+        placeholder: "Enter your email address",
+        required: true,
+        position: { x: 100, y: 230 },
+        size: { width: 600, height: 80 },
+        groupId: null
+      },
+      {
+        id: "text-2",
+        type: "text",
+        label: "Phone Number",
+        placeholder: "Enter your phone number",
+        required: true,
+        position: { x: 100, y: 330 },
+        size: { width: 600, height: 80 },
+        groupId: null
+      },
+      {
+        id: "textarea-1",
+        type: "textarea",
+        label: "Work Experience",
+        placeholder: "Describe your relevant work experience",
+        required: true,
+        position: { x: 100, y: 430 },
+        size: { width: 600, height: 120 },
+        groupId: null
+      },
+      {
+        id: "textarea-2",
+        type: "textarea",
+        label: "Education",
+        placeholder: "List your educational background",
+        required: true,
+        position: { x: 100, y: 570 },
+        size: { width: 600, height: 120 },
+        groupId: null
+      }
+    ]
+  },
+  {
+    id: "grant-application",
+    title: "Grant Application",
+    description: "Form for nonprofits to apply for grants and funding.",
+    category: "Nonprofit",
+    industry: "Nonprofit",
+    tags: ["grants", "application", "nonprofit"],
+    thumbnail: "🏦",
+    published: true,
+    elements: [
+      {
+        id: "header-1",
+        type: "header",
+        content: "Grant Application",
+        position: { x: 100, y: 50 },
+        size: { width: 600, height: 60 },
+        groupId: null
+      },
+      {
+        id: "text-1",
+        type: "text",
+        label: "Organization Name",
+        placeholder: "Enter your organization's name",
+        required: true,
+        position: { x: 100, y: 130 },
+        size: { width: 600, height: 80 },
+        groupId: null
+      },
+      {
+        id: "text-2",
+        type: "text",
+        label: "Contact Person",
+        placeholder: "Enter the primary contact's name",
+        required: true,
+        position: { x: 100, y: 230 },
+        size: { width: 600, height: 80 },
+        groupId: null
+      },
+      {
+        id: "email-1",
+        type: "email",
+        label: "Email Address",
+        placeholder: "Enter contact email address",
+        required: true,
+        position: { x: 100, y: 330 },
+        size: { width: 600, height: 80 },
+        groupId: null
+      },
+      {
+        id: "textarea-1",
+        type: "textarea",
+        label: "Project Description",
+        placeholder: "Describe the project that needs funding",
+        required: true,
+        position: { x: 100, y: 430 },
+        size: { width: 600, height: 120 },
+        groupId: null
+      },
+      {
+        id: "number-1",
+        type: "number",
+        label: "Funding Amount Requested",
+        placeholder: "Enter amount in USD",
+        required: true,
+        position: { x: 100, y: 570 },
+        size: { width: 600, height: 80 },
+        groupId: null
+      }
+    ]
   },
   {
     id: "student-enrollment",
@@ -201,7 +464,65 @@ const formTemplates = [
     tags: ["student", "enrollment", "education"],
     thumbnail: "🎓",
     published: true,
-    elements: []
+    elements: [
+      {
+        id: "header-1",
+        type: "header",
+        content: "Student Enrollment",
+        position: { x: 100, y: 50 },
+        size: { width: 600, height: 60 },
+        groupId: null
+      },
+      {
+        id: "text-1",
+        type: "text",
+        label: "Student Name",
+        placeholder: "Enter student's full name",
+        required: true,
+        position: { x: 100, y: 130 },
+        size: { width: 600, height: 80 },
+        groupId: null
+      },
+      {
+        id: "date-1",
+        type: "date",
+        label: "Date of Birth",
+        required: true,
+        position: { x: 100, y: 230 },
+        size: { width: 600, height: 80 },
+        groupId: null
+      },
+      {
+        id: "select-1",
+        type: "select",
+        label: "Grade Level",
+        required: true,
+        position: { x: 100, y: 330 },
+        size: { width: 600, height: 80 },
+        groupId: null,
+        options: ["Kindergarten", "1st Grade", "2nd Grade", "3rd Grade", "4th Grade", "5th Grade", "6th Grade", "7th Grade", "8th Grade", "9th Grade", "10th Grade", "11th Grade", "12th Grade"]
+      },
+      {
+        id: "text-2",
+        type: "text",
+        label: "Parent/Guardian Name",
+        placeholder: "Enter parent or guardian's name",
+        required: true,
+        position: { x: 100, y: 430 },
+        size: { width: 600, height: 80 },
+        groupId: null
+      },
+      {
+        id: "email-1",
+        type: "email",
+        label: "Contact Email",
+        placeholder: "Enter contact email address",
+        required: true,
+        position: { x: 100, y: 530 },
+        size: { width: 600, height: 80 },
+        groupId: null
+      }
+    ]
   }
 ];
 
@@ -209,10 +530,13 @@ const categories = ["All", "Business", "Account", "Feedback", "Events", "Healthc
 const industries = ["All", "Healthcare", "Education", "Government", "Nonprofit", "Technology", "Finance"];
 
 export const PortoFormTemplates: React.FC = () => {
-  const { setActiveSection, setFormElements, setCurrentTemplate } = usePorto();
+  const { setActiveSection, setFormElements, setCurrentTemplate, formElements } = usePorto();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>(["All"]);
+  const [selectedTemplate, setSelectedTemplate] = useState<typeof formTemplates[0] | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   
   // Filter templates based on search, category, and industries
   const filteredTemplates = formTemplates.filter((template) => {
@@ -233,10 +557,25 @@ export const PortoFormTemplates: React.FC = () => {
   });
 
   const handleUseTemplate = (template: typeof formTemplates[0]) => {
+    if (formElements.length > 0) {
+      setSelectedTemplate(template);
+      setIsConfirmOpen(true);
+    } else {
+      applyTemplate(template);
+    }
+  };
+
+  const applyTemplate = (template: typeof formTemplates[0]) => {
     setFormElements(template.elements);
     setCurrentTemplate(template.id);
     setActiveSection("editor");
     toast.success(`"${template.title}" template loaded successfully!`);
+  };
+
+  const handlePreview = (template: typeof formTemplates[0], e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedTemplate(template);
+    setIsPreviewOpen(true);
   };
 
   // Handle industry selection
@@ -348,7 +687,11 @@ export const PortoFormTemplates: React.FC = () => {
         <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredTemplates.length > 0 ? (
             filteredTemplates.map((template) => (
-              <Card key={template.id} className="overflow-hidden">
+              <Card 
+                key={template.id} 
+                className="overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer"
+                onClick={() => handleUseTemplate(template)}
+              >
                 <CardHeader className="p-4 pb-2">
                   <div className="flex justify-between items-start">
                     <div className="text-3xl mr-2">{template.thumbnail}</div>
@@ -377,14 +720,19 @@ export const PortoFormTemplates: React.FC = () => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => handleUseTemplate(template)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleUseTemplate(template);
+                    }}
                   >
                     Use Template
                   </Button>
                   <Button 
                     variant="ghost" 
                     size="sm"
+                    onClick={(e) => handlePreview(template, e)}
                   >
+                    <Eye className="h-4 w-4 mr-1" />
                     Preview
                   </Button>
                 </CardFooter>
@@ -401,6 +749,164 @@ export const PortoFormTemplates: React.FC = () => {
           )}
         </div>
       </ScrollArea>
+
+      {/* Template Preview Dialog */}
+      {selectedTemplate && (
+        <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+            <DialogHeader>
+              <DialogTitle className="flex items-center">
+                <span className="text-xl mr-2">{selectedTemplate.thumbnail}</span>
+                {selectedTemplate.title}
+              </DialogTitle>
+              <DialogDescription>
+                {selectedTemplate.description}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <ScrollArea className="flex-1 mt-4 border rounded-md p-4 bg-slate-50">
+              <div className="space-y-6">
+                {selectedTemplate.elements.map((element) => (
+                  <div key={element.id} className="border border-dashed border-gray-300 p-4 rounded-md">
+                    {element.type === "header" && (
+                      <h2 className="text-xl font-bold">{element.content}</h2>
+                    )}
+                    {element.type === "text" && (
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium">{element.label}</label>
+                        <input
+                          type="text"
+                          placeholder={element.placeholder as string}
+                          disabled
+                          className="w-full border rounded-md px-3 py-2 bg-white"
+                        />
+                      </div>
+                    )}
+                    {element.type === "email" && (
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium">{element.label}</label>
+                        <input
+                          type="email"
+                          placeholder={element.placeholder as string}
+                          disabled
+                          className="w-full border rounded-md px-3 py-2 bg-white"
+                        />
+                      </div>
+                    )}
+                    {element.type === "textarea" && (
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium">{element.label}</label>
+                        <textarea
+                          placeholder={element.placeholder as string}
+                          disabled
+                          className="w-full border rounded-md px-3 py-2 bg-white"
+                          rows={3}
+                        />
+                      </div>
+                    )}
+                    {element.type === "select" && (
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium">{element.label}</label>
+                        <select
+                          disabled
+                          className="w-full border rounded-md px-3 py-2 bg-white"
+                        >
+                          <option value="">Select an option</option>
+                          {(element as any).options?.map((option: string, i: number) => (
+                            <option key={i} value={option}>{option}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                    {element.type === "date" && (
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium">{element.label}</label>
+                        <input
+                          type="date"
+                          disabled
+                          className="w-full border rounded-md px-3 py-2 bg-white"
+                        />
+                      </div>
+                    )}
+                    {element.type === "number" && (
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium">{element.label}</label>
+                        <input
+                          type="number"
+                          placeholder={element.placeholder as string}
+                          disabled
+                          className="w-full border rounded-md px-3 py-2 bg-white"
+                        />
+                      </div>
+                    )}
+                    {element.type === "checkbox" && (
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          disabled
+                          className="border rounded-md"
+                        />
+                        <label className="text-sm font-medium">{element.label}</label>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+            
+            <DialogFooter className="mt-4">
+              <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>
+                Close
+              </Button>
+              <Button onClick={() => {
+                setIsPreviewOpen(false);
+                handleUseTemplate(selectedTemplate);
+              }}>
+                Use This Template
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Confirmation Dialog for overwriting existing form */}
+      {selectedTemplate && (
+        <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-500" />
+                Replace Existing Form?
+              </DialogTitle>
+              <DialogDescription>
+                Your current form will be replaced with the "{selectedTemplate.title}" template. This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <Alert variant="warning" className="mt-2">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                All existing form elements will be lost.
+              </AlertDescription>
+            </Alert>
+            
+            <DialogFooter className="mt-4">
+              <Button variant="outline" onClick={() => setIsConfirmOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive"
+                onClick={() => {
+                  setIsConfirmOpen(false);
+                  applyTemplate(selectedTemplate);
+                }}
+              >
+                Replace Form
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
