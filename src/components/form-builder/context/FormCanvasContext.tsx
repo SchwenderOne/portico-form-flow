@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 type FormCanvasContextType = {
   elements: FormElement[];
-  setElements: (elements: FormElement[]) => void; // Add this line to fix the error
+  setElements: (elements: FormElement[]) => void;
   selectedElements: string[];
   isDragging: boolean;
   setIsDragging: React.Dispatch<React.SetStateAction<boolean>>;

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,21 +47,30 @@ export const EnhancedTemplateCard: React.FC<EnhancedTemplateCardProps> = ({ temp
     const fullTemplate = templatesData.find(t => t.id === template.id);
     
     if (fullTemplate && fullTemplate.elements) {
-      // Deep clone the elements to avoid reference issues
-      const templateElements = JSON.parse(JSON.stringify(fullTemplate.elements));
-      
-      // Set in global context
-      setSelectedTemplate(fullTemplate);
-      
-      // Also directly set in form canvas for immediate use
-      formCanvas.setElements(templateElements);
-      
-      toast({
-        title: "Template Selected",
-        description: `${template.title} template has been loaded.`,
-      });
-      
-      navigate('/form-builder');
+      try {
+        // Deep clone the elements to avoid reference issues
+        const templateElements = JSON.parse(JSON.stringify(fullTemplate.elements));
+        
+        // Set in global context
+        setSelectedTemplate(fullTemplate);
+        
+        // Also directly set in form canvas for immediate use
+        formCanvas.setElements(templateElements);
+        
+        toast({
+          title: "Template Selected",
+          description: `${template.title} template has been loaded.`,
+        });
+        
+        navigate('/form-builder');
+      } catch (error) {
+        console.error("Error using template:", error);
+        toast({
+          title: "Error",
+          description: "Unable to load template. Please try again.",
+          variant: "destructive"
+        });
+      }
     } else {
       toast({
         title: "Error",

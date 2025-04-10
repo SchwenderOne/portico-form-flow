@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { usePorto } from "./context/PortoContext";
 import { Button } from "@/components/ui/button";
@@ -33,16 +34,28 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { templatesData } from "@/data/templates";
+import { useFormCanvas } from "@/components/form-builder/context/FormCanvasContext";
 
-const formTemplates = [
-  // ... keep existing form templates data
-];
+// Extract and convert template data for use in the component
+const formTemplates = templatesData.map(template => ({
+  id: template.id,
+  title: template.title,
+  description: template.description,
+  category: template.category,
+  industry: template.industry,
+  thumbnail: "📝",  // Default emoji for templates
+  tags: [template.category, template.industry], 
+  elements: template.elements || []
+}));
 
-const categories = ["All", "Business", "Account", "Feedback", "Events", "Healthcare", "Nonprofit", "HR", "Education"];
-const industries = ["All", "Healthcare", "Education", "Government", "Nonprofit", "Technology", "Finance"];
+const categories = ["All", "HR", "Feedback", "Healthcare", "Events", "Government", "Education", "Research", "Administrative", "Non-profit", "Security", "Membership"];
+const industries = ["All", "Healthcare", "Education", "Government", "Nonprofit", "Recruitment", "Retail", "Medical", "Entertainment", "Public Sector", "Various", "Corporate", "Charity", "Associations", "Academic"];
 
 export const PortoFormTemplates: React.FC = () => {
   const { setActiveSection, setFormElements, setCurrentTemplate, formElements } = usePorto();
+  const formCanvas = useFormCanvas();
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>(["All"]);
@@ -74,11 +87,25 @@ export const PortoFormTemplates: React.FC = () => {
   };
 
   const applyTemplate = (template: typeof formTemplates[0]) => {
-    const templateElements = JSON.parse(JSON.stringify(template.elements));
-    setFormElements(templateElements);
-    setCurrentTemplate(template.id);
-    setActiveSection("editor");
-    toast.success(`"${template.title}" template loaded successfully!`);
+    try {
+      // Deep clone the template elements to avoid reference issues
+      const templateElements = JSON.parse(JSON.stringify(template.elements));
+      
+      // Update both contexts to ensure consistency
+      setFormElements(templateElements);
+      formCanvas.setElements(templateElements);
+      
+      // Set the current template ID for reference
+      setCurrentTemplate(template.id);
+      
+      // Return to editor with the new form
+      setActiveSection("editor");
+      
+      toast.success(`"${template.title}" template loaded successfully!`);
+    } catch (error) {
+      console.error("Error applying template:", error);
+      toast.error("Failed to load template. Please try again.");
+    }
   };
 
   const handlePreview = (template: typeof formTemplates[0], e: React.MouseEvent) => {
@@ -181,7 +208,7 @@ export const PortoFormTemplates: React.FC = () => {
           onValueChange={setSelectedCategory}
           className="mt-4"
         >
-          <TabsList className="w-full flex-wrap h-auto">
+          <TabsList className="w-full h-auto flex flex-wrap">
             {categories.map((category) => (
               <TabsTrigger key={category} value={category} className="flex-grow">
                 {category}
@@ -272,7 +299,7 @@ export const PortoFormTemplates: React.FC = () => {
             </DialogHeader>
             
             <div className="flex-1 mt-4 overflow-hidden">
-              <ScrollArea className="h-[400px] border rounded-md p-4 bg-slate-50">
+              <ScrollArea className="h-[400px] border rounded-md p-4 bg-slate-50 w-full">
                 <div className="space-y-6">
                   {selectedTemplate.elements.map((element) => (
                     <div key={element.id} className="border border-dashed border-gray-300 p-4 rounded-md">

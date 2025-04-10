@@ -31,15 +31,19 @@ export const PortoEditor: React.FC = () => {
 
   // Sync form elements between contexts
   useEffect(() => {
-    // Sync from FormCanvas to Porto context
-    if (formCanvas.elements && formCanvas.elements.length > 0) {
-      setFormElements(formCanvas.elements);
+    // When FormCanvas has elements but Porto doesn't, update Porto
+    if (formCanvas.elements && formCanvas.elements.length > 0 && 
+        (!formElements || formElements.length === 0)) {
+      console.log("Syncing from FormCanvas to Porto context");
+      setFormElements([...formCanvas.elements]);
     }
-
-    // Sync from Porto context to FormCanvas
+    
+    // When Porto has elements but FormCanvas doesn't, update FormCanvas
     if (formElements && formElements.length > 0 && 
-        JSON.stringify(formElements) !== JSON.stringify(formCanvas.elements)) {
-      formCanvas.setElements(formElements);
+        (!formCanvas.elements || formCanvas.elements.length === 0 || 
+         JSON.stringify(formElements) !== JSON.stringify(formCanvas.elements))) {
+      console.log("Syncing from Porto context to FormCanvas");
+      formCanvas.setElements([...formElements]);
     }
   }, [formCanvas.elements, setFormElements, formElements, formCanvas]);
 
