@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { FormElement } from "@/types/form";
 import { useFormElements } from "@/hooks/use-form-elements";
@@ -7,7 +6,6 @@ import { GroupingProvider, useGroupingState } from "../GroupingContext";
 import { KeyboardEvent } from "react";
 import { toast } from "sonner";
 
-// Define the type for our context
 type FormCanvasContextType = {
   elements: FormElement[];
   selectedElements: string[];
@@ -49,10 +47,8 @@ type FormCanvasContextType = {
   canRedo: boolean;
 };
 
-// Create the context with a default undefined value
 const FormCanvasContext = createContext<FormCanvasContextType | undefined>(undefined);
 
-// Provider component
 export const FormCanvasProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
@@ -91,7 +87,6 @@ export const FormCanvasProvider: React.FC<{
     handleUngroupElements
   );
 
-  // Add event listener for version restore
   useEffect(() => {
     const handleVersionRestore = (event: Event) => {
       const customEvent = event as CustomEvent;
@@ -109,15 +104,12 @@ export const FormCanvasProvider: React.FC<{
     };
   }, [setElements, grouping]);
 
-  // Handle element alignment (left, center, right)
   const handleElementAlign = useCallback((id: string, alignment: 'left' | 'center' | 'right') => {
     const element = elements.find(el => el.id === id);
     if (!element) return;
     
-    // Get the width of the canvas (for now using a fixed width, could be dynamic)
-    const canvasWidth = 800; // Default canvas width
+    const canvasWidth = 800;
     
-    // Calculate the new x position based on alignment
     let newX: number;
     
     switch (alignment) {
@@ -134,7 +126,6 @@ export const FormCanvasProvider: React.FC<{
         newX = element.position.x;
     }
     
-    // Update the element position
     updateElement({
       ...element,
       position: {
@@ -146,7 +137,6 @@ export const FormCanvasProvider: React.FC<{
     toast.success(`Element aligned ${alignment}`);
   }, [elements, updateElement]);
 
-  // Mock undo/redo functions until fully implemented
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
 
@@ -204,7 +194,7 @@ export const FormCanvasProvider: React.FC<{
     handleElementMove(id, nudgedPosition);
   };
 
-  const handleAddAIElements = (elements: FormElement[], replaceExisting = false) => {
+  const handleAddAIElements = useCallback((elements: FormElement[], replaceExisting = false) => {
     if (!elements || elements.length === 0) return;
     
     if (replaceExisting) {
@@ -233,7 +223,7 @@ export const FormCanvasProvider: React.FC<{
     
     currentY = Math.round(currentY / 25) * 25;
     
-    elements.forEach((element, index) => {
+    const newElements = elements.map((element, index) => {
       const adjustedElement = {
         ...element,
         position: {
@@ -242,14 +232,16 @@ export const FormCanvasProvider: React.FC<{
         }
       };
       
-      addElement(adjustedElement);
-      
       const elementHeight = element.size.height || 80;
       const spacing = 20;
       currentY += elementHeight + spacing;
       
       currentY = Math.round(currentY / 25) * 25;
+      
+      return adjustedElement;
     });
+    
+    setElements(prev => [...prev, ...newElements]);
     
     if (elements.length > 0) {
       const lastElement = elements[elements.length - 1];
@@ -257,7 +249,7 @@ export const FormCanvasProvider: React.FC<{
     }
     
     toast.success(`${elements.length} elements added to canvas`);
-  };
+  }, [setElements, handleElementSelect]);
 
   const handleOpenAIModal = () => {
     setIsAIModalOpen(true);

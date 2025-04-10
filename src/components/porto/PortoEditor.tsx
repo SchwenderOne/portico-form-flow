@@ -13,6 +13,7 @@ import { AIAssistantModal } from "@/components/porto/AIAssistantModal";
 import { PortoFormTemplates } from "./PortoFormTemplates";
 import { PortoSettings } from "./PortoSettings";
 import { toast } from "sonner";
+import { Toaster } from "sonner";
 
 export const PortoEditor: React.FC = () => {
   const { 
@@ -21,14 +22,15 @@ export const PortoEditor: React.FC = () => {
     setFormElements, 
     formElements,
     isEdited,
-    lastSaved
+    lastSaved,
+    saveForm
   } = usePorto();
   
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const formCanvas = useFormCanvas();
 
+  // Sync form elements between contexts
   useEffect(() => {
-    // Sync form elements between contexts
     if (formCanvas.elements && formCanvas.elements.length > 0) {
       setFormElements(formCanvas.elements);
     }
@@ -45,6 +47,17 @@ export const PortoEditor: React.FC = () => {
       });
     }
   }, [lastSaved]);
+
+  // Auto-save every 30 seconds if there are unsaved changes
+  useEffect(() => {
+    if (isEdited) {
+      const autoSaveTimer = setTimeout(() => {
+        saveForm();
+      }, 30000);
+      
+      return () => clearTimeout(autoSaveTimer);
+    }
+  }, [isEdited, saveForm]);
 
   // Prompt before leaving if there are unsaved changes
   useEffect(() => {
@@ -63,11 +76,22 @@ export const PortoEditor: React.FC = () => {
     };
   }, [isEdited]);
 
-  const handleAddElement = (element: FormElement) => {
-    if (formCanvas && formCanvas.addElement) {
-      formCanvas.addElement(element);
-    }
-  };
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Save with Ctrl+S or Cmd+S
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        saveForm();
+      }
+    };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [saveForm]);
 
   const renderActiveSection = () => {
     if (previewMode) {
@@ -107,6 +131,8 @@ export const PortoEditor: React.FC = () => {
         isOpen={isAIModalOpen}
         onClose={() => setIsAIModalOpen(false)}
       />
+      
+      <Toaster position="top-center" />
     </div>
   );
 };

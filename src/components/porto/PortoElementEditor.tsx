@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { FormElement } from "@/types/form";
 import { ChevronRight, ListChecks, SlidersHorizontal, Paintbrush } from "lucide-react";
 import PropertiesTab from "@/components/form-builder/toolbars/tabs/PropertiesTab";
@@ -52,17 +53,19 @@ export const PortoElementEditor: React.FC<PortoElementEditorProps> = ({
           </TabsList>
         </div>
 
-        <TabsContent value="properties" className="flex-1 overflow-auto p-0">
-          <PropertiesTab element={element} onElementUpdate={onUpdate} />
-        </TabsContent>
+        <ScrollArea className="flex-1">
+          <TabsContent value="properties" className="m-0 p-4">
+            <PropertiesTab element={element} onElementUpdate={onUpdate} />
+          </TabsContent>
 
-        <TabsContent value="validation" className="flex-1 overflow-auto p-0">
-          <ValidationTab element={element} onElementUpdate={onUpdate} />
-        </TabsContent>
+          <TabsContent value="validation" className="m-0 p-4">
+            <ValidationTab element={element} onElementUpdate={onUpdate} />
+          </TabsContent>
 
-        <TabsContent value="appearance" className="flex-1 overflow-auto p-0">
-          <AppearanceTab element={element} onElementUpdate={onUpdate} />
-        </TabsContent>
+          <TabsContent value="appearance" className="m-0 p-4">
+            <AppearanceTab element={element} onElementUpdate={onUpdate} />
+          </TabsContent>
+        </ScrollArea>
       </Tabs>
       
       <div className="border-t p-4">

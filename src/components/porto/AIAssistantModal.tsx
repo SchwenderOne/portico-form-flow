@@ -1,446 +1,369 @@
 
 import React, { useState } from "react";
-import { FormElement } from "@/types/form";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+import { FormElement } from "@/types/form";
+import { usePorto } from "./context/PortoContext";
+import { useFormCanvas } from "@/components/form-builder/context/FormCanvasContext";
 import { 
-  Wand2, 
-  Sparkles, 
-  SquarePen, 
+  Wand, 
   MessageSquare, 
-  Lightbulb, 
-  CheckCircle2, 
-  Brain, 
-  Cpu, 
-  Loader2,
-  ShieldCheck
+  Sparkles, 
+  BookTemplate,
+  Lightbulb,
+  AlignLeft,
+  Calendar,
+  Mail,
+  Checkbox,
+  ListCheck
 } from "lucide-react";
 import { toast } from "sonner";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-// Sample AI-generated form elements for demo
-const aiGeneratedElements: FormElement[] = [
-  {
-    id: crypto.randomUUID(),
-    type: "header",
-    content: "Job Application Form",
-    position: { x: 100, y: 50 },
-    size: { width: 600, height: 60 },
-    groupId: null,
-  },
-  {
-    id: crypto.randomUUID(),
-    type: "paragraph",
-    content: "Please fill out this application form to apply for a position at our company.",
-    position: { x: 100, y: 130 },
-    size: { width: 600, height: 50 },
-    groupId: null,
-  },
-  {
-    id: crypto.randomUUID(),
-    type: "text",
-    label: "Full Name",
-    placeholder: "Enter your full name",
-    required: true,
-    position: { x: 100, y: 200 },
-    size: { width: 600, height: 80 },
-    groupId: null,
-  },
-  {
-    id: crypto.randomUUID(),
-    type: "email",
-    label: "Email Address",
-    placeholder: "Enter your email address",
-    required: true,
-    position: { x: 100, y: 300 },
-    size: { width: 600, height: 80 },
-    groupId: null,
-  },
-  {
-    id: crypto.randomUUID(),
-    type: "textarea",
-    label: "Work Experience",
-    placeholder: "Describe your relevant work experience",
-    required: true,
-    position: { x: 100, y: 400 },
-    size: { width: 600, height: 150 },
-    groupId: null,
-  },
-  {
-    id: crypto.randomUUID(),
-    type: "file",
-    label: "Resume Upload",
-    placeholder: "Upload your resume (PDF or DOC)",
-    required: true,
-    position: { x: 100, y: 570 },
-    size: { width: 600, height: 100 },
-    groupId: null,
-  },
-];
-
-interface AIAssistantModalProps {
+export const AIAssistantModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
-}
-
-export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({ isOpen, onClose }) => {
+}> = ({ isOpen, onClose }) => {
+  const [aiPrompt, setAiPrompt] = useState("");
   const [activeTab, setActiveTab] = useState("generate");
-  const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [conversation, setConversation] = useState<{role: string, content: string}[]>([
-    {
-      role: "assistant",
-      content: "Hello! I'm the Porto AI Assistant. I can help you build forms, suggest fields, and improve your form's completion rate. How can I assist you today?"
-    }
-  ]);
-  const [userMessage, setUserMessage] = useState("");
-  const [fieldDescription, setFieldDescription] = useState("");
-  const [isGeneratingField, setIsGeneratingField] = useState(false);
+  const [generatedElements, setGeneratedElements] = useState<FormElement[]>([]);
   
-  const handleGenerate = () => {
-    if (!prompt.trim()) {
-      toast.error("Please enter a description of the form you want to create");
+  const { formTitle, formDescription } = usePorto();
+  const { handleAddAIElements } = useFormCanvas();
+
+  const examplePrompts = [
+    "Create a contact form with name, email, and message fields",
+    "Make a job application form with personal details and experience sections",
+    "Design a conference registration form with attendance options",
+    "Generate a feedback survey with multiple choice questions",
+    "Create a medical intake form with patient history sections"
+  ];
+
+  const fieldSuggestions = [
+    { name: "Full Name", type: "text", icon: <AlignLeft className="h-4 w-4" /> },
+    { name: "Email Address", type: "email", icon: <Mail className="h-4 w-4" /> },
+    { name: "Date of Birth", type: "date", icon: <Calendar className="h-4 w-4" /> },
+    { name: "Terms Acceptance", type: "checkbox", icon: <Checkbox className="h-4 w-4" /> },
+    { name: "Survey Questions", type: "radio", icon: <ListCheck className="h-4 w-4" /> }
+  ];
+
+  const handleSubmitPrompt = async () => {
+    if (!aiPrompt.trim()) {
+      toast.error("Please enter a prompt");
       return;
     }
-    
+
     setIsGenerating(true);
     
-    // Simulate AI generation with a timer
-    setTimeout(() => {
-      setIsGenerating(false);
-      onClose();
+    try {
+      // Simulate AI generation with some mock elements
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Add the successful generation message to the conversation
-      setConversation(prev => [
-        ...prev,
-        { role: "user", content: prompt },
-        { role: "assistant", content: "I've generated a job application form based on your request. You can now see it in the editor." }
-      ]);
-      
-      // Clear the prompt
-      setPrompt("");
-      
-      // Show success message
-      toast.success("AI has generated a form based on your prompt!");
-    }, 2000);
-  };
-  
-  const handleSendMessage = () => {
-    if (!userMessage.trim()) return;
-    
-    // Add user message to the conversation
-    setConversation(prev => [...prev, { role: "user", content: userMessage }]);
-    
-    // Simulate AI processing
-    setTimeout(() => {
-      // Add AI response
-      setConversation(prev => [
-        ...prev, 
-        { 
-          role: "assistant", 
-          content: "I understand you're looking for assistance. Based on your form's purpose, I would suggest adding fields for contact information, relevant experience, and availability. Would you like me to generate these fields for you?"
+      const mockElements: FormElement[] = [
+        {
+          id: `header-${Date.now()}`,
+          type: "header",
+          position: { x: 100, y: 50 },
+          size: { width: 600, height: 50 },
+          content: formTitle || "Generated Form",
+          groupId: null,
+          required: false
+        },
+        {
+          id: `paragraph-${Date.now() + 1}`,
+          type: "paragraph",
+          position: { x: 100, y: 120 },
+          size: { width: 600, height: 80 },
+          content: formDescription || "This form was generated using AI",
+          groupId: null,
+          required: false
+        },
+        {
+          id: `text-${Date.now() + 2}`,
+          type: "text",
+          position: { x: 100, y: 220 },
+          size: { width: 600, height: 80 },
+          label: "Full Name",
+          placeholder: "Enter your full name",
+          helpText: "Please provide your first and last name",
+          groupId: null,
+          required: true
+        },
+        {
+          id: `email-${Date.now() + 3}`,
+          type: "email",
+          position: { x: 100, y: 320 },
+          size: { width: 600, height: 80 },
+          label: "Email Address",
+          placeholder: "your@email.com",
+          helpText: "We'll never share your email with anyone else",
+          groupId: null,
+          required: true
         }
-      ]);
+      ];
       
-      // Clear the input
-      setUserMessage("");
-    }, 1000);
+      setGeneratedElements(mockElements);
+      toast.success("Form elements generated successfully");
+    } catch (error) {
+      console.error("Error generating form:", error);
+      toast.error("Failed to generate form elements");
+    } finally {
+      setIsGenerating(false);
+    }
   };
-  
-  const handleFieldGeneration = () => {
-    if (!fieldDescription.trim()) {
-      toast.error("Please describe the field you want to generate");
+
+  const handleInsertElements = (replace = false) => {
+    if (generatedElements.length === 0) {
+      toast.error("No elements generated yet");
       return;
     }
     
-    setIsGeneratingField(true);
+    handleAddAIElements(generatedElements, replace);
+    toast.success(`${generatedElements.length} elements ${replace ? 'replaced existing elements' : 'added to form'}`);
+    onClose();
+  };
+
+  const handleUseExamplePrompt = (prompt: string) => {
+    setAiPrompt(prompt);
+  };
+
+  const handleAddField = (fieldType: string) => {
+    // Create a single new field based on type
+    const newField: FormElement = {
+      id: `${fieldType}-${Date.now()}`,
+      type: fieldType,
+      position: { x: 100, y: 100 },
+      size: { width: 600, height: 80 },
+      label: `New ${fieldType} field`,
+      placeholder: `Enter ${fieldType} here`,
+      helpText: `This is a ${fieldType} field`,
+      groupId: null,
+      required: false
+    };
     
-    // Simulate field generation
-    setTimeout(() => {
-      setIsGeneratingField(false);
-      setFieldDescription("");
-      
-      toast.success("Field suggestion added to your form!");
-      onClose();
-    }, 1500);
+    handleAddAIElements([newField]);
+    toast.success(`Added ${fieldType} field to form`);
+    onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-hidden">
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="flex items-center">
-            <Wand2 className="h-5 w-5 mr-2 text-primary" />
-            AI Form Assistant
-          </DialogTitle>
-          <DialogDescription>
-            Create forms, get field suggestions, or optimize your existing form using AI.
-          </DialogDescription>
+          <DialogTitle>AI Form Assistant</DialogTitle>
         </DialogHeader>
         
-        <Tabs defaultValue="generate" value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col h-full">
-          <TabsList className="grid grid-cols-3 mb-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+          <TabsList className="mb-4">
             <TabsTrigger value="generate">
-              <Sparkles className="h-4 w-4 mr-2" />
+              <Wand className="h-4 w-4 mr-2" />
               Generate Form
             </TabsTrigger>
-            <TabsTrigger value="chat">
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Chat Assistant
-            </TabsTrigger>
-            <TabsTrigger value="suggest">
+            <TabsTrigger value="suggestions">
               <Lightbulb className="h-4 w-4 mr-2" />
               Field Suggestions
             </TabsTrigger>
+            <TabsTrigger value="templates">
+              <BookTemplate className="h-4 w-4 mr-2" />
+              Templates
+            </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="generate" className="space-y-4 flex-1 overflow-auto">
-            <div className="space-y-2">
-              <Label htmlFor="form-prompt">Describe the form you want to create</Label>
-              <Textarea
-                id="form-prompt"
-                placeholder="E.g., Create a job application form with fields for personal information, work experience, and education history."
-                rows={4}
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-              />
-            </div>
-            
-            <Separator />
-            
-            <div className="space-y-2">
-              <div className="flex items-center">
-                <Brain className="h-4 w-4 mr-2 text-primary" />
-                <Label>AI Model Suggestions</Label>
-              </div>
-              <div className="grid grid-cols-1 gap-2">
-                <Button 
-                  variant="outline" 
-                  className="justify-start h-auto py-3 text-left" 
-                  onClick={() => setPrompt("Create a customer feedback form with rating scales, multiple choice questions about product satisfaction, and an open comment field.")}
-                >
-                  <div>
-                    <p className="font-medium text-sm">Customer Feedback Form</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Rating scales, satisfaction questions, and comment field
-                    </p>
-                  </div>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="justify-start h-auto py-3 text-left"
-                  onClick={() => setPrompt("Build an event registration form for a corporate conference with personal information, company details, session selections, and dietary preferences.")}
-                >
-                  <div>
-                    <p className="font-medium text-sm">Event Registration Form</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Contact info, session selections, and preferences
-                    </p>
-                  </div>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="justify-start h-auto py-3 text-left"
-                  onClick={() => setPrompt("Create a healthcare patient intake form with medical history, current medications, insurance information, and consent forms.")}
-                >
-                  <div>
-                    <p className="font-medium text-sm">Patient Intake Form</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Medical history, medications, and consent sections
-                    </p>
-                  </div>
-                </Button>
-              </div>
-            </div>
-
-            <div className="bg-muted/50 rounded-md p-3 flex items-start">
-              <ShieldCheck className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-              <div className="ml-2 text-sm">
-                <p className="font-medium">Trusted Form Generation</p>
-                <p className="text-muted-foreground text-xs mt-1">
-                  All generated forms comply with accessibility standards and best practices for form design. Your data and prompts remain private and secure.
-                </p>
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="chat" className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-y-auto border rounded-md mb-4 p-4 space-y-4">
-              {conversation.map((message, index) => (
-                <div 
-                  key={index} 
-                  className={`flex ${message.role === "assistant" ? "justify-start" : "justify-end"}`}
-                >
-                  <div 
-                    className={`max-w-[80%] rounded-lg p-3 ${
-                      message.role === "assistant" 
-                        ? "bg-muted" 
-                        : "bg-primary text-primary-foreground"
-                    }`}
-                  >
-                    {message.content}
+          <ScrollArea className="flex-1">
+            <TabsContent value="generate" className="m-0">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="mb-2 text-sm font-medium">Example Prompts</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {examplePrompts.map((prompt, index) => (
+                      <Button 
+                        key={index} 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleUseExamplePrompt(prompt)}
+                      >
+                        {prompt}
+                      </Button>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Input
-                placeholder="Ask how to improve your form or get help with field types..."
-                value={userMessage}
-                onChange={(e) => setUserMessage(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleSendMessage();
-                  }
-                }}
-              />
-              <Button onClick={handleSendMessage}>
-                <MessageSquare className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <div className="mt-2 text-xs text-muted-foreground">
-              <p className="flex items-center">
-                <Cpu className="h-3 w-3 mr-1" />
-                AI assistant can help improve your form design and completion rates
-              </p>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="suggest" className="space-y-4 flex-1 overflow-auto">
-            <div className="space-y-2">
-              <Label htmlFor="field-description">Describe the field you need</Label>
-              <Textarea
-                id="field-description"
-                placeholder="E.g., I need a field to collect user's date of birth with age verification."
-                rows={3}
-                value={fieldDescription}
-                onChange={(e) => setFieldDescription(e.target.value)}
-              />
-            </div>
-            
-            <Separator />
-            
-            <div className="space-y-2">
-              <div className="flex items-center">
-                <SquarePen className="h-4 w-4 mr-2 text-primary" />
-                <Label>Common Field Suggestions</Label>
+                
+                <div>
+                  <Textarea
+                    placeholder="Describe the form you want to create..."
+                    className="min-h-[100px]"
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                  />
+                </div>
+                
+                <Button 
+                  className="w-full" 
+                  onClick={handleSubmitPrompt}
+                  disabled={isGenerating || !aiPrompt.trim()}
+                >
+                  {isGenerating ? (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Wand className="mr-2 h-4 w-4" />
+                      Generate Form
+                    </>
+                  )}
+                </Button>
+                
+                {generatedElements.length > 0 && (
+                  <div className="border rounded-md p-4 mt-4">
+                    <h4 className="text-sm font-medium mb-2">Generated Elements ({generatedElements.length})</h4>
+                    <ul className="space-y-2 mb-4">
+                      {generatedElements.map((element, index) => (
+                        <li key={index} className="flex items-center text-sm">
+                          {element.type === 'header' ? (
+                            <Heading1 className="h-4 w-4 mr-2 text-blue-500" />
+                          ) : element.type === 'paragraph' ? (
+                            <AlignLeft className="h-4 w-4 mr-2 text-blue-500" />
+                          ) : element.type === 'text' ? (
+                            <AlignLeft className="h-4 w-4 mr-2 text-purple-500" />
+                          ) : element.type === 'email' ? (
+                            <Mail className="h-4 w-4 mr-2 text-purple-500" />
+                          ) : (
+                            <div className="h-4 w-4 mr-2" />
+                          )}
+                          <span>
+                            {element.label || element.content || element.type}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => handleInsertElements(false)}>
+                        Add to Form
+                      </Button>
+                      <Button variant="default" onClick={() => handleInsertElements(true)}>
+                        Replace Form
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <Button 
-                  variant="outline" 
-                  className="justify-start"
-                  onClick={() => setFieldDescription("Address field with auto-complete functionality")}
-                >
-                  Address Field
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="justify-start"
-                  onClick={() => setFieldDescription("Phone number field with country code selection")}
-                >
-                  Phone Number
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="justify-start"
-                  onClick={() => setFieldDescription("Credit card field with validation and security")}
-                >
-                  Payment Info
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="justify-start"
-                  onClick={() => setFieldDescription("Date range picker for selecting start and end dates")}
-                >
-                  Date Range
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="justify-start"
-                  onClick={() => setFieldDescription("Consent checkbox with legal language for GDPR compliance")}
-                >
-                  GDPR Consent
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="justify-start"
-                  onClick={() => setFieldDescription("File upload for accepting resumes with size restrictions")}
-                >
-                  File Upload
-                </Button>
-              </div>
-            </div>
+            </TabsContent>
             
-            <div className="bg-muted/50 rounded-md p-3">
-              <h4 className="text-sm font-medium">AI-Powered Field Analysis</h4>
-              <p className="text-xs text-muted-foreground mt-1">
-                The AI assistant is analyzing your existing form and can suggest additional fields that might improve completion rates and data quality.
-              </p>
-              <div className="mt-2 flex gap-2">
-                <Button size="sm" variant="outline" className="text-xs h-7">
-                  <CheckCircle2 className="h-3 w-3 mr-1" />
-                  Suggest Missing Fields
-                </Button>
-                <Button size="sm" variant="outline" className="text-xs h-7">
-                  <CheckCircle2 className="h-3 w-3 mr-1" />
-                  Optimize Field Order
-                </Button>
+            <TabsContent value="suggestions" className="m-0">
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium">Suggested Fields</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  {fieldSuggestions.map((field, index) => (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      className="justify-start h-auto py-3"
+                      onClick={() => handleAddField(field.type)}
+                    >
+                      {field.icon}
+                      <div className="ml-2 text-left">
+                        <div className="font-medium">{field.name}</div>
+                        <div className="text-xs text-muted-foreground">{field.type}</div>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+                
+                <div className="mt-8">
+                  <h4 className="text-sm font-medium mb-3">Smart Field Recommendations</h4>
+                  <div className="border rounded-md p-4 bg-muted/20">
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Based on your form's title "{formTitle || 'Untitled Form'}", we recommend adding:
+                    </p>
+                    <div className="grid grid-cols-1 gap-2">
+                      <Button 
+                        variant="secondary" 
+                        size="sm"
+                        className="justify-start"
+                        onClick={() => handleAddField('text')}
+                      >
+                        <AlignLeft className="h-3 w-3 mr-2" />
+                        Name Field
+                      </Button>
+                      <Button 
+                        variant="secondary" 
+                        size="sm"
+                        className="justify-start"
+                        onClick={() => handleAddField('email')}
+                      >
+                        <Mail className="h-3 w-3 mr-2" />
+                        Email Field
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </TabsContent>
+            </TabsContent>
+            
+            <TabsContent value="templates" className="m-0">
+              <div className="grid grid-cols-2 gap-4">
+                <div 
+                  className="border rounded-md p-4 cursor-pointer hover:bg-muted/20 transition-colors"
+                  onClick={() => handleUseExamplePrompt("Create a contact form with name, email, and message fields")}
+                >
+                  <h4 className="text-sm font-medium mb-2">Contact Form</h4>
+                  <p className="text-xs text-muted-foreground mb-3">Simple form for website contact pages</p>
+                  <Button variant="secondary" size="sm" className="w-full">
+                    <MessageSquare className="h-3 w-3 mr-2" />
+                    Use Template
+                  </Button>
+                </div>
+                
+                <div 
+                  className="border rounded-md p-4 cursor-pointer hover:bg-muted/20 transition-colors"
+                  onClick={() => handleUseExamplePrompt("Make a job application form with personal details and experience sections")}
+                >
+                  <h4 className="text-sm font-medium mb-2">Job Application</h4>
+                  <p className="text-xs text-muted-foreground mb-3">Complete job application form with multiple sections</p>
+                  <Button variant="secondary" size="sm" className="w-full">
+                    <MessageSquare className="h-3 w-3 mr-2" />
+                    Use Template
+                  </Button>
+                </div>
+                
+                <div 
+                  className="border rounded-md p-4 cursor-pointer hover:bg-muted/20 transition-colors"
+                  onClick={() => handleUseExamplePrompt("Design a conference registration form with attendance options")}
+                >
+                  <h4 className="text-sm font-medium mb-2">Event Registration</h4>
+                  <p className="text-xs text-muted-foreground mb-3">Form for event and conference sign-ups</p>
+                  <Button variant="secondary" size="sm" className="w-full">
+                    <MessageSquare className="h-3 w-3 mr-2" />
+                    Use Template
+                  </Button>
+                </div>
+                
+                <div 
+                  className="border rounded-md p-4 cursor-pointer hover:bg-muted/20 transition-colors"
+                  onClick={() => handleUseExamplePrompt("Generate a feedback survey with multiple choice questions")}
+                >
+                  <h4 className="text-sm font-medium mb-2">Customer Feedback</h4>
+                  <p className="text-xs text-muted-foreground mb-3">Survey form to collect customer opinions</p>
+                  <Button variant="secondary" size="sm" className="w-full">
+                    <MessageSquare className="h-3 w-3 mr-2" />
+                    Use Template
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+          </ScrollArea>
         </Tabs>
         
-        <DialogFooter className="flex items-center">
-          <Button 
-            variant="secondary" 
-            onClick={onClose}
-          >
+        <DialogFooter className="mt-6">
+          <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          
-          {activeTab === "generate" && (
-            <Button 
-              onClick={handleGenerate} 
-              disabled={isGenerating || !prompt.trim()}
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Wand2 className="h-4 w-4 mr-2" />
-                  Generate Form
-                </>
-              )}
-            </Button>
-          )}
-          
-          {activeTab === "suggest" && (
-            <Button 
-              onClick={handleFieldGeneration} 
-              disabled={isGeneratingField || !fieldDescription.trim()}
-            >
-              {isGeneratingField ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Generating Field...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Generate Field
-                </>
-              )}
-            </Button>
-          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

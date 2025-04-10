@@ -1,3 +1,4 @@
+
 import { Validation } from "./validation";
 import { Database } from "@/integrations/supabase/types";
 
@@ -34,6 +35,20 @@ export interface FormElement {
     padding?: string;
     margin?: string;
     shadow?: string;
+  };
+  // New properties for enhanced functionality
+  isLocked?: boolean;
+  isHidden?: boolean;
+  description?: string;
+  defaultValue?: any;
+  conditionalLogic?: {
+    enabled: boolean;
+    conditions: Array<{
+      fieldId: string;
+      operator: 'equals' | 'not_equals' | 'contains' | 'not_contains' | 'greater_than' | 'less_than';
+      value: any;
+    }>;
+    action: 'show' | 'hide' | 'enable' | 'disable';
   };
 }
 

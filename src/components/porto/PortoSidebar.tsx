@@ -96,7 +96,7 @@ export const PortoSidebar: React.FC = () => {
   }
 
   return (
-    <div className="w-64 bg-background border-r h-full flex flex-col">
+    <div className="w-72 bg-background border-r h-full flex flex-col">
       <div className="flex justify-between items-center border-b px-4 py-2">
         <h3 className="text-sm font-medium">Porto Form Builder</h3>
         <Button
@@ -130,21 +130,23 @@ export const PortoSidebar: React.FC = () => {
           </TabsList>
         </div>
 
-        <TabsContent value="elements" className="flex-1 p-0">
-          <PortoElementsTab onAddElement={handleAddElement} />
-        </TabsContent>
+        <ScrollArea className="flex-1">
+          <TabsContent value="elements" className="p-0 m-0 h-full">
+            <PortoElementsTab onAddElement={handleAddElement} />
+          </TabsContent>
 
-        <TabsContent value="theme" className="flex-1 p-0">
-          <PortoThemeTab />
-        </TabsContent>
+          <TabsContent value="theme" className="p-0 m-0 h-full">
+            <PortoThemeTab />
+          </TabsContent>
 
-        <TabsContent value="ai" className="flex-1 p-0">
-          <PortoAITab />
-        </TabsContent>
+          <TabsContent value="ai" className="p-0 m-0 h-full">
+            <PortoAITab />
+          </TabsContent>
 
-        <TabsContent value="settings" className="flex-1 p-0">
-          <PortoSettingsTab />
-        </TabsContent>
+          <TabsContent value="settings" className="p-0 m-0 h-full">
+            <PortoSettingsTab />
+          </TabsContent>
+        </ScrollArea>
       </Tabs>
     </div>
   );
