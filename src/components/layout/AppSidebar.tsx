@@ -26,7 +26,8 @@ import {
   Users,
   Zap,
   Clipboard,
-  KeyRound
+  KeyRound,
+  CreditCard
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TeamManagementSheet } from "@/components/team/TeamManagementSheet";
@@ -134,8 +135,11 @@ const AppSidebar = () => {
         </SidebarContent>
         <SidebarFooter>
           <div className="px-4 py-2">
-            <div className="flex items-center space-x-2 p-2 rounded-md hover:bg-sidebar-accent cursor-pointer">
-              <Award className="h-5 w-5" style={{ color: brandSettings.colors.primary }} />
+            <div 
+              className="flex items-center space-x-2 p-2 rounded-md hover:bg-sidebar-accent cursor-pointer"
+              onClick={() => navigate("/subscription")}
+            >
+              <CreditCard className="h-5 w-5" style={{ color: brandSettings.colors.primary }} />
               <div className="flex flex-col">
                 <span className="text-xs font-medium">Free Plan</span>
                 <span className="text-xs text-muted-foreground">Upgrade to Pro</span>

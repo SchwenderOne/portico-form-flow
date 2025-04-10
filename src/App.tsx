@@ -28,6 +28,7 @@ import Auth from "./pages/Auth";
 import RequireAuth from "./components/auth/RequireAuth";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
 import Porto from "./pages/Porto";
+import Subscription from "./pages/Subscription";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient({
@@ -72,6 +73,7 @@ const App = () => (
                         <Route path="/security" element={<RequireAuth><Security /></RequireAuth>} />
                         <Route path="/form-builder" element={<RequireAuth><FormBuilder /></RequireAuth>} />
                         <Route path="/porto" element={<RequireAuth><Porto /></RequireAuth>} />
+                        <Route path="/subscription" element={<RequireAuth><Subscription /></RequireAuth>} />
                         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                         <Route path="*" element={<NotFound />} />
                       </Routes>
