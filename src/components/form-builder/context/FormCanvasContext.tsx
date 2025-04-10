@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { FormElement } from "@/types/form";
 import { useFormElements } from "@/hooks/use-form-elements";
@@ -8,6 +9,7 @@ import { toast } from "sonner";
 
 type FormCanvasContextType = {
   elements: FormElement[];
+  setElements: (elements: FormElement[]) => void; // Add this line to fix the error
   selectedElements: string[];
   isDragging: boolean;
   setIsDragging: React.Dispatch<React.SetStateAction<boolean>>;
@@ -263,6 +265,7 @@ export const FormCanvasProvider: React.FC<{
 
   const contextValue: FormCanvasContextType = {
     elements,
+    setElements, // Add this line to expose setElements
     selectedElements,
     isDragging,
     setIsDragging,

@@ -41,7 +41,7 @@ export const EnhancedTemplateCard: React.FC<EnhancedTemplateCardProps> = ({ temp
   const { toast } = useToast();
   const { brandSettings } = useBrandSettings();
   const { setSelectedTemplate } = useSelectedTemplate();
-  const { setElements } = useFormCanvas();
+  const formCanvas = useFormCanvas();
 
   const handleUseTemplate = () => {
     // Find the full template with elements from the templatesData
@@ -55,7 +55,7 @@ export const EnhancedTemplateCard: React.FC<EnhancedTemplateCardProps> = ({ temp
       setSelectedTemplate(fullTemplate);
       
       // Also directly set in form canvas for immediate use
-      setElements(templateElements);
+      formCanvas.setElements(templateElements);
       
       toast({
         title: "Template Selected",

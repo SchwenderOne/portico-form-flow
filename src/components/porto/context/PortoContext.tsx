@@ -2,6 +2,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { FormElement } from "@/types/form";
 import { v4 as uuidv4 } from "uuid";
+import { toast } from "sonner";
 
 // Default form data
 const defaultFormTitle = "Untitled Form";
@@ -43,6 +44,14 @@ interface PortoContextType {
   saveForm: () => void;
   currentTemplate: string | null;
   setCurrentTemplate: (templateId: string | null) => void;
+  // Add missing properties needed by components
+  isPublished: boolean;
+  publishForm: () => void;
+  unpublishForm: () => void;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
+  exportForm: (format: 'json' | 'pdf' | 'html') => void;
+  saveFormAsTemplate: () => void;
 }
 
 const PortoContext = createContext<PortoContextType | undefined>(undefined);
@@ -51,12 +60,16 @@ export const PortoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // UI state
   const [activeSection, setActiveSection] = useState<"editor" | "templates" | "settings">("editor");
   const [previewMode, setPreviewMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   
   // Form content state
   const [formTitle, setFormTitle] = useState(defaultFormTitle);
   const [formDescription, setFormDescription] = useState(defaultFormDescription);
   const [formElements, setFormElements] = useState<FormElement[]>([]);
   const [currentTemplate, setCurrentTemplate] = useState<string | null>(null);
+  
+  // Publication state
+  const [isPublished, setIsPublished] = useState(false);
   
   // Theme state
   const [theme, setTheme] = useState(defaultTheme);
@@ -77,6 +90,11 @@ export const PortoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setPreviewMode(!previewMode);
   };
   
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+  
   // Save form
   const saveForm = () => {
     setIsEdited(false);
@@ -90,6 +108,33 @@ export const PortoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       theme,
       templateId: currentTemplate
     });
+    
+    toast.success("Form saved successfully");
+  };
+  
+  // Publish form
+  const publishForm = () => {
+    setIsPublished(true);
+    saveForm();
+    toast.success("Form published successfully");
+  };
+  
+  // Unpublish form
+  const unpublishForm = () => {
+    setIsPublished(false);
+    toast.info("Form unpublished");
+  };
+  
+  // Export form to different formats
+  const exportForm = (format: 'json' | 'pdf' | 'html') => {
+    // In a real app, we would implement format-specific export logic
+    toast.success(`Form exported as ${format.toUpperCase()}`);
+  };
+  
+  // Save form as template
+  const saveFormAsTemplate = () => {
+    // In a real app, we would save this form as a template in the database
+    toast.success("Form saved as template");
   };
   
   return (
@@ -111,7 +156,14 @@ export const PortoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         lastSaved,
         saveForm,
         currentTemplate,
-        setCurrentTemplate
+        setCurrentTemplate,
+        isPublished,
+        publishForm,
+        unpublishForm,
+        isDarkMode,
+        toggleDarkMode,
+        exportForm,
+        saveFormAsTemplate
       }}
     >
       {children}

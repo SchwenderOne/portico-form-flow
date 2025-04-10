@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { PortoHeader } from "./PortoHeader";
 import { PortoSidebar } from "./PortoSidebar";
@@ -28,7 +29,7 @@ export const PortoEditor: React.FC = () => {
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const formCanvas = useFormCanvas();
 
-  // Sync form elements between contexts - bidirectional now
+  // Sync form elements between contexts
   useEffect(() => {
     // Sync from FormCanvas to Porto context
     if (formCanvas.elements && formCanvas.elements.length > 0) {
