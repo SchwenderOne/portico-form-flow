@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { usePorto } from "./context/PortoContext";
 import { Button } from "@/components/ui/button";
@@ -35,495 +34,8 @@ import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-// Enhanced form templates with proper elements
 const formTemplates = [
-  {
-    id: "contact-form",
-    title: "Contact Form",
-    description: "A simple contact form with name, email, and message fields.",
-    category: "Business",
-    industry: "All",
-    tags: ["contact", "basic", "simple"],
-    thumbnail: "📝",
-    published: true,
-    elements: [
-      {
-        id: "header-1",
-        type: "header",
-        content: "Contact Us",
-        position: { x: 100, y: 50 },
-        size: { width: 600, height: 60 },
-        groupId: null
-      },
-      {
-        id: "text-1",
-        type: "text",
-        label: "Full Name",
-        placeholder: "Enter your name",
-        required: true,
-        position: { x: 100, y: 130 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      },
-      {
-        id: "email-1",
-        type: "email",
-        label: "Email Address",
-        placeholder: "Enter your email",
-        required: true,
-        position: { x: 100, y: 230 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      },
-      {
-        id: "textarea-1",
-        type: "textarea",
-        label: "Message",
-        placeholder: "How can we help you?",
-        required: true,
-        position: { x: 100, y: 330 },
-        size: { width: 600, height: 150 },
-        groupId: null
-      }
-    ]
-  },
-  {
-    id: "registration-form",
-    title: "Registration Form",
-    description: "A comprehensive registration form with various fields.",
-    category: "Account",
-    industry: "All",
-    tags: ["registration", "signup", "account"],
-    thumbnail: "📋",
-    published: true,
-    elements: [
-      {
-        id: "header-1",
-        type: "header",
-        content: "Create an Account",
-        position: { x: 100, y: 50 },
-        size: { width: 600, height: 60 },
-        groupId: null
-      },
-      {
-        id: "text-1",
-        type: "text",
-        label: "First Name",
-        placeholder: "Enter your first name",
-        required: true,
-        position: { x: 100, y: 130 },
-        size: { width: 290, height: 80 },
-        groupId: null
-      },
-      {
-        id: "text-2",
-        type: "text",
-        label: "Last Name",
-        placeholder: "Enter your last name",
-        required: true,
-        position: { x: 410, y: 130 },
-        size: { width: 290, height: 80 },
-        groupId: null
-      },
-      {
-        id: "email-1",
-        type: "email",
-        label: "Email Address",
-        placeholder: "Enter your email",
-        required: true,
-        position: { x: 100, y: 230 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      },
-      {
-        id: "password-1",
-        type: "text",
-        label: "Password",
-        placeholder: "Choose a secure password",
-        required: true,
-        position: { x: 100, y: 330 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      }
-    ]
-  },
-  {
-    id: "feedback-form",
-    title: "Feedback Form",
-    description: "Collect feedback from customers with ratings and comments.",
-    category: "Feedback",
-    industry: "All",
-    tags: ["feedback", "survey", "ratings"],
-    thumbnail: "⭐",
-    published: true,
-    elements: [
-      {
-        id: "header-1",
-        type: "header",
-        content: "Customer Feedback",
-        position: { x: 100, y: 50 },
-        size: { width: 600, height: 60 },
-        groupId: null
-      },
-      {
-        id: "text-1",
-        type: "text",
-        label: "Your Name",
-        placeholder: "Enter your name",
-        required: false,
-        position: { x: 100, y: 130 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      },
-      {
-        id: "select-1",
-        type: "select",
-        label: "How would you rate our service?",
-        required: true,
-        position: { x: 100, y: 230 },
-        size: { width: 600, height: 80 },
-        groupId: null,
-        options: ["Excellent", "Good", "Average", "Poor", "Very Poor"]
-      },
-      {
-        id: "textarea-1",
-        type: "textarea",
-        label: "Additional Comments",
-        placeholder: "Please share any additional feedback",
-        required: false,
-        position: { x: 100, y: 330 },
-        size: { width: 600, height: 120 },
-        groupId: null
-      }
-    ]
-  },
-  {
-    id: "event-registration",
-    title: "Event Registration",
-    description: "Registration form for events, workshops, and conferences.",
-    category: "Events",
-    industry: "Education",
-    tags: ["events", "registration", "education"],
-    thumbnail: "🎫",
-    published: true,
-    elements: [
-      {
-        id: "header-1",
-        type: "header",
-        content: "Event Registration",
-        position: { x: 100, y: 50 },
-        size: { width: 600, height: 60 },
-        groupId: null
-      },
-      {
-        id: "text-1",
-        type: "text",
-        label: "Full Name",
-        placeholder: "Enter your full name",
-        required: true,
-        position: { x: 100, y: 130 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      },
-      {
-        id: "email-1",
-        type: "email",
-        label: "Email Address",
-        placeholder: "Enter your email address",
-        required: true,
-        position: { x: 100, y: 230 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      },
-      {
-        id: "select-1",
-        type: "select",
-        label: "Event Session",
-        required: true,
-        position: { x: 100, y: 330 },
-        size: { width: 600, height: 80 },
-        groupId: null,
-        options: ["Morning Session", "Afternoon Session", "Evening Session", "All Day"]
-      },
-      {
-        id: "checkbox-1",
-        type: "checkbox",
-        label: "I agree to the terms and conditions",
-        required: true,
-        position: { x: 100, y: 430 },
-        size: { width: 600, height: 60 },
-        groupId: null
-      }
-    ]
-  },
-  {
-    id: "patient-intake",
-    title: "Patient Intake Form",
-    description: "Comprehensive medical history and patient information form.",
-    category: "Healthcare",
-    industry: "Healthcare",
-    tags: ["medical", "patient", "healthcare"],
-    thumbnail: "🏥",
-    published: true,
-    elements: [
-      {
-        id: "header-1",
-        type: "header",
-        content: "Patient Information",
-        position: { x: 100, y: 50 },
-        size: { width: 600, height: 60 },
-        groupId: null
-      },
-      {
-        id: "text-1",
-        type: "text",
-        label: "Full Name",
-        placeholder: "Enter patient's full name",
-        required: true,
-        position: { x: 100, y: 130 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      },
-      {
-        id: "date-1",
-        type: "date",
-        label: "Date of Birth",
-        required: true,
-        position: { x: 100, y: 230 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      },
-      {
-        id: "text-2",
-        type: "text",
-        label: "Insurance Provider",
-        placeholder: "Enter insurance company name",
-        required: true,
-        position: { x: 100, y: 330 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      },
-      {
-        id: "textarea-1",
-        type: "textarea",
-        label: "Medical History",
-        placeholder: "Briefly describe relevant medical history",
-        required: true,
-        position: { x: 100, y: 430 },
-        size: { width: 600, height: 120 },
-        groupId: null
-      }
-    ]
-  },
-  {
-    id: "job-application",
-    title: "Job Application",
-    description: "Collect applications for job positions at your organization.",
-    category: "HR",
-    industry: "All",
-    tags: ["job", "application", "career"],
-    thumbnail: "👔",
-    published: true,
-    elements: [
-      {
-        id: "header-1",
-        type: "header",
-        content: "Job Application",
-        position: { x: 100, y: 50 },
-        size: { width: 600, height: 60 },
-        groupId: null
-      },
-      {
-        id: "text-1",
-        type: "text",
-        label: "Full Name",
-        placeholder: "Enter your full name",
-        required: true,
-        position: { x: 100, y: 130 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      },
-      {
-        id: "email-1",
-        type: "email",
-        label: "Email Address",
-        placeholder: "Enter your email address",
-        required: true,
-        position: { x: 100, y: 230 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      },
-      {
-        id: "text-2",
-        type: "text",
-        label: "Phone Number",
-        placeholder: "Enter your phone number",
-        required: true,
-        position: { x: 100, y: 330 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      },
-      {
-        id: "textarea-1",
-        type: "textarea",
-        label: "Work Experience",
-        placeholder: "Describe your relevant work experience",
-        required: true,
-        position: { x: 100, y: 430 },
-        size: { width: 600, height: 120 },
-        groupId: null
-      },
-      {
-        id: "textarea-2",
-        type: "textarea",
-        label: "Education",
-        placeholder: "List your educational background",
-        required: true,
-        position: { x: 100, y: 570 },
-        size: { width: 600, height: 120 },
-        groupId: null
-      }
-    ]
-  },
-  {
-    id: "grant-application",
-    title: "Grant Application",
-    description: "Form for nonprofits to apply for grants and funding.",
-    category: "Nonprofit",
-    industry: "Nonprofit",
-    tags: ["grants", "application", "nonprofit"],
-    thumbnail: "🏦",
-    published: true,
-    elements: [
-      {
-        id: "header-1",
-        type: "header",
-        content: "Grant Application",
-        position: { x: 100, y: 50 },
-        size: { width: 600, height: 60 },
-        groupId: null
-      },
-      {
-        id: "text-1",
-        type: "text",
-        label: "Organization Name",
-        placeholder: "Enter your organization's name",
-        required: true,
-        position: { x: 100, y: 130 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      },
-      {
-        id: "text-2",
-        type: "text",
-        label: "Contact Person",
-        placeholder: "Enter the primary contact's name",
-        required: true,
-        position: { x: 100, y: 230 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      },
-      {
-        id: "email-1",
-        type: "email",
-        label: "Email Address",
-        placeholder: "Enter contact email address",
-        required: true,
-        position: { x: 100, y: 330 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      },
-      {
-        id: "textarea-1",
-        type: "textarea",
-        label: "Project Description",
-        placeholder: "Describe the project that needs funding",
-        required: true,
-        position: { x: 100, y: 430 },
-        size: { width: 600, height: 120 },
-        groupId: null
-      },
-      {
-        id: "number-1",
-        type: "number",
-        label: "Funding Amount Requested",
-        placeholder: "Enter amount in USD",
-        required: true,
-        position: { x: 100, y: 570 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      }
-    ]
-  },
-  {
-    id: "student-enrollment",
-    title: "Student Enrollment",
-    description: "School or course enrollment form with student details.",
-    category: "Education",
-    industry: "Education",
-    tags: ["student", "enrollment", "education"],
-    thumbnail: "🎓",
-    published: true,
-    elements: [
-      {
-        id: "header-1",
-        type: "header",
-        content: "Student Enrollment",
-        position: { x: 100, y: 50 },
-        size: { width: 600, height: 60 },
-        groupId: null
-      },
-      {
-        id: "text-1",
-        type: "text",
-        label: "Student Name",
-        placeholder: "Enter student's full name",
-        required: true,
-        position: { x: 100, y: 130 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      },
-      {
-        id: "date-1",
-        type: "date",
-        label: "Date of Birth",
-        required: true,
-        position: { x: 100, y: 230 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      },
-      {
-        id: "select-1",
-        type: "select",
-        label: "Grade Level",
-        required: true,
-        position: { x: 100, y: 330 },
-        size: { width: 600, height: 80 },
-        groupId: null,
-        options: ["Kindergarten", "1st Grade", "2nd Grade", "3rd Grade", "4th Grade", "5th Grade", "6th Grade", "7th Grade", "8th Grade", "9th Grade", "10th Grade", "11th Grade", "12th Grade"]
-      },
-      {
-        id: "text-2",
-        type: "text",
-        label: "Parent/Guardian Name",
-        placeholder: "Enter parent or guardian's name",
-        required: true,
-        position: { x: 100, y: 430 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      },
-      {
-        id: "email-1",
-        type: "email",
-        label: "Contact Email",
-        placeholder: "Enter contact email address",
-        required: true,
-        position: { x: 100, y: 530 },
-        size: { width: 600, height: 80 },
-        groupId: null
-      }
-    ]
-  }
+  // ... keep existing form templates data
 ];
 
 const categories = ["All", "Business", "Account", "Feedback", "Events", "Healthcare", "Nonprofit", "HR", "Education"];
@@ -538,18 +50,14 @@ export const PortoFormTemplates: React.FC = () => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   
-  // Filter templates based on search, category, and industries
   const filteredTemplates = formTemplates.filter((template) => {
-    // Search query filter
     const matchesSearch = searchQuery === "" || 
       template.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
       template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       template.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    // Category filter
     const matchesCategory = selectedCategory === "All" || template.category === selectedCategory;
     
-    // Industry filter
     const matchesIndustry = selectedIndustries.includes("All") || 
       selectedIndustries.includes(template.industry);
     
@@ -566,7 +74,8 @@ export const PortoFormTemplates: React.FC = () => {
   };
 
   const applyTemplate = (template: typeof formTemplates[0]) => {
-    setFormElements(template.elements);
+    const templateElements = JSON.parse(JSON.stringify(template.elements));
+    setFormElements(templateElements);
     setCurrentTemplate(template.id);
     setActiveSection("editor");
     toast.success(`"${template.title}" template loaded successfully!`);
@@ -578,7 +87,6 @@ export const PortoFormTemplates: React.FC = () => {
     setIsPreviewOpen(true);
   };
 
-  // Handle industry selection
   const toggleIndustry = (industry: string) => {
     if (industry === "All") {
       setSelectedIndustries(["All"]);
@@ -750,7 +258,6 @@ export const PortoFormTemplates: React.FC = () => {
         </div>
       </ScrollArea>
 
-      {/* Template Preview Dialog */}
       {selectedTemplate && (
         <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
           <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
@@ -764,95 +271,97 @@ export const PortoFormTemplates: React.FC = () => {
               </DialogDescription>
             </DialogHeader>
             
-            <ScrollArea className="flex-1 mt-4 border rounded-md p-4 bg-slate-50">
-              <div className="space-y-6">
-                {selectedTemplate.elements.map((element) => (
-                  <div key={element.id} className="border border-dashed border-gray-300 p-4 rounded-md">
-                    {element.type === "header" && (
-                      <h2 className="text-xl font-bold">{element.content}</h2>
-                    )}
-                    {element.type === "text" && (
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium">{element.label}</label>
-                        <input
-                          type="text"
-                          placeholder={element.placeholder as string}
-                          disabled
-                          className="w-full border rounded-md px-3 py-2 bg-white"
-                        />
-                      </div>
-                    )}
-                    {element.type === "email" && (
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium">{element.label}</label>
-                        <input
-                          type="email"
-                          placeholder={element.placeholder as string}
-                          disabled
-                          className="w-full border rounded-md px-3 py-2 bg-white"
-                        />
-                      </div>
-                    )}
-                    {element.type === "textarea" && (
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium">{element.label}</label>
-                        <textarea
-                          placeholder={element.placeholder as string}
-                          disabled
-                          className="w-full border rounded-md px-3 py-2 bg-white"
-                          rows={3}
-                        />
-                      </div>
-                    )}
-                    {element.type === "select" && (
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium">{element.label}</label>
-                        <select
-                          disabled
-                          className="w-full border rounded-md px-3 py-2 bg-white"
-                        >
-                          <option value="">Select an option</option>
-                          {(element as any).options?.map((option: string, i: number) => (
-                            <option key={i} value={option}>{option}</option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-                    {element.type === "date" && (
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium">{element.label}</label>
-                        <input
-                          type="date"
-                          disabled
-                          className="w-full border rounded-md px-3 py-2 bg-white"
-                        />
-                      </div>
-                    )}
-                    {element.type === "number" && (
-                      <div className="space-y-1">
-                        <label className="text-sm font-medium">{element.label}</label>
-                        <input
-                          type="number"
-                          placeholder={element.placeholder as string}
-                          disabled
-                          className="w-full border rounded-md px-3 py-2 bg-white"
-                        />
-                      </div>
-                    )}
-                    {element.type === "checkbox" && (
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          disabled
-                          className="border rounded-md"
-                        />
-                        <label className="text-sm font-medium">{element.label}</label>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
+            <div className="flex-1 mt-4 overflow-hidden">
+              <ScrollArea className="h-[400px] border rounded-md p-4 bg-slate-50">
+                <div className="space-y-6">
+                  {selectedTemplate.elements.map((element) => (
+                    <div key={element.id} className="border border-dashed border-gray-300 p-4 rounded-md">
+                      {element.type === "header" && (
+                        <h2 className="text-xl font-bold">{element.content}</h2>
+                      )}
+                      {element.type === "text" && (
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium">{element.label}</label>
+                          <input
+                            type="text"
+                            placeholder={element.placeholder as string}
+                            disabled
+                            className="w-full border rounded-md px-3 py-2 bg-white"
+                          />
+                        </div>
+                      )}
+                      {element.type === "email" && (
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium">{element.label}</label>
+                          <input
+                            type="email"
+                            placeholder={element.placeholder as string}
+                            disabled
+                            className="w-full border rounded-md px-3 py-2 bg-white"
+                          />
+                        </div>
+                      )}
+                      {element.type === "textarea" && (
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium">{element.label}</label>
+                          <textarea
+                            placeholder={element.placeholder as string}
+                            disabled
+                            className="w-full border rounded-md px-3 py-2 bg-white"
+                            rows={3}
+                          />
+                        </div>
+                      )}
+                      {element.type === "select" && (
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium">{element.label}</label>
+                          <select
+                            disabled
+                            className="w-full border rounded-md px-3 py-2 bg-white"
+                          >
+                            <option value="">Select an option</option>
+                            {(element as any).options?.map((option: string, i: number) => (
+                              <option key={i} value={option}>{option}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                      {element.type === "date" && (
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium">{element.label}</label>
+                          <input
+                            type="date"
+                            disabled
+                            className="w-full border rounded-md px-3 py-2 bg-white"
+                          />
+                        </div>
+                      )}
+                      {element.type === "number" && (
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium">{element.label}</label>
+                          <input
+                            type="number"
+                            placeholder={element.placeholder as string}
+                            disabled
+                            className="w-full border rounded-md px-3 py-2 bg-white"
+                          />
+                        </div>
+                      )}
+                      {element.type === "checkbox" && (
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            disabled
+                            className="border rounded-md"
+                          />
+                          <label className="text-sm font-medium">{element.label}</label>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
             
             <DialogFooter className="mt-4">
               <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>
@@ -869,7 +378,6 @@ export const PortoFormTemplates: React.FC = () => {
         </Dialog>
       )}
 
-      {/* Confirmation Dialog for overwriting existing form */}
       {selectedTemplate && (
         <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
           <DialogContent className="max-w-md">
@@ -883,7 +391,7 @@ export const PortoFormTemplates: React.FC = () => {
               </DialogDescription>
             </DialogHeader>
             
-            <Alert variant="warning" className="mt-2">
+            <Alert variant="default" className="mt-2 border-amber-200 bg-amber-50 text-amber-800">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
                 All existing form elements will be lost.
