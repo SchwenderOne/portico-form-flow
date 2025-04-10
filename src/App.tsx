@@ -31,6 +31,7 @@ import Porto from "./pages/Porto";
 import Subscription from "./pages/Subscription";
 import HelpSupport from "./pages/HelpSupport";
 import BlocksLibrary from "./pages/BlocksLibrary";
+import Profile from "./pages/Profile";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient({
@@ -78,6 +79,7 @@ const App = () => (
                         <Route path="/blocks-library" element={<RequireAuth><BlocksLibrary /></RequireAuth>} />
                         <Route path="/subscription" element={<RequireAuth><Subscription /></RequireAuth>} />
                         <Route path="/help-support" element={<RequireAuth><HelpSupport /></RequireAuth>} />
+                        <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
                         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                         <Route path="*" element={<NotFound />} />
                       </Routes>
