@@ -1,11 +1,10 @@
 
-import { useState } from "react";
-import { FormElement } from "@/types/form";
+import { useState, useCallback } from "react";
 
 export const useElementSelection = () => {
   const [selectedElements, setSelectedElements] = useState<string[]>([]);
 
-  const handleElementSelect = (id: string, isMultiSelect: boolean) => {
+  const handleElementSelect = useCallback((id: string, isMultiSelect: boolean = false) => {
     if (isMultiSelect) {
       setSelectedElements(prev => 
         prev.includes(id) 
@@ -15,7 +14,7 @@ export const useElementSelection = () => {
     } else {
       setSelectedElements(prev => prev.includes(id) && prev.length === 1 ? [] : [id]);
     }
-  };
+  }, []);
 
   return {
     selectedElements,
