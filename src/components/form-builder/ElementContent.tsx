@@ -1,196 +1,241 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { FormElement } from "@/types/form";
-import TextField from "./fields/TextField";
-import TextareaField from "./fields/TextareaField";
-import CheckboxField from "./fields/CheckboxField";
-import SelectField from "./fields/SelectField";
-import FileField from "./fields/FileField";
-import HeaderField from "./fields/HeaderField";
-import EmailField from "./fields/EmailField";
-import DateField from "./fields/DateField";
-import NumberField from "./fields/NumberField";
-import ParagraphField from "./fields/ParagraphField";
-import GDPRConsentField from "./fields/GDPRConsentField";
-import { InfoIcon, AlertTriangle } from "lucide-react";
-import { useCompliance } from "@/context/ComplianceContext";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface ElementContentProps {
   element: FormElement;
-  isEditing: boolean;
-  isPreview?: boolean; // Add isPreview prop
+  isEditing?: boolean;
+  isPreview?: boolean; // Add this prop
 }
 
-const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing, isPreview = false }) => {
-  // Add default state values for form controls
-  const [textValue, setTextValue] = useState('');
-  const [selectValue, setSelectValue] = useState('');
-  const [checkboxValue, setCheckboxValue] = useState(false);
-  const [dateValue, setDateValue] = useState<Date | undefined>(undefined);
-  const [gdprConsentValue, setGdprConsentValue] = useState(false);
-  const [radioValue, setRadioValue] = useState('');
+const ElementContent: React.FC<ElementContentProps> = ({ 
+  element, 
+  isEditing = false,
+  isPreview = false // Initialize with default value
+}) => {
+  // Determine if we should show as readonly based on editing status or preview mode
+  const readonly = isPreview || !isEditing;
   
-  // Get compliance context for GDPR field
-  const { complianceSettings } = useCompliance();
+  // Simulate form field rendering
+  switch (element.type) {
+    case "text":
+      return (
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">
+            {element.label} {element.required && <span className="text-red-500">*</span>}
+          </label>
+          <input
+            type="text"
+            placeholder={element.placeholder}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            disabled={readonly}
+          />
+          {element.helpText && (
+            <p className="text-xs text-gray-500">{element.helpText}</p>
+          )}
+        </div>
+      );
 
-  const renderField = () => {
-    // When in preview mode, disable editing for all fields
-    const effectiveIsEditing = isPreview ? false : isEditing;
+    case "email":
+      return (
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">
+            {element.label} {element.required && <span className="text-red-500">*</span>}
+          </label>
+          <input
+            type="email"
+            placeholder={element.placeholder}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            disabled={readonly}
+          />
+          {element.helpText && (
+            <p className="text-xs text-gray-500">{element.helpText}</p>
+          )}
+        </div>
+      );
 
-    switch (element.type) {
-      case 'text':
-        return (
-          <TextField 
-            label={element.label || ''} 
-            placeholder={element.placeholder} 
-            required={element.required} 
-            isEditing={effectiveIsEditing} 
-            value={textValue}
-            onChange={setTextValue}
+    case "number":
+      return (
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">
+            {element.label} {element.required && <span className="text-red-500">*</span>}
+          </label>
+          <input
+            type="number"
+            placeholder={element.placeholder}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            disabled={readonly}
           />
-        );
-      case 'textarea':
-        return (
-          <TextareaField 
-            label={element.label || ''} 
-            placeholder={element.placeholder} 
-            required={element.required} 
-            isEditing={effectiveIsEditing} 
-            value={textValue}
-            onChange={setTextValue}
-          />
-        );
-      case 'checkbox':
-        return (
-          <CheckboxField 
-            id={element.id}
-            label={element.label || ''} 
-            required={element.required} 
-            isEditing={effectiveIsEditing} 
-            checked={checkboxValue}
-            onCheckedChange={setCheckboxValue}
-          />
-        );
-      case 'gdpr-consent':
-        return (
-          <GDPRConsentField 
-            id={element.id}
-            checked={gdprConsentValue}
-            onCheckedChange={setGdprConsentValue}
-            isEditing={effectiveIsEditing}
-            privacyPolicyUrl={complianceSettings.privacyPolicyUrl}
-            termsOfServiceUrl={complianceSettings.termsOfServiceUrl}
-          />
-        );
-      case 'radio':
-        return (
-          <div className="space-y-2">
-            {element.label && (
-              <label className="text-sm font-medium">
-                {element.label}
-                {element.required && <span className="text-red-500 ml-1">*</span>}
-              </label>
-            )}
-            <RadioGroup
-              value={radioValue}
-              onValueChange={setRadioValue}
-              className="flex flex-col space-y-1"
-            >
-              {(element.options || ['Option 1', 'Option 2', 'Option 3']).map((option, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <RadioGroupItem value={option} id={`${element.id}-${index}`} />
-                  <label htmlFor={`${element.id}-${index}`} className="text-sm">
+          {element.helpText && (
+            <p className="text-xs text-gray-500">{element.helpText}</p>
+          )}
+        </div>
+      );
+
+    case "textarea":
+      return (
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">
+            {element.label} {element.required && <span className="text-red-500">*</span>}
+          </label>
+          <textarea
+            placeholder={element.placeholder}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+            rows={3}
+            disabled={readonly}
+          ></textarea>
+          {element.helpText && (
+            <p className="text-xs text-gray-500">{element.helpText}</p>
+          )}
+        </div>
+      );
+
+    case "select":
+      return (
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">
+            {element.label} {element.required && <span className="text-red-500">*</span>}
+          </label>
+          <select
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+            disabled={readonly}
+          >
+            <option value="">{element.placeholder || "Select an option"}</option>
+            {(element as any).options?.map((option: string, index: number) => (
+              <option key={index} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+          {element.helpText && (
+            <p className="text-xs text-gray-500">{element.helpText}</p>
+          )}
+        </div>
+      );
+
+    case "checkbox":
+      return (
+        <div className="space-y-2">
+          <fieldset>
+            <legend className="text-sm font-medium mb-2">
+              {element.label} {element.required && <span className="text-red-500">*</span>}
+            </legend>
+            <div className="space-y-1">
+              {(element as any).options?.map((option: string, index: number) => (
+                <div key={index} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={`${element.id}-${index}`}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    disabled={readonly}
+                  />
+                  <label
+                    htmlFor={`${element.id}-${index}`}
+                    className="ml-2 block text-sm text-gray-700"
+                  >
                     {option}
                   </label>
                 </div>
               ))}
-            </RadioGroup>
-          </div>
-        );
-      case 'select':
-        return (
-          <SelectField 
-            label={element.label || ''} 
-            options={element.options || []} 
-            required={element.required} 
-            isEditing={effectiveIsEditing}
-            selectedOption={selectValue}
-            onChange={setSelectValue}
-          />
-        );
-      case 'file':
-        return (
-          <FileField 
-            label={element.label || ''} 
-            required={element.required} 
-            isEditing={effectiveIsEditing} 
-          />
-        );
-      case 'header':
-        return <HeaderField content={(element as any).content || ''} isEditing={effectiveIsEditing} />;
-      case 'paragraph':
-        return <ParagraphField content={(element as any).content || ''} isEditing={effectiveIsEditing} />;
-      case 'email':
-        return (
-          <EmailField 
-            label={element.label || ''} 
-            placeholder={element.placeholder} 
-            required={element.required} 
-            isEditing={effectiveIsEditing}
-            value={textValue}
-            onChange={setTextValue}
-          />
-        );
-      case 'date':
-        return (
-          <DateField 
-            label={element.label || ''} 
-            required={element.required} 
-            isEditing={effectiveIsEditing}
-            date={dateValue}
-            onChange={setDateValue}
-          />
-        );
-      case 'number':
-        return (
-          <NumberField 
-            label={element.label || ''} 
-            placeholder={element.placeholder} 
-            required={element.required} 
-            isEditing={effectiveIsEditing}
-            value={textValue}
-            onChange={setTextValue}
-          />
-        );
-      default:
-        return <div>Unsupported field type: {element.type}</div>;
-    }
-  };
+            </div>
+          </fieldset>
+          {element.helpText && (
+            <p className="text-xs text-gray-500">{element.helpText}</p>
+          )}
+        </div>
+      );
 
-  return (
-    <div className="form-element-content w-full">
-      {renderField()}
-      
-      {/* Help Text - Don't show in preview mode unless configured differently */}
-      {element.helpText && element.type !== 'header' && element.type !== 'paragraph' && !isPreview && (
-        <div className="mt-1 flex items-start gap-1.5">
-          <InfoIcon className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-muted-foreground">{element.helpText}</p>
+    case "radio":
+      return (
+        <div className="space-y-2">
+          <fieldset>
+            <legend className="text-sm font-medium mb-2">
+              {element.label} {element.required && <span className="text-red-500">*</span>}
+            </legend>
+            <div className="space-y-1">
+              {(element as any).options?.map((option: string, index: number) => (
+                <div key={index} className="flex items-center">
+                  <input
+                    type="radio"
+                    id={`${element.id}-${index}`}
+                    name={element.id}
+                    className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                    disabled={readonly}
+                  />
+                  <label
+                    htmlFor={`${element.id}-${index}`}
+                    className="ml-2 block text-sm text-gray-700"
+                  >
+                    {option}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </fieldset>
+          {element.helpText && (
+            <p className="text-xs text-gray-500">{element.helpText}</p>
+          )}
         </div>
-      )}
-      
-      {/* Validation Status - only show this when there's a validation type set and not in preview or editing mode */}
-      {element.validation?.type && !isEditing && !isPreview && (
-        <div className="mt-1 px-2 py-1 bg-yellow-50 border border-yellow-200 rounded-sm flex items-center text-yellow-700">
-          <AlertTriangle className="h-3.5 w-3.5 mr-1.5" />
-          <span className="text-xs">
-            {element.validation.message || `Validation: ${element.validation.type}`}
-          </span>
+      );
+
+    case "file":
+      return (
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">
+            {element.label} {element.required && <span className="text-red-500">*</span>}
+          </label>
+          <input
+            type="file"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            disabled={readonly}
+          />
+          {element.helpText && (
+            <p className="text-xs text-gray-500">{element.helpText}</p>
+          )}
         </div>
-      )}
-    </div>
-  );
+      );
+
+    case "date":
+      return (
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">
+            {element.label} {element.required && <span className="text-red-500">*</span>}
+          </label>
+          <input
+            type="date"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            disabled={readonly}
+          />
+          {element.helpText && (
+            <p className="text-xs text-gray-500">{element.helpText}</p>
+          )}
+        </div>
+      );
+
+    case "time":
+      return (
+        <div className="space-y-2">
+          <label className="block text-sm font-medium">
+            {element.label} {element.required && <span className="text-red-500">*</span>}
+          </label>
+          <input
+            type="time"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            disabled={readonly}
+          />
+          {element.helpText && (
+            <p className="text-xs text-gray-500">{element.helpText}</p>
+          )}
+        </div>
+      );
+
+    default:
+      return (
+        <div className="bg-gray-100 p-3 rounded border border-gray-300 text-sm text-gray-500">
+          Element type "{element.type}" not implemented
+        </div>
+      );
+  }
 };
 
 export default ElementContent;

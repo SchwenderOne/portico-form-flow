@@ -5,15 +5,12 @@ import { PortoSidebar } from "./PortoSidebar";
 import { PortoCanvas } from "./PortoCanvas";
 import { usePorto } from "./context/PortoContext";
 import { useFormCanvas } from "@/components/form-builder/context/FormCanvasContext";
-import { FormElement } from "@/types/form";
-import { PortoToolbar } from "./PortoToolbar";
-import { CollaboratorAvatars } from "@/context/CollaborationContext";
-import { PortoPreview } from "./PortoPreview";
 import { AIAssistantModal } from "@/components/porto/AIAssistantModal";
 import { PortoFormTemplates } from "./PortoFormTemplates";
 import { PortoSettings } from "./PortoSettings";
+import { PortoPreview } from "./PortoPreview";
+import { CollaboratorAvatars } from "@/context/CollaborationContext";
 import { toast } from "sonner";
-import { Toaster } from "sonner";
 
 export const PortoEditor: React.FC = () => {
   const { 
@@ -120,8 +117,8 @@ export const PortoEditor: React.FC = () => {
           <div className="flex flex-1 h-full overflow-hidden">
             <PortoSidebar />
             <div className="flex-1 flex flex-col relative">
-              <PortoToolbar />
               <div className="flex-1 overflow-hidden relative">
+                {/* Place collaborator avatars in the top right corner only once */}
                 <div className="absolute top-2 right-2 z-10">
                   <CollaboratorAvatars />
                 </div>
@@ -142,8 +139,6 @@ export const PortoEditor: React.FC = () => {
         isOpen={isAIModalOpen}
         onClose={() => setIsAIModalOpen(false)}
       />
-      
-      <Toaster position="top-center" />
     </div>
   );
 };

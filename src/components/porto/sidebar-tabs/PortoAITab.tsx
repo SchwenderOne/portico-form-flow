@@ -38,6 +38,7 @@ export const PortoAITab: React.FC = () => {
         handleAddAIElements(generatedElements);
         toast.success("Form generated based on your prompt");
         setPrompt("");
+        setError(null);
       } else {
         console.error("No elements generated from sidebar prompt:", prompt);
         setError("Failed to generate form elements. Please try a different prompt.");

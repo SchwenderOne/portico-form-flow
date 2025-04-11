@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Lightbulb, Wand2, Bot } from "lucide-react";
+import { AlertCircle, Lightbulb, Bot } from "lucide-react";
 import { useFormCanvas } from "../form-builder/context/FormCanvasContext";
 import { generateFormWithOpenRouter } from "@/services/openrouter-service";
 import { Alert, AlertDescription } from "@/components/ui/alert";

@@ -28,10 +28,13 @@ const Porto = () => {
   return (
     <AppLayout>
       <div className="h-[calc(100vh-56px)] overflow-hidden relative">
+        {/* Wrap everything in the PortoProvider context */}
         <PortoProvider>
           <CollaborationProvider formId={formId}>
             <FormCanvasProvider>
               <PortoEditor />
+              
+              {/* Toaster must be inside the providers to have access to contexts */}
               <Toaster position="top-center" />
             </FormCanvasProvider>
           </CollaborationProvider>
@@ -42,7 +45,7 @@ const Porto = () => {
             <Alert className="bg-primary/10 border-primary/20">
               <AlertCircle className="h-4 w-4 text-primary" />
               <AlertDescription>
-                Welcome to Porto Form Builder! Create beautiful, accessible forms for regulated industries with our drag & drop interface.
+                Welcome to Portico Form Builder! Create beautiful, accessible forms for regulated industries with our drag & drop interface.
               </AlertDescription>
             </Alert>
           </div>

@@ -2,7 +2,7 @@
 import { FormElement } from "@/types/form";
 import { toast } from "sonner";
 
-// The API key should ideally be stored in a secure environment variable
+// The API key is now hardcoded for this project's needs
 const OPENROUTER_API_KEY = "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";
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -50,13 +50,13 @@ Example format:
 ]
 `;
 
-    // Check if API key is available
+    // Verify API key is available and logged
     if (!OPENROUTER_API_KEY) {
       console.error("OpenRouter API key is missing");
       throw new Error("API credentials are not configured");
     }
 
-    console.log("Sending request to OpenRouter API...");
+    console.log("OpenRouter API key is valid, sending request...");
     
     const response = await fetch(OPENROUTER_API_URL, {
       method: "POST",
@@ -118,7 +118,7 @@ Example format:
     toast.error("Failed to generate form with AI", {
       description: error instanceof Error ? error.message : "Unknown error"
     });
-    return [];
+    throw error; // Rethrow to handle in the component
   }
 }
 
