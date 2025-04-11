@@ -135,15 +135,9 @@ export const PortoEditor: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex h-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col">
-          <AppHeader />
-          <div className="flex-1 overflow-hidden">
-            <PortoHeader onOpenAIModal={() => setIsAIModalOpen(true)} />
-            {renderActiveSection()}
-          </div>
-        </div>
+      <PortoHeader onOpenAIModal={() => setIsAIModalOpen(true)} />
+      <div className="flex-1 overflow-hidden">
+        {renderActiveSection()}
       </div>
       
       <AIAssistantModal

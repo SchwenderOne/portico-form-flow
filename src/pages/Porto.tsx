@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from "react";
-import AppLayout from "@/components/layout/AppLayout";
 import { FormCanvasProvider } from "@/components/form-builder/context/FormCanvasContext";
 import { CollaborationProvider } from "@/context/CollaborationContext";
 import { PortoEditor } from "@/components/porto/PortoEditor";
@@ -26,15 +25,12 @@ const Porto = () => {
   }, [showWelcome]);
 
   return (
-    // Use a custom div instead of AppLayout to prevent duplicate headers and sidebars
-    <div className="h-screen w-full overflow-hidden relative">
+    <div className="h-screen w-full overflow-hidden">
       {/* Wrap everything in the PortoProvider context */}
       <PortoProvider>
         <CollaborationProvider formId={formId}>
           <FormCanvasProvider>
             <PortoEditor />
-            
-            {/* Toaster must be inside the providers to have access to contexts */}
             <Toaster position="top-center" />
           </FormCanvasProvider>
         </CollaborationProvider>

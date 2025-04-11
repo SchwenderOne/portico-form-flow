@@ -56,9 +56,6 @@ Example format:
       throw new Error("API credentials are not configured");
     }
 
-    // Add debug log to verify API key
-    console.log("Using OpenRouter API key:", OPENROUTER_API_KEY.substring(0, 5) + "...");
-    
     const response = await fetch(OPENROUTER_API_URL, {
       method: "POST",
       headers: {
