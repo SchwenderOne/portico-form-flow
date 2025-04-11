@@ -13,6 +13,7 @@ import { FormCanvasProvider, useFormCanvas } from "@/components/form-builder/con
 import { CollaborationProvider } from "@/context/CollaborationContext";
 import { useSelectedTemplate } from "@/context/SelectedTemplateContext";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
+import { useToast } from "@/hooks/use-toast";
 
 // Import the version history sheet and its controls using ES Module imports
 import VersionHistorySheet, { 
@@ -115,6 +116,7 @@ const FormBuilder = () => {
 const TemplateFormLoader = () => {
   const { selectedTemplate, setSelectedTemplate } = useSelectedTemplate();
   const formCanvas = useFormCanvas();
+  const { toast } = useToast();
   
   // Effect to load template elements when the form builder loads
   useEffect(() => {
@@ -128,15 +130,26 @@ const TemplateFormLoader = () => {
         // Replace current elements with template elements
         formCanvas.setElements(templateElements);
         
+        // Show success toast
+        toast({
+          title: "Template Loaded",
+          description: `${selectedTemplate.title} template has been loaded successfully.`,
+        });
+        
         console.log("Template elements loaded successfully");
       } catch (error) {
         console.error("Error loading template elements:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load template. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        // Clear the selected template to avoid reloading on component re-renders
+        setSelectedTemplate(null);
       }
-      
-      // Clear the selected template to avoid reloading on component re-renders
-      setSelectedTemplate(null);
     }
-  }, [selectedTemplate, formCanvas, setSelectedTemplate]);
+  }, [selectedTemplate, formCanvas, setSelectedTemplate, toast]);
   
   return null;
 };

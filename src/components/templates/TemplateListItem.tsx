@@ -60,6 +60,7 @@ export const TemplateListItem: React.FC<TemplateListItemProps> = ({ template }) 
           description: `${template.title} template has been loaded.`,
         });
         
+        // Navigate to the form builder where the template will be loaded
         navigate('/form-builder');
       } catch (error) {
         console.error("Error using template:", error);
@@ -274,6 +275,27 @@ export const TemplateListItem: React.FC<TemplateListItemProps> = ({ template }) 
                             disabled
                             className="w-full border rounded-md px-3 py-2 bg-white"
                           />
+                        </div>
+                      )}
+                      {element.type === "number" && (
+                        <div className="space-y-1">
+                          <label className="text-sm font-medium">{element.label}</label>
+                          <input
+                            type="number"
+                            placeholder={element.placeholder}
+                            disabled
+                            className="w-full border rounded-md px-3 py-2 bg-white"
+                          />
+                        </div>
+                      )}
+                      {element.type === "checkbox" && (
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            disabled
+                            className="border rounded-md"
+                          />
+                          <label className="text-sm font-medium">{element.label}</label>
                         </div>
                       )}
                     </div>
