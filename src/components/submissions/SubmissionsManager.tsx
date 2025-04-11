@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { 
   Search, 
@@ -9,7 +8,8 @@ import {
   Eye, 
   MoreHorizontal, 
   ChevronDown,
-  BellRing
+  BellRing,
+  Loader2
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { 
   Select, 
@@ -42,9 +49,10 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
-// Mock data for form submissions
 const mockSubmissions = [
   {
     id: "1",
@@ -52,7 +60,17 @@ const mockSubmissions = [
     submittedBy: "John Smith",
     email: "john.smith@example.com",
     submittedOn: "2024-04-09T14:30:00Z",
-    status: "new"
+    status: "new",
+    responseData: {
+      name: "John Smith",
+      email: "john.smith@example.com",
+      phone: "555-123-4567",
+      address: "123 Main St, Anytown, USA",
+      dob: "1985-06-15",
+      allergies: "None",
+      medications: "Lisinopril, 10mg daily",
+      symptoms: "Persistent cough for 2 weeks"
+    }
   },
   {
     id: "2",
@@ -60,7 +78,17 @@ const mockSubmissions = [
     submittedBy: "Sarah Johnson",
     email: "sarah.j@example.com",
     submittedOn: "2024-04-09T10:15:00Z",
-    status: "reviewed"
+    status: "reviewed",
+    responseData: {
+      name: "Sarah Johnson",
+      email: "sarah.j@example.com",
+      phone: "555-987-6543",
+      address: "456 Oak Ave, Somewhere, USA",
+      dob: "1990-03-22",
+      allergies: "Penicillin",
+      medications: "None",
+      symptoms: "Headache and dizziness"
+    }
   },
   {
     id: "3",
@@ -102,11 +130,14 @@ const SubmissionsManager = () => {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedForm, setSelectedForm] = useState("all");
   const [selectedSubmissions, setSelectedSubmissions] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [viewSubmission, setViewSubmission] = useState<any>(null);
+  const [isSubmissionDialogOpen, setIsSubmissionDialogOpen] = useState(false);
 
-  // Get unique form names for filter
   const formNames = Array.from(new Set(submissions.map(sub => sub.formName)));
 
-  // Filter submissions based on search query, status, and form name
   const filteredSubmissions = submissions.filter(submission => {
     const matchesSearch = 
       submission.submittedBy.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -162,18 +193,50 @@ const SubmissionsManager = () => {
     }
   };
 
+  const handleApplyFilters = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 600);
+  };
+
+  const handleResetFilters = () => {
+    setSelectedForm("all");
+    setSelectedStatus("all");
+    setSearchQuery("");
+    handleApplyFilters();
+  };
+
   const handleBulkAction = (action: string) => {
     if (selectedSubmissions.length === 0) {
       toast.error("No submissions selected");
       return;
     }
     
-    toast.success(`${action} ${selectedSubmissions.length} submissions`);
-    setSelectedSubmissions([]);
+    setIsActionLoading(true);
+    setTimeout(() => {
+      toast.success(`${action} ${selectedSubmissions.length} submissions`);
+      setSelectedSubmissions([]);
+      setIsActionLoading(false);
+    }, 800);
+  };
+
+  const handleExport = () => {
+    setIsExporting(true);
+    setTimeout(() => {
+      toast.success("Submissions exported successfully");
+      setIsExporting(false);
+    }, 1200);
   };
 
   const handleViewSubmission = (id: string) => {
-    toast.success(`Viewing submission ${id}`);
+    const submission = submissions.find(sub => sub.id === id);
+    if (submission) {
+      setViewSubmission(submission);
+      setIsSubmissionDialogOpen(true);
+    } else {
+      toast.error("Submission details not found");
+    }
   };
 
   return (
@@ -231,28 +294,70 @@ const SubmissionsManager = () => {
                   </Select>
                 </div>
                 <div className="flex justify-between">
-                  <Button variant="outline" size="sm" onClick={() => {
-                    setSelectedForm("all");
-                    setSelectedStatus("all");
-                  }}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleResetFilters}
+                    disabled={isLoading}
+                  >
                     Reset
                   </Button>
-                  <Button size="sm">Apply Filters</Button>
+                  <Button 
+                    size="sm" 
+                    onClick={handleApplyFilters}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Applying...
+                      </>
+                    ) : (
+                      "Apply Filters"
+                    )}
+                  </Button>
                 </div>
               </div>
             </PopoverContent>
           </Popover>
 
-          <Button variant="outline" size="sm" onClick={() => handleBulkAction("Exporting")}>
-            <Download className="mr-2 h-4 w-4" />
-            Export
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleExport}
+            disabled={isExporting}
+          >
+            {isExporting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Exporting...
+              </>
+            ) : (
+              <>
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </>
+            )}
           </Button>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" disabled={selectedSubmissions.length === 0}>
-                Bulk Actions
-                <ChevronDown className="ml-2 h-4 w-4" />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={selectedSubmissions.length === 0 || isActionLoading}
+              >
+                {isActionLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    Bulk Actions
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </>
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -279,7 +384,12 @@ const SubmissionsManager = () => {
         </div>
       </div>
 
-      {filteredSubmissions.length > 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center p-12">
+          <Loader2 className="h-8 w-8 text-primary animate-spin" />
+          <span className="ml-2 text-lg text-muted-foreground">Loading submissions...</span>
+        </div>
+      ) : filteredSubmissions.length > 0 ? (
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -363,15 +473,74 @@ const SubmissionsManager = () => {
           <p className="text-muted-foreground mb-4 max-w-md">
             There are no submissions matching your current filters. Try adjusting your search criteria or check back later.
           </p>
-          <Button variant="outline" onClick={() => {
-            setSearchQuery("");
-            setSelectedForm("all");
-            setSelectedStatus("all");
-          }}>
+          <Button variant="outline" onClick={handleResetFilters}>
             Reset Filters
           </Button>
         </div>
       )}
+
+      <Dialog open={isSubmissionDialogOpen} onOpenChange={setIsSubmissionDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              Submission Details
+              <Badge className="ml-2">
+                {viewSubmission?.status.charAt(0).toUpperCase() + viewSubmission?.status.slice(1)}
+              </Badge>
+            </DialogTitle>
+            <DialogDescription>
+              {viewSubmission?.formName} - Submitted on {viewSubmission ? formatDate(viewSubmission.submittedOn) : ''}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {viewSubmission && (
+            <div className="mt-2">
+              <div className="mb-4">
+                <h4 className="text-sm font-medium mb-1">Submitter</h4>
+                <div className="text-sm">
+                  <div><span className="font-medium">Name:</span> {viewSubmission.submittedBy}</div>
+                  <div><span className="font-medium">Email:</span> {viewSubmission.email}</div>
+                </div>
+              </div>
+              
+              <Separator className="my-4" />
+              
+              <div>
+                <h4 className="text-sm font-medium mb-2">Form Responses</h4>
+                <ScrollArea className="h-[300px] rounded-md border p-4">
+                  {viewSubmission.responseData && Object.entries(viewSubmission.responseData).map(([key, value]) => (
+                    <div key={key} className="mb-3">
+                      <div className="text-sm font-medium">{key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}</div>
+                      <div className="text-sm text-muted-foreground break-words">{String(value)}</div>
+                    </div>
+                  ))}
+                </ScrollArea>
+              </div>
+              
+              <div className="mt-4 flex justify-end gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => toast.success("Submission exported")}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Export
+                </Button>
+                <Button 
+                  variant="default" 
+                  size="sm"
+                  onClick={() => {
+                    toast.success("Submission marked as reviewed");
+                    setIsSubmissionDialogOpen(false);
+                  }}
+                >
+                  Mark as Reviewed
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
