@@ -4,8 +4,8 @@ import AppLayout from "@/components/layout/AppLayout";
 import { TemplateGallery } from "@/components/templates/TemplateGallery";
 import { SelectedTemplateProvider } from "@/context/SelectedTemplateContext";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Templates = () => {
   const navigate = useNavigate();
@@ -32,7 +32,7 @@ const Templates = () => {
             <div className="ml-auto w-20"></div> {/* Spacer for centered title */}
           </div>
           
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-auto">
             <TemplateGallery />
           </div>
         </div>

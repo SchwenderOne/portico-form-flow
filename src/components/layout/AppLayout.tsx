@@ -18,7 +18,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, hideHeader = false }) =
           <AppSidebar />
           <div className="flex flex-col flex-1 min-h-screen">
             {!hideHeader && <AppHeader />}
-            <main className="flex-1 flex flex-col">
+            <main className="flex-1 flex flex-col overflow-auto">
               {children}
             </main>
           </div>

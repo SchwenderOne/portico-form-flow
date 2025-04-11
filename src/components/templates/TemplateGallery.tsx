@@ -1,10 +1,10 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { templatesData } from "@/data/templates";
-import { TemplateCard } from "./TemplateCard";
-import { SearchBar } from "../ui/search-bar";
-import { ScrollArea } from "../ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { TemplateCard } from "@/components/templates/TemplateCard";
+import { SearchBar } from "@/components/ui/search-bar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSelectedTemplate } from "@/context/SelectedTemplateContext";
 
 export const TemplateGallery = () => {
@@ -27,15 +27,15 @@ export const TemplateGallery = () => {
     return matchesSearch && matchesCategory;
   });
   
-  const handleSearch = (term: string) => {
+  const handleSearch = (term) => {
     setSearchTerm(term);
   };
   
-  const handleCategoryChange = (category: string) => {
+  const handleCategoryChange = (category) => {
     setSelectedCategory(category);
   };
   
-  const handleSelectTemplate = (templateId: string) => {
+  const handleSelectTemplate = (templateId) => {
     const template = templatesData.find(t => t.id === templateId);
     if (template) {
       setSelectedTemplate(template);
@@ -69,7 +69,7 @@ export const TemplateGallery = () => {
         </div>
         
         <ScrollArea className="flex-1 p-4">
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredTemplates.length > 0 ? (
               filteredTemplates.map(template => (
                 <TemplateCard 
