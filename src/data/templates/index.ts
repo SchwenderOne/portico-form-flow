@@ -5,6 +5,7 @@ import { feedbackTemplates } from "./feedback-templates";
 import { medicalTemplates } from "./medical-templates";
 import { eventTemplates } from "./event-templates";
 import { governmentTemplates } from "./government-templates";
+import { educationTemplates } from "./education-templates";
 
 // Combine all template categories into a single array
 export const templatesData: TemplateData[] = [
@@ -13,6 +14,7 @@ export const templatesData: TemplateData[] = [
   ...medicalTemplates,
   ...eventTemplates,
   ...governmentTemplates,
+  ...educationTemplates,
   // Add a simple contact info update template
   {
     id: "contact-info-update",
