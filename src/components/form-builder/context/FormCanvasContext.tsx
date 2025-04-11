@@ -22,8 +22,8 @@ interface FormCanvasContextType {
   handleDuplicateGroup: (groupIds: string[]) => void;
   updateElement: (element: FormElement) => void;
   showSmartGuides: boolean;
-  guideLines: { x: number; y: number }[];
-  distances: { x: number; y: number }[];
+  guideLines: { horizontal: number[]; vertical: number[] };
+  distances: { horizontal: { position: number; distance: number }[]; vertical: { position: number; distance: number }[] };
   isDragOver: boolean;
   setIsDragOver: React.Dispatch<React.SetStateAction<boolean>>;
   handleElementAlign: (elementId: string, alignment: 'left' | 'center' | 'right') => void;
@@ -45,8 +45,17 @@ export const FormCanvasContext = createContext<FormCanvasContextType | null>(nul
 export const FormCanvasProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [elements, setElements] = useState<FormElement[]>([]);
   const [showSmartGuides, setShowSmartGuides] = useState(false);
-  const [guideLines, setGuideLines] = useState<{ x: number; y: number }[]>([]);
-  const [distances, setDistances] = useState<{ x: number; y: number }[]>([]);
+  const [guideLines, setGuideLines] = useState<{ horizontal: number[]; vertical: number[] }>({ 
+    horizontal: [], 
+    vertical: [] 
+  });
+  const [distances, setDistances] = useState<{ 
+    horizontal: { position: number; distance: number }[]; 
+    vertical: { position: number; distance: number }[] 
+  }>({ 
+    horizontal: [], 
+    vertical: [] 
+  });
   const [isDragOver, setIsDragOver] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   
@@ -59,9 +68,9 @@ export const FormCanvasProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   
   // Use element grouping hook
   const {
+    handleRequiredToggle,
     handleGroupElements,
-    handleUngroupElements,
-    handleRequiredToggle
+    handleUngroupElements
   } = useElementGrouping(elements, setElements, selectedElements);
   
   // Use element duplication hook
