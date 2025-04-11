@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import FormElementsPanel from "./FormElementsPanel";
 import { FormElement } from "@/types/form";
@@ -141,12 +142,12 @@ const FormCanvasContent = () => {
         existingElements={elements}
       />
       
-      <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
-        <div className={`${isMobile ? 'h-auto border-b' : ''}`}>
+      <div className="flex flex-1 overflow-hidden">
+        <div className={`${isMobile ? 'h-auto border-b' : 'h-full border-r'} bg-background`}>
           <FormElementsPanel onElementDrop={handleElementDrop} />
         </div>
         
-        <div className="flex-1 relative">
+        <div className="flex-1 relative overflow-auto">
           <CanvasDropZone
             onDrop={handleElementDrop}
             isDragOver={isDragOver}
@@ -227,7 +228,7 @@ const FormCanvasContent = () => {
         </div>
         
         {selectedElement && (
-          <div className={`${isMobile ? 'absolute inset-0 z-50 bg-background/95' : ''}`}>
+          <div className={`${isMobile ? 'absolute inset-0 z-50 bg-background/95' : 'w-64 border-l'} h-full`}>
             <FormEditorSidebar 
               element={selectedElement}
               onElementUpdate={updateElement}

@@ -18,7 +18,7 @@ const FormsV2Editor = () => {
           onTabChange={setCurrentTab}
         />
         
-        <div className="flex-1 relative">
+        <div className="flex-1 overflow-hidden">
           <FormCanvas />
         </div>
       </div>

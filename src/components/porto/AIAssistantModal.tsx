@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Lightbulb, Wand2 } from "lucide-react";
+import { AlertCircle, Lightbulb, Wand2, Bot } from "lucide-react";
 import { useFormCanvas } from "../form-builder/context/FormCanvasContext";
 import { generateFormWithOpenRouter } from "@/services/openrouter-service";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -43,6 +43,8 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
 
     try {
       console.log("Starting form generation with prompt:", prompt);
+      toast.info("Mistral AI is generating your form...", { duration: 3000 });
+      
       // Use the OpenRouter service to generate form elements
       const generatedElements = await generateFormWithOpenRouter(prompt);
       
@@ -84,11 +86,11 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Wand2 className="h-5 w-5 text-primary" />
-            AI Form Generator
+            <Bot className="h-5 w-5 text-primary" />
+            Mistral AI Form Generator
           </DialogTitle>
           <DialogDescription>
-            Describe what kind of form you want to create and let AI build it for
+            Describe what kind of form you want to create and let Mistral AI build it for
             you.
           </DialogDescription>
         </DialogHeader>

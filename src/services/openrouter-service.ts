@@ -3,7 +3,6 @@ import { FormElement } from "@/types/form";
 import { toast } from "sonner";
 
 // The API key should ideally be stored in a secure environment variable
-// For this demo, we're using a valid API key directly
 const OPENROUTER_API_KEY = "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";
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -68,7 +67,7 @@ Example format:
         "X-Title": "Portico Form Builder" // Identify your application
       },
       body: JSON.stringify({
-        model: "deepseek-ai/deepseek-chat",
+        model: "mistralai/mistral-7b-instruct",  // Using Mistral 7B Instruct model
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Create a form with these requirements: ${prompt}` }

@@ -6,7 +6,7 @@ interface SmartGuidesProps {
     horizontal: number[];
     vertical: number[];
   };
-  distances?: {
+  distances: {
     horizontal: { position: number; distance: number }[];
     vertical: { position: number; distance: number }[];
   };
@@ -14,55 +14,104 @@ interface SmartGuidesProps {
 
 const SmartGuides: React.FC<SmartGuidesProps> = ({ guides, distances }) => {
   return (
-    <>
+    <div className="smart-guides" style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none" }}>
       {/* Horizontal guides */}
-      {guides.horizontal.map((position, index) => (
+      {guides.horizontal.map((y, index) => (
         <div
-          key={`h-${index}-${position}`}
-          className="absolute left-0 w-full h-[1px] bg-portico-purple pointer-events-none z-10"
-          style={{ top: position }}
+          key={`h-${index}`}
+          style={{
+            position: "absolute",
+            top: `${y}px`,
+            left: 0,
+            right: 0,
+            height: "1px",
+            backgroundColor: "rgba(0, 120, 255, 0.7)",
+            zIndex: 1000,
+          }}
         />
       ))}
-      
+
       {/* Vertical guides */}
-      {guides.vertical.map((position, index) => (
+      {guides.vertical.map((x, index) => (
         <div
-          key={`v-${index}-${position}`}
-          className="absolute top-0 w-[1px] h-full bg-portico-purple pointer-events-none z-10"
-          style={{ left: position }}
+          key={`v-${index}`}
+          style={{
+            position: "absolute",
+            left: `${x}px`,
+            top: 0,
+            bottom: 0,
+            width: "1px",
+            backgroundColor: "rgba(0, 120, 255, 0.7)",
+            zIndex: 1000,
+          }}
         />
       ))}
 
-      {/* Distance measurements - horizontal */}
-      {distances?.horizontal.map((item, index) => (
+      {/* Horizontal distance indicators */}
+      {distances.horizontal.map((dist, index) => (
         <div
-          key={`hd-${index}-${item.position}`}
-          className="absolute flex items-center justify-center bg-portico-purple/80 text-white text-xs px-1 py-0.5 rounded-sm pointer-events-none z-20"
-          style={{ 
-            left: item.position, 
-            top: item.position + item.distance/2, 
-            transform: 'translateX(-50%)' 
+          key={`hd-${index}`}
+          style={{
+            position: "absolute",
+            top: `${dist.position}px`,
+            left: 0,
+            right: 0,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+            pointerEvents: "none",
           }}
         >
-          {item.distance}px
+          <div
+            className="distance-indicator"
+            style={{
+              padding: "0 4px",
+              fontSize: "10px",
+              backgroundColor: "rgba(0, 120, 255, 0.7)",
+              color: "white",
+              borderRadius: "2px",
+            }}
+          >
+            {dist.distance}px
+          </div>
         </div>
       ))}
 
-      {/* Distance measurements - vertical */}
-      {distances?.vertical.map((item, index) => (
+      {/* Vertical distance indicators */}
+      {distances.vertical.map((dist, index) => (
         <div
-          key={`vd-${index}-${item.position}`}
-          className="absolute flex items-center justify-center bg-portico-purple/80 text-white text-xs px-1 py-0.5 rounded-sm pointer-events-none z-20"
-          style={{ 
-            left: item.position + item.distance/2, 
-            top: item.position,
-            transform: 'translateY(-50%)' 
+          key={`vd-${index}`}
+          style={{
+            position: "absolute",
+            left: `${dist.position}px`,
+            top: 0,
+            bottom: 0,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+            pointerEvents: "none",
           }}
         >
-          {item.distance}px
+          <div
+            className="distance-indicator"
+            style={{
+              padding: "2px 4px",
+              fontSize: "10px",
+              backgroundColor: "rgba(0, 120, 255, 0.7)",
+              color: "white",
+              borderRadius: "2px",
+              writingMode: "vertical-lr",
+              transform: "rotate(180deg)",
+            }}
+          >
+            {dist.distance}px
+          </div>
         </div>
       ))}
-    </>
+    </div>
   );
 };
 

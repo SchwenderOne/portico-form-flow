@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Wand2, Sparkles, Lightbulb, MessageSquare, AlertCircle } from "lucide-react";
+import { Wand2, Sparkles, Lightbulb, MessageSquare, AlertCircle, Bot } from "lucide-react";
 import { toast } from "sonner";
 import { generateFormWithOpenRouter } from "@/services/openrouter-service";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -28,6 +28,8 @@ export const PortoAITab: React.FC = () => {
     
     try {
       console.log("Starting form generation from sidebar with prompt:", prompt);
+      toast.info("AI is working on your form...", { duration: 3000 });
+      
       // Use the OpenRouter service to generate form elements
       const generatedElements = await generateFormWithOpenRouter(prompt);
       
@@ -39,6 +41,7 @@ export const PortoAITab: React.FC = () => {
       } else {
         console.error("No elements generated from sidebar prompt:", prompt);
         setError("Failed to generate form elements. Please try a different prompt.");
+        toast.error("Failed to generate form elements");
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Something went wrong";
@@ -73,9 +76,12 @@ export const PortoAITab: React.FC = () => {
     <ScrollArea className="h-full">
       <div className="p-4 space-y-6">
         <div>
-          <h3 className="text-sm font-medium mb-2">AI Form Generator</h3>
+          <div className="flex items-center gap-2 mb-2">
+            <Bot className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-medium">Mistral AI Form Generator</h3>
+          </div>
           <p className="text-xs text-muted-foreground mb-4">
-            Describe the form you want to create and AI will generate it for you.
+            Describe the form you want to create and Mistral AI will generate it for you.
           </p>
           
           {error && (
