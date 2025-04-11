@@ -83,6 +83,35 @@ export const PortoCanvas: React.FC = () => {
     };
   }, [selectedElements, handleDeleteElement]);
   
+  // Handle element drag functionality
+  const handleElementDragStart = (e: React.DragEvent, element: FormElement) => {
+    if (previewMode) {
+      e.preventDefault();
+      return;
+    }
+    e.dataTransfer.setData("elementId", element.id);
+    e.dataTransfer.setData("action", "move");
+    
+    // Create a transparent drag image
+    const dragImage = document.createElement('div');
+    dragImage.style.width = `${element.size.width}px`;
+    dragImage.style.height = `${element.size.height}px`;
+    dragImage.style.backgroundColor = 'transparent';
+    document.body.appendChild(dragImage);
+    e.dataTransfer.setDragImage(dragImage, 0, 0);
+    setTimeout(() => document.body.removeChild(dragImage), 0);
+    
+    // Set initial drag coordinates
+    e.dataTransfer.setData("startX", e.clientX.toString());
+    e.dataTransfer.setData("startY", e.clientY.toString());
+    e.dataTransfer.setData("elementX", element.position.x.toString());
+    e.dataTransfer.setData("elementY", element.position.y.toString());
+  };
+  
+  const handleElementDragEnd = (e: React.DragEvent) => {
+    // Clean up after drag ends
+  };
+  
   return (
     <div 
       className="h-full w-full overflow-auto relative bg-gray-50"
@@ -114,11 +143,43 @@ export const PortoCanvas: React.FC = () => {
           const elementId = e.dataTransfer.getData("elementId");
           
           if (action === "move" && elementId) {
-            // Moving existing element, handled by the element's own drag events
-            return;
-          }
-          
-          if (type) {
+            // Calculate the new position based on the drop coordinates
+            const startX = parseInt(e.dataTransfer.getData("startX") || "0");
+            const startY = parseInt(e.dataTransfer.getData("startY") || "0");
+            const elementX = parseInt(e.dataTransfer.getData("elementX") || "0");
+            const elementY = parseInt(e.dataTransfer.getData("elementY") || "0");
+            
+            const canvasRect = e.currentTarget.getBoundingClientRect();
+            const dropX = (e.clientX - canvasRect.left) / canvasScale;
+            const dropY = (e.clientY - canvasRect.top) / canvasScale;
+            
+            // Calculate the difference between starting drag coordinates and drop coordinates
+            const deltaX = (e.clientX - startX) / canvasScale;
+            const deltaY = (e.clientY - startY) / canvasScale;
+            
+            // Calculate new position
+            let newX = elementX + deltaX;
+            let newY = elementY + deltaY;
+            
+            // Snap to grid if enabled
+            if (useGrid) {
+              newX = Math.round(newX / gridSize) * gridSize;
+              newY = Math.round(newY / gridSize) * gridSize;
+            }
+            
+            // Update the element position
+            const element = elements.find(el => el.id === elementId);
+            if (element) {
+              updateElement({
+                ...element,
+                position: {
+                  x: newX,
+                  y: newY
+                }
+              });
+            }
+          } else if (type) {
+            // Handle dropping a new element from the sidebar
             const canvasRect = e.currentTarget.getBoundingClientRect();
             const x = (e.clientX - canvasRect.left) / canvasScale;
             const y = (e.clientY - canvasRect.top) / canvasScale;
@@ -165,23 +226,8 @@ export const PortoCanvas: React.FC = () => {
             onMouseEnter={() => setHoveredElement(element.id)}
             onMouseLeave={() => setHoveredElement(null)}
             draggable={!previewMode}
-            onDragStart={(e) => {
-              if (previewMode) {
-                e.preventDefault();
-                return;
-              }
-              e.dataTransfer.setData("elementId", element.id);
-              e.dataTransfer.setData("action", "move");
-              
-              // Create a transparent drag image
-              const dragImage = document.createElement('div');
-              dragImage.style.width = `${element.size.width}px`;
-              dragImage.style.height = `${element.size.height}px`;
-              dragImage.style.backgroundColor = 'transparent';
-              document.body.appendChild(dragImage);
-              e.dataTransfer.setDragImage(dragImage, 0, 0);
-              setTimeout(() => document.body.removeChild(dragImage), 0);
-            }}
+            onDragStart={(e) => handleElementDragStart(e, element)}
+            onDragEnd={handleElementDragEnd}
           >
             <div 
               className={`relative w-full h-full rounded-md border ${

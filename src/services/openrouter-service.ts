@@ -50,12 +50,6 @@ Example format:
 ]
 `;
 
-    // Verify API key is available
-    if (!OPENROUTER_API_KEY) {
-      console.error("OpenRouter API key is missing");
-      throw new Error("API credentials are not configured");
-    }
-
     const response = await fetch(OPENROUTER_API_URL, {
       method: "POST",
       headers: {
@@ -157,7 +151,7 @@ function convertToFormElements(fields: any[]): FormElement[] {
     
     // Add type-specific properties
     if (field.type === 'header' || field.type === 'paragraph') {
-      (element as any).content = field.content || field.label || "Untitled";
+      element.content = field.content || field.label || "Untitled";
     }
     
     if (field.options && ['select', 'radio', 'checkbox'].includes(field.type)) {
