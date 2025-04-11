@@ -52,7 +52,7 @@ export const PortoSidebar: React.FC = () => {
 
   if (collapsed) {
     return (
-      <div className="w-10 bg-background border-r h-full flex flex-col items-center pt-4">
+      <div className="w-12 bg-background border-r h-full flex flex-col items-center pt-4 transition-all duration-300">
         <Button
           variant="ghost" 
           size="icon" 
@@ -61,8 +61,8 @@ export const PortoSidebar: React.FC = () => {
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
-        <div className="flex flex-col gap-2 items-center">
-          <TooltipProvider>
+        <div className="flex flex-col gap-3 items-center">
+          <TooltipProvider delayDuration={100}>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -121,7 +121,7 @@ export const PortoSidebar: React.FC = () => {
   }
 
   return (
-    <div className="w-72 bg-background border-r h-full flex flex-col">
+    <div className="w-80 bg-background border-r h-full flex flex-col transition-all duration-300">
       <div className="flex justify-between items-center border-b px-4 py-2">
         <h3 className="text-sm font-medium">Porto Form Builder</h3>
         <Button

@@ -41,6 +41,7 @@ import {
   ChevronDown,
   PanelLeftClose,
   PanelLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TeamManagementSheet } from "@/components/team/TeamManagementSheet";
@@ -170,55 +171,147 @@ const AppSidebar = () => {
     ));
   };
 
+  // When the sidebar is fully collapsed, show only icons
   if (isSidebarCollapsed) {
     return (
-      <TooltipProvider>
-        <Sidebar collapsible="icon">
-          <SidebarHeader className="flex justify-center p-2">
-            <div 
-              className="w-8 h-8 rounded-md flex items-center justify-center" 
-              style={{ backgroundColor: brandSettings.colors.primary }}
-            >
-              <span className="text-white font-bold">P</span>
+      <div className="w-14 border-r h-full flex flex-col bg-background transition-all duration-300">
+        <div className="p-2 flex justify-center border-b">
+          <div 
+            className="w-8 h-8 rounded-md flex items-center justify-center" 
+            style={{ backgroundColor: brandSettings.colors.primary }}
+          >
+            <span className="text-white font-bold">P</span>
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto py-4">
+          <TooltipProvider delayDuration={100}>
+            <div className="space-y-6">
+              <div className="px-2">
+                {createSection.map((item) => (
+                  <Tooltip key={item.title}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant={location.pathname === item.path ? "secondary" : "ghost"}
+                        size="icon"
+                        className={cn(
+                          "w-10 h-10 mb-1",
+                          item.highlight && "border-l-2 border-primary"
+                        )}
+                        onClick={() => !item.disabled && handleMenuItemClick(item.path)}
+                      >
+                        <item.icon className="h-5 w-5" />
+                        <span className="sr-only">{item.title}</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">{item.title}</TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+              <SidebarSeparator />
+              <div className="px-2">
+                {distributeSection.map((item) => (
+                  <Tooltip key={item.title}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant={location.pathname === item.path ? "secondary" : "ghost"}
+                        size="icon"
+                        className="w-10 h-10 mb-1"
+                        onClick={() => !item.disabled && handleMenuItemClick(item.path)}
+                      >
+                        <item.icon className="h-5 w-5" />
+                        <span className="sr-only">{item.title}</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">{item.title}</TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+              <SidebarSeparator />
+              <div className="px-2">
+                {analyzeSection.map((item) => (
+                  <Tooltip key={item.title}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant={location.pathname === item.path ? "secondary" : "ghost"}
+                        size="icon"
+                        className="w-10 h-10 mb-1"
+                        onClick={() => !item.disabled && handleMenuItemClick(item.path)}
+                      >
+                        <item.icon className="h-5 w-5" />
+                        <span className="sr-only">{item.title}</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">{item.title}</TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+              <SidebarSeparator />
+              <div className="px-2">
+                {collaborateSection.map((item) => (
+                  <Tooltip key={item.title}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant={location.pathname === item.path ? "secondary" : "ghost"}
+                        size="icon"
+                        className="w-10 h-10 mb-1"
+                        onClick={() => !item.disabled && handleMenuItemClick(item.path)}
+                      >
+                        <item.icon className="h-5 w-5" />
+                        <span className="sr-only">{item.title}</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">{item.title}</TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+              <SidebarSeparator />
+              <div className="px-2">
+                {controlSection.map((item) => (
+                  <Tooltip key={item.title}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant={location.pathname === item.path ? "secondary" : "ghost"}
+                        size="icon"
+                        className="w-10 h-10 mb-1"
+                        onClick={() => !item.disabled && handleMenuItemClick(item.path)}
+                        style={item.usesBrandColor && location.pathname === item.path ? { 
+                          backgroundColor: brandSettings.colors.primary,
+                          color: 'white'
+                        } : {}}
+                      >
+                        <item.icon className="h-5 w-5" />
+                        <span className="sr-only">{item.title}</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">{item.title}</TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
             </div>
-          </SidebarHeader>
-          
-          <SidebarContent className="py-2">
-            {renderMenuItems(createSection)}
-            <SidebarSeparator className="my-2" />
-            {renderMenuItems(distributeSection)}
-            <SidebarSeparator className="my-2" />
-            {renderMenuItems(analyzeSection)}
-            <SidebarSeparator className="my-2" />
-            {renderMenuItems(collaborateSection)}
-            <SidebarSeparator className="my-2" />
-            {renderMenuItems(controlSection)}
-          </SidebarContent>
-
-          <SidebarFooter>
-            <div className="flex justify-center p-4">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    onClick={() => setIsSidebarCollapsed(false)}
-                  >
-                    <PanelLeft className="h-5 w-5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="right">Expand sidebar</TooltipContent>
-              </Tooltip>
-            </div>
-          </SidebarFooter>
-        </Sidebar>
-      </TooltipProvider>
+          </TooltipProvider>
+        </div>
+        <div className="p-2 border-t">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                className="w-10 h-10"
+                onClick={() => setIsSidebarCollapsed(false)}
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Expand sidebar</TooltipContent>
+          </Tooltip>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Sidebar>
-      <SidebarHeader className="flex items-center justify-between px-4 py-2">
+    <div className="w-64 border-r h-full flex flex-col bg-background transition-all duration-300">
+      <div className="flex items-center justify-between px-4 py-3 border-b">
         <div className="flex items-center space-x-2">
           <div 
             className="w-8 h-8 rounded-md flex items-center justify-center" 
@@ -226,7 +319,7 @@ const AppSidebar = () => {
           >
             <span className="text-white font-bold">P</span>
           </div>
-          <span className="font-bold text-xl" style={{ 
+          <span className="font-bold text-lg" style={{ 
             fontFamily: brandSettings.typography.fontFamily 
           }}>
             {brandSettings.identity.brandName}
@@ -239,9 +332,9 @@ const AppSidebar = () => {
         >
           <PanelLeftClose className="h-5 w-5" />
         </Button>
-      </SidebarHeader>
+      </div>
       
-      <SidebarContent>
+      <div className="flex-1 overflow-y-auto py-2 px-3">
         {/* Create Section */}
         <SidebarSection title="CREATE" isCollapsed={isSidebarCollapsed}>
           <SidebarMenu>
@@ -276,36 +369,34 @@ const AppSidebar = () => {
             {renderMenuItems(controlSection)}
           </SidebarMenu>
         </SidebarSection>
-      </SidebarContent>
+      </div>
       
-      <SidebarFooter>
-        <div className="px-4 py-2">
-          <div 
-            className="flex items-center space-x-2 p-2 rounded-md hover:bg-sidebar-accent cursor-pointer"
-            onClick={() => navigate("/subscription")}
-          >
-            <CreditCard className="h-5 w-5" style={{ color: brandSettings.colors.primary }} />
-            <div className="flex flex-col">
-              <span className="text-xs font-medium">Free Plan</span>
-              <span className="text-xs text-muted-foreground">Upgrade to Pro</span>
-            </div>
-          </div>
-          <div 
-            className="flex items-center space-x-2 p-2 rounded-md hover:bg-sidebar-accent cursor-pointer mt-2"
-            onClick={() => navigate("/help-support")}
-          >
-            <HelpCircle className="h-5 w-5" />
-            <span className="text-sm">Help & Support</span>
+      <div className="p-3 border-t">
+        <div 
+          className="flex items-center space-x-2 p-2 rounded-md hover:bg-sidebar-accent cursor-pointer"
+          onClick={() => navigate("/subscription")}
+        >
+          <CreditCard className="h-5 w-5" style={{ color: brandSettings.colors.primary }} />
+          <div className="flex flex-col">
+            <span className="text-xs font-medium">Free Plan</span>
+            <span className="text-xs text-muted-foreground">Upgrade to Pro</span>
           </div>
         </div>
-      </SidebarFooter>
+        <div 
+          className="flex items-center space-x-2 p-2 rounded-md hover:bg-sidebar-accent cursor-pointer mt-2"
+          onClick={() => navigate("/help-support")}
+        >
+          <HelpCircle className="h-5 w-5" />
+          <span className="text-sm">Help & Support</span>
+        </div>
+      </div>
       
       <TeamManagementSheet
         open={isTeamManagementOpen}
         onOpenChange={setIsTeamManagementOpen}
         showTrigger={false}
       />
-    </Sidebar>
+    </div>
   );
 };
 

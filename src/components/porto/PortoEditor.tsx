@@ -30,14 +30,6 @@ export const PortoEditor: React.FC = () => {
     setIsAIModalOpen(false);
   };
 
-  const toggleLeftSidebar = () => {
-    setIsLeftSidebarCollapsed(!isLeftSidebarCollapsed);
-  };
-
-  const toggleRightSidebar = () => {
-    setIsRightSidebarCollapsed(!isRightSidebarCollapsed);
-  };
-
   const handlePreviewForm = () => {
     toast.success(`Form with ${elements.length} elements ready to preview`);
   };
@@ -48,52 +40,11 @@ export const PortoEditor: React.FC = () => {
 
   return (
     <div className="flex h-[calc(100vh-60px)] overflow-hidden relative">
-      {isLeftSidebarCollapsed ? (
-        <div className="w-10 bg-background border-r h-full flex flex-col items-center pt-4">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggleLeftSidebar}
-                  className="mb-4"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                Show sidebar
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      ) : (
-        <PortoSidebar />
-      )}
+      <PortoSidebar />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="h-14 border-b flex items-center justify-between px-4">
+        <div className="h-14 border-b flex items-center justify-between px-4 bg-white z-10">
           <div className="flex items-center gap-2">
-            {!isLeftSidebarCollapsed && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={toggleLeftSidebar}
-                      className="mr-2"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Hide sidebar
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
             <h1 className="text-lg font-medium">Portico Form Builder</h1>
           </div>
 
@@ -168,7 +119,7 @@ export const PortoEditor: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={toggleRightSidebar}
+                      onClick={() => setIsRightSidebarCollapsed(!isRightSidebarCollapsed)}
                     >
                       <Settings className="h-4 w-4" />
                     </Button>
@@ -233,11 +184,13 @@ export const PortoEditor: React.FC = () => {
           </div>
 
           {selectedElement && !isRightSidebarCollapsed && (
-            <FormEditorSidebar
-              element={selectedElement}
-              onElementUpdate={updateElement}
-              existingElements={elements}
-            />
+            <div className="w-80 border-l bg-background overflow-y-auto transition-all duration-300">
+              <FormEditorSidebar
+                element={selectedElement}
+                onElementUpdate={updateElement}
+                existingElements={elements}
+              />
+            </div>
           )}
         </div>
       </div>
