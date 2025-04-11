@@ -1,3 +1,4 @@
+
 import { FormElement } from "@/types/form";
 
 // Job Application Form elements with comprehensive fields
@@ -901,3 +902,153 @@ const governmentGrantElements: FormElement[] = [
     position: { x: 100, y: 630 },
     size: { width: 500, height: 120 },
     groupId: null
+  }
+];
+
+// Define data structure for templates list
+export interface TemplateData {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  industry: string;
+  created: string;
+  image: string;
+  author?: string;
+  popularity?: number;
+  timeEstimate?: string;
+  elements: FormElement[];
+}
+
+// Export the templates data for use in the application
+export const templatesData: TemplateData[] = [
+  {
+    id: "job-application",
+    title: "Job Application Form",
+    description: "Standard job application form for collecting applicant information",
+    category: "HR",
+    industry: "Recruitment",
+    created: "2024-03-15",
+    image: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?q=80&w=2070&auto=format&fit=crop",
+    author: "HR Team",
+    popularity: 4.8,
+    timeEstimate: "5-10 min",
+    elements: jobApplicationElements
+  },
+  {
+    id: "job-application-extended",
+    title: "Comprehensive Job Application",
+    description: "Detailed job application with additional fields for thorough candidate screening",
+    category: "HR",
+    industry: "Recruitment",
+    created: "2024-02-20",
+    image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop",
+    author: "Talent Acquisition",
+    popularity: 4.6,
+    timeEstimate: "10-15 min",
+    elements: jobApplicationExtendedElements
+  },
+  {
+    id: "customer-feedback",
+    title: "Customer Feedback Survey",
+    description: "Collect detailed feedback about your products or services",
+    category: "Feedback",
+    industry: "Various",
+    created: "2024-03-10",
+    image: "https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?q=80&w=1974&auto=format&fit=crop",
+    author: "Customer Experience",
+    popularity: 4.7,
+    timeEstimate: "5-8 min",
+    elements: feedbackElements
+  },
+  {
+    id: "simple-feedback",
+    title: "Quick Feedback Form",
+    description: "Short form for gathering essential feedback with minimal user effort",
+    category: "Feedback",
+    industry: "Various",
+    created: "2024-01-25",
+    image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop",
+    popularity: 4.9,
+    timeEstimate: "2-3 min",
+    elements: simpleFeedbackElements
+  },
+  {
+    id: "patient-intake",
+    title: "Patient Intake Form",
+    description: "Comprehensive medical intake for new patients with detailed health information",
+    category: "Healthcare",
+    industry: "Medical",
+    created: "2024-03-05",
+    image: "https://images.unsplash.com/photo-1579154204601-01588f351e67?q=80&w=2070&auto=format&fit=crop",
+    author: "Healthcare Compliance",
+    popularity: 4.5,
+    timeEstimate: "10-15 min",
+    elements: patientIntakeElements
+  },
+  {
+    id: "medical-history",
+    title: "Medical History Form",
+    description: "Form for collecting patient medical history and current health status",
+    category: "Healthcare",
+    industry: "Medical",
+    created: "2024-02-15",
+    image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=2070&auto=format&fit=crop",
+    author: "Medical Standards",
+    popularity: 4.3,
+    timeEstimate: "8-12 min",
+    elements: medicalHistoryElements
+  },
+  {
+    id: "event-registration",
+    title: "Event Registration Form",
+    description: "Registration form for collecting attendee information for events",
+    category: "Events",
+    industry: "Entertainment",
+    created: "2024-03-01",
+    image: "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=2069&auto=format&fit=crop",
+    author: "Events Team",
+    popularity: 4.7,
+    timeEstimate: "5-7 min",
+    elements: eventRegistrationElements
+  },
+  {
+    id: "conference-registration",
+    title: "Conference Registration Form",
+    description: "Professional conference registration with session selection options",
+    category: "Events",
+    industry: "Corporate",
+    created: "2024-02-10",
+    image: "https://images.unsplash.com/photo-1540317580384-e5d43867caa6?q=80&w=1974&auto=format&fit=crop",
+    author: "Corporate Events",
+    popularity: 4.6,
+    timeEstimate: "7-10 min",
+    elements: conferenceRegistrationElements
+  },
+  {
+    id: "government-grant",
+    title: "Government Grant Application",
+    description: "Detailed application form for government grant funding requests",
+    category: "Government",
+    industry: "Public Sector",
+    created: "2024-01-20",
+    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=2070&auto=format&fit=crop",
+    author: "Grants Division",
+    popularity: 4.2,
+    timeEstimate: "15-20 min",
+    elements: governmentGrantElements
+  },
+  {
+    id: "contact-info-update",
+    title: "Contact Information Update",
+    description: "Simple form for updating contact information in your records",
+    category: "Administrative",
+    industry: "Various",
+    created: "2024-03-18",
+    image: "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=80&w=2070&auto=format&fit=crop",
+    author: "Admin Team",
+    popularity: 4.8,
+    timeEstimate: "2-3 min",
+    elements: []
+  }
+];
