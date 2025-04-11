@@ -50,6 +50,9 @@ export interface FormElement {
     }>;
     action: 'show' | 'hide' | 'enable' | 'disable';
   };
+  // Checkbox specific properties
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
 }
 
 // Export additional form-related types for better organization
