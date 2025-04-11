@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useState } from "react";
 import { BlockItem } from "./types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,9 @@ import { Code, Copy, Download, Plus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBrandSettings } from "@/context/BrandSettingsContext";
 import { toast } from "sonner";
-import { LayoutGrid } from "lucide-react"; // Importing LayoutGrid icon instead of Blocks
+import { LayoutGrid } from "lucide-react";
+import { useFormCanvas } from "@/components/form-builder/context/FormCanvasContext";
+import { useNavigate } from "react-router-dom";
 
 interface BlocksLibraryCanvasProps {
   selectedBlock: BlockItem | null;
@@ -15,10 +16,17 @@ interface BlocksLibraryCanvasProps {
 
 export const BlocksLibraryCanvas: React.FC<BlocksLibraryCanvasProps> = ({ selectedBlock }) => {
   const { brandSettings } = useBrandSettings();
+  const navigate = useNavigate();
+  const [isDragging, setIsDragging] = useState(false);
   
+  let formCanvasContext: any = null;
+  try {
+    formCanvasContext = useFormCanvas();
+  } catch (error) {
+  }
+
   const handleCopyCode = () => {
     if (selectedBlock) {
-      // In a real app, this would copy the actual code
       navigator.clipboard.writeText(selectedBlock.code || "// Block code would go here");
       toast.success("Code copied to clipboard");
     }
@@ -26,8 +34,57 @@ export const BlocksLibraryCanvas: React.FC<BlocksLibraryCanvasProps> = ({ select
   
   const handleAddToForm = () => {
     if (selectedBlock) {
-      toast.success(`${selectedBlock.name} added to form`);
+      if (formCanvasContext && formCanvasContext.handleAddAIElements) {
+        const elements = [{
+          id: `${selectedBlock.id}-${Date.now()}`,
+          type: selectedBlock.category === 'forms' ? 'text' : 'header',
+          position: { x: 100, y: 100 },
+          size: { width: 500, height: selectedBlock.category === 'forms' ? 80 : 60 },
+          content: selectedBlock.name,
+          groupId: null,
+          required: false
+        }];
+        
+        formCanvasContext.handleAddAIElements(elements);
+        toast.success(`${selectedBlock.name} added to form`);
+      } else {
+        localStorage.setItem('blockToAdd', JSON.stringify(selectedBlock));
+        navigate('/form-builder');
+        toast.success(`${selectedBlock.name} will be added to form editor`);
+      }
     }
+  };
+  
+  const handleDragStart = (e: React.DragEvent) => {
+    if (!selectedBlock) return;
+    
+    setIsDragging(true);
+    e.dataTransfer.setData('blockData', JSON.stringify(selectedBlock));
+    e.dataTransfer.effectAllowed = 'copy';
+    
+    const dragImage = document.createElement('div');
+    dragImage.style.width = '200px';
+    dragImage.style.height = '100px';
+    dragImage.style.backgroundColor = '#e5deff';
+    dragImage.style.border = '2px dashed #8b5cf6';
+    dragImage.style.borderRadius = '4px';
+    dragImage.style.display = 'flex';
+    dragImage.style.alignItems = 'center';
+    dragImage.style.justifyContent = 'center';
+    dragImage.style.color = '#8b5cf6';
+    dragImage.style.fontWeight = 'bold';
+    dragImage.textContent = selectedBlock.name;
+    document.body.appendChild(dragImage);
+    
+    e.dataTransfer.setDragImage(dragImage, 100, 50);
+    
+    setTimeout(() => {
+      document.body.removeChild(dragImage);
+    }, 0);
+  };
+  
+  const handleDragEnd = () => {
+    setIsDragging(false);
   };
 
   if (!selectedBlock) {
@@ -64,6 +121,10 @@ export const BlocksLibraryCanvas: React.FC<BlocksLibraryCanvasProps> = ({ select
             size="sm" 
             onClick={handleAddToForm}
             style={{ backgroundColor: brandSettings.colors.primary }}
+            draggable
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            className={isDragging ? "opacity-50" : ""}
           >
             <Plus className="h-4 w-4 mr-2" />
             Add to Form
@@ -84,9 +145,17 @@ export const BlocksLibraryCanvas: React.FC<BlocksLibraryCanvasProps> = ({ select
           <TabsContent value="preview" className="h-full m-0 p-0">
             <ScrollArea className="h-full">
               <div className="p-6 flex items-center justify-center min-h-[400px]">
-                <div className="border rounded-md p-6 w-full max-w-2xl">
+                <div 
+                  className="border rounded-md p-6 w-full max-w-2xl cursor-grab"
+                  draggable
+                  onDragStart={handleDragStart}
+                  onDragEnd={handleDragEnd}
+                >
                   {selectedBlock.previewComponent ? (
-                    <div dangerouslySetInnerHTML={{ __html: selectedBlock.previewComponent }} />
+                    <div 
+                      dangerouslySetInnerHTML={{ __html: selectedBlock.previewComponent }} 
+                      className={isDragging ? "opacity-50" : ""}
+                    />
                   ) : (
                     <div className="bg-muted/30 p-10 rounded-md flex items-center justify-center">
                       <p className="text-muted-foreground">Preview not available</p>

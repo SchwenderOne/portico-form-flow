@@ -1,11 +1,12 @@
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { FormElement, FormPosition } from '@/types/form';
 import { v4 as uuidv4 } from 'uuid';
 import { useElementSelection } from '@/hooks/form/useElementSelection';
 import { useElementGrouping } from '@/hooks/form/useElementGrouping';
 import { useElementDuplication } from '@/hooks/form/useElementDuplication';
 import { useElementActions } from '@/hooks/form/useElementActions';
+import { toast } from 'sonner';
 
 interface FormCanvasContextType {
   elements: FormElement[];
@@ -33,11 +34,11 @@ interface FormCanvasContextType {
     ungroupElements: () => void;
   };
   addElements: (newElements: FormElement[]) => void;
-  setIsDragging?: (isDragging: boolean) => void;
-  undoOperation?: () => void;
-  redoOperation?: () => void;
-  canUndo?: boolean;
-  canRedo?: boolean;
+  setIsDragging: (isDragging: boolean) => void;
+  undoOperation: () => void;
+  redoOperation: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 }
 
 export const FormCanvasContext = createContext<FormCanvasContextType | null>(null);
@@ -58,6 +59,58 @@ export const FormCanvasProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   });
   const [isDragOver, setIsDragOver] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  
+  // Track operation history for undo/redo
+  const [history, setHistory] = useState<FormElement[][]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+  
+  // Track operation in progress to avoid adding to history during undo/redo
+  const isUndoRedoOperation = useRef(false);
+  
+  // Add elements to history when they change
+  useEffect(() => {
+    if (!isUndoRedoOperation.current && elements.length > 0) {
+      // Add current state to history
+      const newHistory = history.slice(0, historyIndex + 1);
+      newHistory.push([...elements]);
+      setHistory(newHistory);
+      setHistoryIndex(newHistory.length - 1);
+      setCanUndo(true);
+      setCanRedo(false);
+    }
+  }, [elements]);
+  
+  // Update undo/redo availability
+  useEffect(() => {
+    setCanUndo(historyIndex > 0);
+    setCanRedo(historyIndex < history.length - 1);
+  }, [historyIndex, history]);
+  
+  // Undo operation
+  const undoOperation = useCallback(() => {
+    if (historyIndex > 0) {
+      isUndoRedoOperation.current = true;
+      setHistoryIndex(historyIndex - 1);
+      setElements([...history[historyIndex - 1]]);
+      setTimeout(() => {
+        isUndoRedoOperation.current = false;
+      }, 0);
+    }
+  }, [historyIndex, history]);
+  
+  // Redo operation
+  const redoOperation = useCallback(() => {
+    if (historyIndex < history.length - 1) {
+      isUndoRedoOperation.current = true;
+      setHistoryIndex(historyIndex + 1);
+      setElements([...history[historyIndex + 1]]);
+      setTimeout(() => {
+        isUndoRedoOperation.current = false;
+      }, 0);
+    }
+  }, [historyIndex, history]);
   
   // Use element selection hook
   const {
@@ -87,14 +140,113 @@ export const FormCanvasProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // Handle element alignment
   const handleElementAlign = useCallback((elementId: string, alignment: 'left' | 'center' | 'right') => {
     console.log(`Aligning element ${elementId} to ${alignment}`);
-    // Implementation would adjust the element position based on alignment
-  }, []);
+    
+    setElements(prev => {
+      const element = prev.find(el => el.id === elementId);
+      if (!element) return prev;
+      
+      const canvasWidth = 1000; // Default canvas width, should be dynamic in a real app
+      
+      let newX = element.position.x;
+      switch (alignment) {
+        case 'left':
+          newX = 20;
+          break;
+        case 'center':
+          newX = (canvasWidth - element.size.width) / 2;
+          break;
+        case 'right':
+          newX = canvasWidth - element.size.width - 20;
+          break;
+      }
+      
+      return prev.map(el => 
+        el.id === elementId ? { ...el, position: { ...el.position, x: newX } } : el
+      );
+    });
+    
+    toast.success(`Element aligned to ${alignment}`);
+  }, [setElements]);
   
   // Handle keyboard events
   const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
-    console.log('Key pressed:', event.key);
-    // Implement keyboard shortcuts (delete, duplicate, etc.)
-  }, []);
+    // Don't trigger if user is typing in a text field
+    if (event.target instanceof HTMLInputElement || 
+        event.target instanceof HTMLTextAreaElement ||
+        event.target instanceof HTMLSelectElement) {
+      return;
+    }
+    
+    switch (event.key) {
+      case 'Delete':
+      case 'Backspace':
+        if (selectedElements.length > 0) {
+          selectedElements.forEach(id => handleDeleteElement(id));
+          event.preventDefault();
+        }
+        break;
+      case 'z':
+        if (event.metaKey || event.ctrlKey) {
+          if (event.shiftKey) {
+            // Redo with Cmd/Ctrl+Shift+Z
+            redoOperation();
+          } else {
+            // Undo with Cmd/Ctrl+Z
+            undoOperation();
+          }
+          event.preventDefault();
+        }
+        break;
+      case 'y':
+        if ((event.metaKey || event.ctrlKey) && !event.shiftKey) {
+          // Redo with Cmd/Ctrl+Y
+          redoOperation();
+          event.preventDefault();
+        }
+        break;
+      case 'd':
+        if (event.metaKey || event.ctrlKey) {
+          // Duplicate with Cmd/Ctrl+D
+          if (selectedElements.length === 1) {
+            handleDuplicateElement(selectedElements[0]);
+          } else if (selectedElements.length > 1) {
+            handleDuplicateGroup(selectedElements);
+          }
+          event.preventDefault();
+        }
+        break;
+      case 'a':
+        if (event.metaKey || event.ctrlKey) {
+          // Select all with Cmd/Ctrl+A
+          setSelectedElements(elements.map(el => el.id));
+          event.preventDefault();
+        }
+        break;
+      case 'g':
+        if (event.metaKey || event.ctrlKey) {
+          if (event.shiftKey) {
+            // Ungroup with Cmd/Ctrl+Shift+G
+            handleUngroupElements();
+          } else {
+            // Group with Cmd/Ctrl+G
+            handleGroupElements();
+          }
+          event.preventDefault();
+        }
+        break;
+    }
+  }, [
+    selectedElements, 
+    handleDeleteElement, 
+    elements, 
+    setSelectedElements, 
+    handleDuplicateElement, 
+    handleDuplicateGroup,
+    handleGroupElements,
+    handleUngroupElements,
+    undoOperation,
+    redoOperation
+  ]);
   
   // Handle moving elements with guides
   const handleElementMoveWithGuides = useCallback((elementId: string, newPosition: FormPosition) => {
@@ -115,12 +267,17 @@ export const FormCanvasProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       // Make sure elements have unique IDs
       const uniqueElements = newElements.map(el => ({
         ...el,
-        id: `${el.type}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+        id: el.id || `${el.type}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
       }));
       
       setElements(prev => [...prev, ...uniqueElements]);
+      
+      // Select the newly added elements
+      setSelectedElements(uniqueElements.map(el => el.id));
+      
+      toast.success(`Added ${uniqueElements.length} element${uniqueElements.length !== 1 ? 's' : ''} to canvas`);
     }
-  }, [setElements]);
+  }, [setElements, setSelectedElements]);
 
   // Get element actions from the hook
   const {
@@ -171,7 +328,41 @@ export const FormCanvasProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     
     console.log("Adding elements to canvas:", elementsToAdd);
     setElements((prev) => [...prev, ...elementsToAdd]);
-  }, [elements, setElements]);
+    
+    // Select the newly added elements
+    setSelectedElements(elementsToAdd.map(el => el.id));
+    
+    toast.success(`Added ${elementsToAdd.length} element${elementsToAdd.length !== 1 ? 's' : ''} to canvas`);
+  }, [elements, setElements, setSelectedElements]);
+
+  // Check for blocks from library to add when this component mounts
+  useEffect(() => {
+    const storedBlock = localStorage.getItem('blockToAdd');
+    if (storedBlock) {
+      try {
+        const block = JSON.parse(storedBlock);
+        
+        // Create a form element from the block
+        const newElement: FormElement = {
+          id: `${block.id}-${Date.now()}`,
+          type: block.category === 'forms' ? 'text' : 'header',
+          position: { x: 100, y: 100 },
+          size: { width: 500, height: block.category === 'forms' ? 80 : 60 },
+          content: block.name,
+          groupId: null,
+          required: false
+        };
+        
+        handleAddAIElements([newElement]);
+        toast.success(`${block.name} added from Components Library`);
+        
+        // Clear the stored block
+        localStorage.removeItem('blockToAdd');
+      } catch (error) {
+        console.error("Error adding block from library:", error);
+      }
+    }
+  }, [handleAddAIElements]);
 
   return (
     <FormCanvasContext.Provider
@@ -201,11 +392,11 @@ export const FormCanvasProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           ungroupElements: handleUngroupElements
         },
         addElements,
-        setIsDragging: setIsDragging ? setIsDragging : undefined,
-        undoOperation: undefined, // Implement if needed
-        redoOperation: undefined, // Implement if needed
-        canUndo: false, // Implement if needed
-        canRedo: false  // Implement if needed
+        setIsDragging,
+        undoOperation,
+        redoOperation,
+        canUndo,
+        canRedo
       }}
     >
       {children}

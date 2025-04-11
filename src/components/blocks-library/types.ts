@@ -11,4 +11,11 @@ export interface BlockItem {
   previewComponent?: string;
   properties?: Record<string, string>;
   tags?: string[];
+  metadata?: {
+    author?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    version?: string;
+    usageCount?: number;
+  };
 }
