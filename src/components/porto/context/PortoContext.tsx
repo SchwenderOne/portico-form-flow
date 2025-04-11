@@ -46,7 +46,7 @@ interface PortoContextType {
   setCurrentTemplate: (templateId: string | null) => void;
   // Add missing properties needed by components
   isPublished: boolean;
-  publishForm: () => voi 
+  publishForm: () => void; // Fixed the typo here, changed 'voi' to 'void'
   unpublishForm: () => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
