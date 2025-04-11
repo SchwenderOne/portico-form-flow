@@ -62,34 +62,59 @@ export const PortoSidebar: React.FC = () => {
           <ChevronRight className="h-4 w-4" />
         </Button>
         <div className="flex flex-col gap-2 items-center">
-          <Button
-            variant={activeTab === "elements" ? "secondary" : "ghost"}
-            size="icon"
-            onClick={() => { setCollapsed(false); setActiveTab("elements"); }}
-          >
-            <LayoutGrid className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={activeTab === "theme" ? "secondary" : "ghost"}
-            size="icon"
-            onClick={() => { setCollapsed(false); setActiveTab("theme"); }}
-          >
-            <Paintbrush className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={activeTab === "ai" ? "secondary" : "ghost"}
-            size="icon"
-            onClick={() => { setCollapsed(false); setActiveTab("ai"); }}
-          >
-            <Wand className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={activeTab === "settings" ? "secondary" : "ghost"}
-            size="icon"
-            onClick={() => { setCollapsed(false); setActiveTab("settings"); }}
-          >
-            <Settings className="h-4 w-4" />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={activeTab === "elements" ? "secondary" : "ghost"}
+                  size="icon"
+                  onClick={() => { setCollapsed(false); setActiveTab("elements"); }}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Elements</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={activeTab === "theme" ? "secondary" : "ghost"}
+                  size="icon"
+                  onClick={() => { setCollapsed(false); setActiveTab("theme"); }}
+                >
+                  <Paintbrush className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Theme</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={activeTab === "ai" ? "secondary" : "ghost"}
+                  size="icon"
+                  onClick={() => { setCollapsed(false); setActiveTab("ai"); }}
+                >
+                  <Wand className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">AI</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={activeTab === "settings" ? "secondary" : "ghost"}
+                  size="icon"
+                  onClick={() => { setCollapsed(false); setActiveTab("settings"); }}
+                >
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Settings</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
     );
@@ -111,21 +136,21 @@ export const PortoSidebar: React.FC = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
         <div className="border-b bg-muted/30">
           <TabsList className="w-full justify-between">
-            <TabsTrigger value="elements" className="flex-1">
-              <LayoutGrid className="h-4 w-4 mr-2" />
-              Elements
+            <TabsTrigger value="elements" className="flex-1 gap-1 py-1.5">
+              <LayoutGrid className="h-4 w-4" />
+              <span>Elements</span>
             </TabsTrigger>
-            <TabsTrigger value="theme" className="flex-1">
-              <Paintbrush className="h-4 w-4 mr-2" />
-              Theme
+            <TabsTrigger value="theme" className="flex-1 gap-1 py-1.5">
+              <Paintbrush className="h-4 w-4" />
+              <span>Theme</span>
             </TabsTrigger>
-            <TabsTrigger value="ai" className="flex-1">
-              <Wand className="h-4 w-4 mr-2" />
-              AI
+            <TabsTrigger value="ai" className="flex-1 gap-1 py-1.5">
+              <Wand className="h-4 w-4" />
+              <span>AI</span>
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex-1">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
+            <TabsTrigger value="settings" className="flex-1 gap-1 py-1.5">
+              <Settings className="h-4 w-4" />
+              <span>Settings</span>
             </TabsTrigger>
           </TabsList>
         </div>

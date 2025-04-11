@@ -9,7 +9,9 @@ import { BrandSettingsApplier } from "@/components/branding/BrandSettingsApplier
 import { Toaster } from "@/components/ui/sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import AppLayout from "@/components/layout/AppLayout";
+
+// Custom layout component for Porto that includes app sidebar
+import AppLayout from "@/components/layout/AppLayout"; 
 
 const Porto = () => {
   // Default form ID for collaboration

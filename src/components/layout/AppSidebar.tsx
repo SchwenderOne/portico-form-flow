@@ -11,6 +11,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarSeparator,
+  SidebarHeader,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { 
@@ -38,37 +39,33 @@ import {
   Component,
   ChevronUp,
   ChevronDown,
+  PanelLeftClose,
+  PanelLeft,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { TeamManagementSheet } from "@/components/team/TeamManagementSheet";
 import { useBrandSettings } from "@/context/BrandSettingsContext";
 import { openVersionHistory } from "@/components/form-builder/version-history/VersionHistorySheet";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-const SidebarHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ 
-  className, 
-  children, 
-  ...props 
-}) => {
-  return (
-    <div className={cn("py-4", className)} {...props}>
-      {children}
-    </div>
-  );
-};
-
-interface SidebarSectionProps {
+const SidebarSection: React.FC<{
   title: string;
   children: React.ReactNode;
   defaultOpen?: boolean;
-}
-
-const SidebarSection: React.FC<SidebarSectionProps> = ({ 
+  isCollapsed: boolean;
+}> = ({ 
   title, 
   children, 
-  defaultOpen = true 
+  defaultOpen = true,
+  isCollapsed
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  if (isCollapsed) {
+    return <>{children}</>;
+  }
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mb-2">
@@ -90,6 +87,7 @@ const AppSidebar = () => {
   const location = useLocation();
   const [isTeamManagementOpen, setIsTeamManagementOpen] = useState(false);
   const { brandSettings } = useBrandSettings();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     if (location.pathname === "/team") {
@@ -158,101 +156,156 @@ const AppSidebar = () => {
               ? "bg-[var(--brand-primary)] text-white font-medium" 
               : "bg-sidebar-accent text-foreground font-medium"),
             item.highlight && "border-l-2 border-primary",
-            item.disabled && "opacity-50 cursor-not-allowed"
+            item.disabled && "opacity-50 cursor-not-allowed",
+            isSidebarCollapsed && "justify-center p-2"
           )}
           onClick={() => !item.disabled && handleMenuItemClick(item.path)}
           disabled={item.disabled}
+          tooltip={isSidebarCollapsed ? item.title : undefined}
         >
-          <item.icon className="mr-2 h-5 w-5" />
-          <span>{item.title}</span>
+          <item.icon className={cn("h-5 w-5", !isSidebarCollapsed && "mr-2")} />
+          {!isSidebarCollapsed && <span>{item.title}</span>}
         </SidebarMenuButton>
       </SidebarMenuItem>
     ));
   };
 
-  return (
-    <>
-      <Sidebar>
-        <SidebarHeader className="flex items-center px-4 py-2">
-          <div className="flex items-center space-x-2">
+  if (isSidebarCollapsed) {
+    return (
+      <TooltipProvider>
+        <Sidebar collapsible="icon">
+          <SidebarHeader className="flex justify-center p-2">
             <div 
               className="w-8 h-8 rounded-md flex items-center justify-center" 
               style={{ backgroundColor: brandSettings.colors.primary }}
             >
               <span className="text-white font-bold">P</span>
             </div>
-            <span className="font-bold text-xl" style={{ 
-              fontFamily: brandSettings.typography.fontFamily 
-            }}>
-              {brandSettings.identity.brandName}
-            </span>
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          {/* Create Section */}
-          <SidebarSection title="CREATE">
-            <SidebarMenu>
-              {renderMenuItems(createSection)}
-            </SidebarMenu>
-          </SidebarSection>
+          </SidebarHeader>
+          
+          <SidebarContent className="py-2">
+            {renderMenuItems(createSection)}
+            <SidebarSeparator className="my-2" />
+            {renderMenuItems(distributeSection)}
+            <SidebarSeparator className="my-2" />
+            {renderMenuItems(analyzeSection)}
+            <SidebarSeparator className="my-2" />
+            {renderMenuItems(collaborateSection)}
+            <SidebarSeparator className="my-2" />
+            {renderMenuItems(controlSection)}
+          </SidebarContent>
 
-          {/* Distribute Section */}
-          <SidebarSection title="DISTRIBUTE">
-            <SidebarMenu>
-              {renderMenuItems(distributeSection)}
-            </SidebarMenu>
-          </SidebarSection>
-
-          {/* Analyze Section */}
-          <SidebarSection title="ANALYZE">
-            <SidebarMenu>
-              {renderMenuItems(analyzeSection)}
-            </SidebarMenu>
-          </SidebarSection>
-
-          {/* Collaborate Section */}
-          <SidebarSection title="COLLABORATE">
-            <SidebarMenu>
-              {renderMenuItems(collaborateSection)}
-            </SidebarMenu>
-          </SidebarSection>
-
-          {/* Brand & Control Section */}
-          <SidebarSection title="BRAND & CONTROL">
-            <SidebarMenu>
-              {renderMenuItems(controlSection)}
-            </SidebarMenu>
-          </SidebarSection>
-        </SidebarContent>
-        <SidebarFooter>
-          <div className="px-4 py-2">
-            <div 
-              className="flex items-center space-x-2 p-2 rounded-md hover:bg-sidebar-accent cursor-pointer"
-              onClick={() => navigate("/subscription")}
-            >
-              <CreditCard className="h-5 w-5" style={{ color: brandSettings.colors.primary }} />
-              <div className="flex flex-col">
-                <span className="text-xs font-medium">Free Plan</span>
-                <span className="text-xs text-muted-foreground">Upgrade to Pro</span>
-              </div>
+          <SidebarFooter>
+            <div className="flex justify-center p-4">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => setIsSidebarCollapsed(false)}
+                  >
+                    <PanelLeft className="h-5 w-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">Expand sidebar</TooltipContent>
+              </Tooltip>
             </div>
-            <div 
-              className="flex items-center space-x-2 p-2 rounded-md hover:bg-sidebar-accent cursor-pointer mt-2"
-              onClick={() => navigate("/help-support")}
-            >
-              <HelpCircle className="h-5 w-5" />
-              <span className="text-sm">Help & Support</span>
+          </SidebarFooter>
+        </Sidebar>
+      </TooltipProvider>
+    );
+  }
+
+  return (
+    <Sidebar>
+      <SidebarHeader className="flex items-center justify-between px-4 py-2">
+        <div className="flex items-center space-x-2">
+          <div 
+            className="w-8 h-8 rounded-md flex items-center justify-center" 
+            style={{ backgroundColor: brandSettings.colors.primary }}
+          >
+            <span className="text-white font-bold">P</span>
+          </div>
+          <span className="font-bold text-xl" style={{ 
+            fontFamily: brandSettings.typography.fontFamily 
+          }}>
+            {brandSettings.identity.brandName}
+          </span>
+        </div>
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={() => setIsSidebarCollapsed(true)}
+        >
+          <PanelLeftClose className="h-5 w-5" />
+        </Button>
+      </SidebarHeader>
+      
+      <SidebarContent>
+        {/* Create Section */}
+        <SidebarSection title="CREATE" isCollapsed={isSidebarCollapsed}>
+          <SidebarMenu>
+            {renderMenuItems(createSection)}
+          </SidebarMenu>
+        </SidebarSection>
+
+        {/* Distribute Section */}
+        <SidebarSection title="DISTRIBUTE" isCollapsed={isSidebarCollapsed}>
+          <SidebarMenu>
+            {renderMenuItems(distributeSection)}
+          </SidebarMenu>
+        </SidebarSection>
+
+        {/* Analyze Section */}
+        <SidebarSection title="ANALYZE" isCollapsed={isSidebarCollapsed}>
+          <SidebarMenu>
+            {renderMenuItems(analyzeSection)}
+          </SidebarMenu>
+        </SidebarSection>
+
+        {/* Collaborate Section */}
+        <SidebarSection title="COLLABORATE" isCollapsed={isSidebarCollapsed}>
+          <SidebarMenu>
+            {renderMenuItems(collaborateSection)}
+          </SidebarMenu>
+        </SidebarSection>
+
+        {/* Brand & Control Section */}
+        <SidebarSection title="BRAND & CONTROL" isCollapsed={isSidebarCollapsed}>
+          <SidebarMenu>
+            {renderMenuItems(controlSection)}
+          </SidebarMenu>
+        </SidebarSection>
+      </SidebarContent>
+      
+      <SidebarFooter>
+        <div className="px-4 py-2">
+          <div 
+            className="flex items-center space-x-2 p-2 rounded-md hover:bg-sidebar-accent cursor-pointer"
+            onClick={() => navigate("/subscription")}
+          >
+            <CreditCard className="h-5 w-5" style={{ color: brandSettings.colors.primary }} />
+            <div className="flex flex-col">
+              <span className="text-xs font-medium">Free Plan</span>
+              <span className="text-xs text-muted-foreground">Upgrade to Pro</span>
             </div>
           </div>
-        </SidebarFooter>
-      </Sidebar>
-
+          <div 
+            className="flex items-center space-x-2 p-2 rounded-md hover:bg-sidebar-accent cursor-pointer mt-2"
+            onClick={() => navigate("/help-support")}
+          >
+            <HelpCircle className="h-5 w-5" />
+            <span className="text-sm">Help & Support</span>
+          </div>
+        </div>
+      </SidebarFooter>
+      
       <TeamManagementSheet
         open={isTeamManagementOpen}
         onOpenChange={setIsTeamManagementOpen}
         showTrigger={false}
       />
-    </>
+    </Sidebar>
   );
 };
 
