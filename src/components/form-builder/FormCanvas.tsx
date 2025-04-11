@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import FormElementsPanel from "./FormElementsPanel";
 import { FormElement } from "@/types/form";
@@ -14,6 +13,7 @@ import ElementContent from "./ElementContent";
 import ContentEditableElement from "./ContentEditableElement";
 import FormEditorSidebar from "./sidebar/FormEditorSidebar";
 import SuggestFieldsModal from "./ai-assistant/SuggestFieldsModal";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 declare global {
   interface WindowEventMap {
@@ -27,6 +27,8 @@ const FormCanvasContent = () => {
   const [isSuggestFieldsModalOpen, setIsSuggestFieldsModalOpen] = useState(false);
   const { metadata } = useFormMetadata();
   const [hoveredElement, setHoveredElement] = useState<string | null>(null);
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isTablet = useMediaQuery("(min-width: 769px) and (max-width: 1024px)");
   
   const {
     elements,
@@ -107,10 +109,9 @@ const FormCanvasContent = () => {
 
     document.addEventListener('add-elements', handleAddElementsEvent as EventListener);
     
-    // Add event listener for version restore events
     const handleVersionRestoreEvent = (event: CustomEvent<{elements: FormElement[]}>) => {
       const { elements } = event.detail;
-      handleAddAIElements(elements, true); // Replace existing elements
+      handleAddAIElements(elements, true);
     };
     
     document.addEventListener('version-restore', handleVersionRestoreEvent as EventListener);
@@ -140,8 +141,10 @@ const FormCanvasContent = () => {
         existingElements={elements}
       />
       
-      <div className="flex flex-1 overflow-hidden">
-        <FormElementsPanel onElementDrop={handleElementDrop} />
+      <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
+        <div className={`${isMobile ? 'h-auto border-b' : ''}`}>
+          <FormElementsPanel onElementDrop={handleElementDrop} />
+        </div>
         
         <div className="flex-1 relative">
           <CanvasDropZone
@@ -187,7 +190,6 @@ const FormCanvasContent = () => {
                 onDragStart={(e) => {
                   e.dataTransfer.setData("elementId", element.id);
                   e.dataTransfer.setData("action", "move");
-                  // Add a drag image
                   const dragImage = document.createElement('div');
                   dragImage.style.width = `${element.size.width}px`;
                   dragImage.style.height = `${element.size.height}px`;
@@ -224,14 +226,15 @@ const FormCanvasContent = () => {
           </CanvasDropZone>
         </div>
         
-        {/* Right Editor Sidebar - Visible only when elements are selected */}
         {selectedElement && (
-          <FormEditorSidebar 
-            element={selectedElement}
-            onElementUpdate={updateElement}
-            existingElements={elements}
-            onAddElements={handleAddAIElements}
-          />
+          <div className={`${isMobile ? 'absolute inset-0 z-50 bg-background/95' : ''}`}>
+            <FormEditorSidebar 
+              element={selectedElement}
+              onElementUpdate={updateElement}
+              existingElements={elements}
+              onAddElements={handleAddAIElements}
+            />
+          </div>
         )}
       </div>
       

@@ -1,5 +1,4 @@
-
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import { FormElement } from "@/types/form";
 import {
   TooltipProvider,
@@ -8,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import TextFormattingControls from "./TextFormattingControls";
 import ElementActions from "./ElementActions";
 import { toast } from "sonner";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface UnifiedFloatingToolbarProps {
   elementId: string;
@@ -49,8 +49,11 @@ const UnifiedFloatingToolbar: React.FC<UnifiedFloatingToolbarProps> = ({
   const toolbarRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
 
-  // Use the selection rectangle if text is selected, otherwise use the element rectangle
-  useEffect(() => {
+  // Set a unique toolbar ID to help manage instances
+  const toolbarId = `toolbar-${elementId}`;
+  
+  // Define a debounced position update function
+  const updatePosition = useCallback(() => {
     if (toolbarRef.current) {
       const toolbarRect = toolbarRef.current.getBoundingClientRect();
       let newLeft: number;
@@ -66,16 +69,63 @@ const UnifiedFloatingToolbar: React.FC<UnifiedFloatingToolbarProps> = ({
         newTop = elementRect.top - toolbarRect.height - 8;
       }
       
-      // Adjust if toolbar would be off-screen
-      const adjustedLeft = Math.max(8, Math.min(newLeft, window.innerWidth - toolbarRect.width - 8));
-      const adjustedTop = newTop < 8 ? (isTextSelected && selectionRect ? selectionRect.bottom + 8 : elementRect.bottom + 8) : newTop;
+      // Account for scroll position
+      const scrollX = window.scrollX || document.documentElement.scrollLeft;
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      
+      // Keep toolbar within viewport bounds
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      // Adjust if toolbar would be off-screen horizontally
+      newLeft = Math.max(8, Math.min(newLeft, viewportWidth - toolbarRect.width - 8));
+      
+      // Adjust if toolbar would be off-screen vertically
+      if (newTop < 8) {
+        // If there's not enough space above, position below instead
+        if (isTextSelected && selectionRect) {
+          newTop = selectionRect.bottom + 8;
+        } else {
+          newTop = elementRect.bottom + 8;
+        }
+      }
       
       setPosition({ 
-        left: adjustedLeft, 
-        top: adjustedTop 
+        left: newLeft, 
+        top: newTop 
       });
     }
   }, [elementRect, isTextSelected, selectionRect]);
+  
+  // Debounce the position updates to prevent flickering
+  const debouncedUpdatePosition = useDebounce(updatePosition, 50);
+
+  // Clean up existing toolbars and update position when props change
+  useEffect(() => {
+    // First, remove any other floating toolbars
+    const existingToolbars = document.querySelectorAll('.floating-toolbar');
+    existingToolbars.forEach(toolbar => {
+      if (toolbar.id !== toolbarId && toolbar.parentNode) {
+        toolbar.parentNode.removeChild(toolbar);
+      }
+    });
+    
+    // Update position
+    debouncedUpdatePosition();
+    
+    // Update position on window resize and scroll
+    const handleWindowChange = () => {
+      debouncedUpdatePosition();
+    };
+    
+    window.addEventListener('resize', handleWindowChange);
+    window.addEventListener('scroll', handleWindowChange);
+    
+    return () => {
+      window.removeEventListener('resize', handleWindowChange);
+      window.removeEventListener('scroll', handleWindowChange);
+    };
+  }, [elementRect, isTextSelected, selectionRect, debouncedUpdatePosition, toolbarId]);
 
   // Prevent click propagation
   const handleToolbarClick = (e: React.MouseEvent) => {
@@ -85,11 +135,13 @@ const UnifiedFloatingToolbar: React.FC<UnifiedFloatingToolbarProps> = ({
   return (
     <TooltipProvider delayDuration={300}>
       <div
+        id={toolbarId}
         ref={toolbarRef}
-        className="fixed z-50 flex items-center gap-1 p-1 bg-white/95 backdrop-blur-sm border border-border rounded-lg shadow-lg animate-in fade-in-0 zoom-in-95 duration-100"
+        className="floating-toolbar fixed z-50 flex items-center gap-1 p-1 bg-white/95 backdrop-blur-sm border border-border rounded-lg shadow-lg animate-in fade-in-0 zoom-in-95 duration-100"
         style={{ 
           top: `${position.top}px`, 
-          left: `${position.left}px` 
+          left: `${position.left}px`,
+          transform: 'translateZ(0)' // Force hardware acceleration for smoother positioning
         }}
         onClick={handleToolbarClick}
       >

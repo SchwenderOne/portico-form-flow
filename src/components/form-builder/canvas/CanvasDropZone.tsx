@@ -24,36 +24,59 @@ const CanvasDropZone: React.FC<CanvasDropZoneProps> = ({
     type: string;
     position: { x: number; y: number };
   } | null>(null);
+  
+  // Track if we're moving an existing element
+  const [isMovingElement, setIsMovingElement] = useState(false);
+  const [movingElementId, setMovingElementId] = useState<string | null>(null);
 
   // Clean up preview when component unmounts
   useEffect(() => {
     return () => {
       setPreviewElement(null);
+      setIsMovingElement(false);
+      setMovingElementId(null);
     };
   }, []);
+
+  // Calculate snap position to grid
+  const calculateSnapPosition = (x: number, y: number) => {
+    // Snap to grid (25px)
+    const snappedX = Math.round(x / 25) * 25;
+    const snappedY = Math.round(y / 25) * 25;
+    return { x: snappedX, y: snappedY };
+  };
 
   // Handle dragover event to show the drop location
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(true);
     
-    // Get element type from dataTransfer
+    // Get element information from dataTransfer
     const elementType = e.dataTransfer.getData("elementType");
+    const elementId = e.dataTransfer.getData("elementId");
     const action = e.dataTransfer.getData("action");
     
-    // Only show preview for new elements, not for moving existing ones
-    if (elementType && action !== "move") {
-      const dropZoneRect = e.currentTarget.getBoundingClientRect();
-      const x = e.clientX - dropZoneRect.left;
-      const y = e.clientY - dropZoneRect.top;
-      
-      // Snap to grid (25px)
-      const snappedX = Math.round(x / 25) * 25;
-      const snappedY = Math.round(y / 25) * 25;
-      
+    // Get drop position
+    const dropZoneRect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - dropZoneRect.left;
+    const y = e.clientY - dropZoneRect.top;
+    
+    // Calculate snapped position
+    const snappedPosition = calculateSnapPosition(x, y);
+    
+    // Check if this is a move or new element
+    if (action === "move" && elementId) {
+      setIsMovingElement(true);
+      setMovingElementId(elementId);
+      // For existing elements, we'll use the element's appearance
+      setPreviewElement(null);
+    } else if (elementType) {
+      setIsMovingElement(false);
+      setMovingElementId(null);
+      // For new elements, show the preview
       setPreviewElement({
         type: elementType,
-        position: { x: snappedX, y: snappedY }
+        position: snappedPosition
       });
     }
   };
@@ -61,29 +84,31 @@ const CanvasDropZone: React.FC<CanvasDropZoneProps> = ({
   const handleDragLeave = () => {
     setIsDragOver(false);
     setPreviewElement(null);
+    setIsMovingElement(false);
+    setMovingElementId(null);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
     setPreviewElement(null);
+    setIsMovingElement(false);
+    setMovingElementId(null);
     
+    // Get drop position and calculate snap
     const dropZoneRect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - dropZoneRect.left;
     const y = e.clientY - dropZoneRect.top;
     
-    // Snap to grid (25px)
-    const snappedX = Math.round(x / 25) * 25;
-    const snappedY = Math.round(y / 25) * 25;
+    const { x: snappedX, y: snappedY } = calculateSnapPosition(x, y);
     
-    // Check if this is a move operation
+    // Check what kind of operation we're doing
     const elementId = e.dataTransfer.getData("elementId");
     const action = e.dataTransfer.getData("action");
     const elementType = e.dataTransfer.getData("elementType");
     
     if (action === "move" && elementId) {
-      // Handle element movement within the canvas - this is handled by the context
-      // This event is triggered but the drag/drop logic is handled separately
+      // We don't need to do anything here as the parent component handles element movement
     } else if (elementType) {
       // Handle new element drop
       onDrop(elementType, { x: snappedX, y: snappedY });
@@ -92,7 +117,9 @@ const CanvasDropZone: React.FC<CanvasDropZoneProps> = ({
 
   return (
     <div
-      className={`relative w-full h-full bg-gray-50 overflow-auto grid-pattern`}
+      className={`relative w-full h-full bg-gray-50 overflow-auto grid-pattern ${
+        isDragOver ? 'border-2 border-dashed border-primary/40' : ''
+      }`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -109,12 +136,14 @@ const CanvasDropZone: React.FC<CanvasDropZoneProps> = ({
       {children}
       
       {/* Preview of element being dragged */}
-      {isDragOver && previewElement && (
+      {isDragOver && previewElement && !isMovingElement && (
         <DragPreview
           elementType={previewElement.type}
           position={previewElement.position}
         />
       )}
+      
+      {/* When moving an existing element, we don't show a preview */}
     </div>
   );
 };

@@ -1,7 +1,8 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { useCollaboration } from "@/context/CollaborationContext";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export const useElementEditor = (elementId: string) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -11,6 +12,29 @@ export const useElementEditor = (elementId: string) => {
   const elementRef = useRef<HTMLDivElement>(null);
   const contentEditableRef = useRef<HTMLElement | null>(null);
   const { isElementLocked, setActiveElement } = useCollaboration();
+  
+  // Remove any existing toolbars on unmount
+  useEffect(() => {
+    return () => {
+      const existingToolbars = document.querySelectorAll('.floating-toolbar');
+      existingToolbars.forEach(toolbar => {
+        if (toolbar.parentNode) {
+          toolbar.parentNode.removeChild(toolbar);
+        }
+      });
+    };
+  }, []);
+
+  // Get the most current element rect
+  const updateElementRect = useCallback(() => {
+    if (elementRef.current) {
+      const newRect = elementRef.current.getBoundingClientRect();
+      setElementRect(newRect);
+    }
+  }, []);
+  
+  // Debounce the rect update to prevent excessive rerenders
+  const debouncedUpdateElementRect = useDebounce(updateElementRect, 50);
 
   // Handle click outside for editing mode
   useEffect(() => {
@@ -25,12 +49,24 @@ export const useElementEditor = (elementId: string) => {
         setActiveElement(null);
       }
     };
+    
+    // Update the element rect when the window is resized or scrolled
+    const handleWindowChange = () => {
+      if (isEditing) {
+        debouncedUpdateElementRect();
+      }
+    };
 
     document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('resize', handleWindowChange);
+    window.addEventListener('scroll', handleWindowChange);
+    
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('resize', handleWindowChange);
+      window.removeEventListener('scroll', handleWindowChange);
     };
-  }, [isEditing, setActiveElement]);
+  }, [isEditing, setActiveElement, debouncedUpdateElementRect]);
 
   // Handle text selection within the element
   useEffect(() => {
@@ -56,14 +92,32 @@ export const useElementEditor = (elementId: string) => {
       }
     };
 
-    document.addEventListener('selectionchange', checkTextSelection);
-    document.addEventListener('mouseup', checkTextSelection);
+    // Debounce the selection check to prevent flickering
+    const debouncedCheckSelection = debounce(checkTextSelection, 50);
+
+    document.addEventListener('selectionchange', debouncedCheckSelection);
+    document.addEventListener('mouseup', debouncedCheckSelection);
+    
+    // Update element rect immediately
+    updateElementRect();
     
     return () => {
-      document.removeEventListener('selectionchange', checkTextSelection);
-      document.removeEventListener('mouseup', checkTextSelection);
+      document.removeEventListener('selectionchange', debouncedCheckSelection);
+      document.removeEventListener('mouseup', debouncedCheckSelection);
     };
-  }, [isEditing]);
+  }, [isEditing, updateElementRect]);
+
+  // Simple debounce function for selection checking
+  function debounce<T extends (...args: any[]) => any>(
+    fn: T,
+    delay: number
+  ): (...args: Parameters<T>) => void {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    return function(...args: Parameters<T>) {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => fn(...args), delay);
+    };
+  }
 
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -73,6 +127,14 @@ export const useElementEditor = (elementId: string) => {
       toast.error("This element is being edited by another user");
       return;
     }
+    
+    // Remove any existing toolbars
+    const existingToolbars = document.querySelectorAll('.floating-toolbar');
+    existingToolbars.forEach(toolbar => {
+      if (toolbar.parentNode) {
+        toolbar.parentNode.removeChild(toolbar);
+      }
+    });
     
     setIsEditing(true);
     setActiveElement(elementId);

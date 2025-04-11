@@ -1,8 +1,6 @@
 
 import React from "react";
-import { FormElement } from "@/types/form";
-import ElementContent from "./ElementContent";
-import { createNewElement } from "@/utils/element-utils";
+import { cn } from "@/lib/utils";
 
 interface DragPreviewProps {
   elementType: string;
@@ -10,50 +8,93 @@ interface DragPreviewProps {
 }
 
 const DragPreview: React.FC<DragPreviewProps> = ({ elementType, position }) => {
-  // Create a comprehensive temporary element preview based on the type
-  // Pass an empty array as the third argument for existing elements
-  const previewElement = createNewElement(elementType, position, []);
-
-  // Add some styling based on element type
-  const getPreviewStyles = () => {
+  // Define standard sizes based on element type
+  const getPreviewSizeAndContent = () => {
     switch (elementType) {
-      case 'header':
-        return 'bg-purple-50 border-purple-300';
-      case 'paragraph':
-        return 'bg-blue-50 border-blue-300';
-      case 'text':
-      case 'email':
-      case 'number':
-        return 'bg-green-50 border-green-300';
-      case 'checkbox':
-      case 'radio':
-        return 'bg-amber-50 border-amber-300';
-      case 'select':
-      case 'date':
-        return 'bg-teal-50 border-teal-300';
-      case 'file':
-        return 'bg-rose-50 border-rose-300';
+      case "header":
+        return {
+          width: 500,
+          height: 60,
+          content: "Heading Text"
+        };
+      case "paragraph":
+        return {
+          width: 500,
+          height: 120,
+          content: "Paragraph text content will appear here."
+        };
+      case "text":
+        return {
+          width: 500,
+          height: 80,
+          content: "Text Input"
+        };
+      case "textarea":
+        return {
+          width: 500,
+          height: 120,
+          content: "Text Area"
+        };
+      case "number":
+        return {
+          width: 500,
+          height: 80,
+          content: "Number Input"
+        };
+      case "email":
+        return {
+          width: 500,
+          height: 80,
+          content: "Email Input"
+        };
+      case "select":
+        return {
+          width: 500,
+          height: 80,
+          content: "Dropdown Select"
+        };
+      case "checkbox":
+        return {
+          width: 500,
+          height: 80,
+          content: "Checkbox"
+        };
+      case "radio":
+        return {
+          width: 500,
+          height: 100,
+          content: "Radio Group"
+        };
+      case "date":
+        return {
+          width: 500,
+          height: 80,
+          content: "Date Picker"
+        };
       default:
-        return 'bg-gray-50 border-gray-300';
+        return {
+          width: 500,
+          height: 80,
+          content: "Form Element"
+        };
     }
   };
 
+  const { width, height, content } = getPreviewSizeAndContent();
+
   return (
-    <div 
-      className={`absolute border-2 border-dashed rounded-md p-4 pointer-events-none shadow-lg ${getPreviewStyles()}`}
+    <div
+      className="absolute pointer-events-none bg-primary/10 border-2 border-dashed border-primary rounded-md flex items-center justify-center"
       style={{
-        left: position.x,
-        top: position.y,
-        width: previewElement.size.width,
-        height: 'auto', // Allow height to adapt to content
-        zIndex: 100,
-        opacity: 0.95,
-        animation: 'pulse 2s infinite ease-in-out'
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        width: `${width}px`,
+        height: `${height}px`,
+        zIndex: 100
       }}
     >
-      <div className="bg-white/70 backdrop-blur-sm p-2 rounded">
-        <p className="text-xs font-semibold mb-1">Adding: {elementType}</p>
-        <ElementContent element={previewElement} isEditing={false} />
+      <div className="text-sm text-primary/70 font-medium">
+        {content}
       </div>
     </div>
   );

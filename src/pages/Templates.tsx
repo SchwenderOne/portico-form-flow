@@ -1,13 +1,43 @@
 
 import React from "react";
 import AppLayout from "@/components/layout/AppLayout";
-import EnhancedTemplateGallery from "@/components/templates/EnhancedTemplateGallery";
+import { TemplateGallery } from "@/components/templates/TemplateGallery";
+import { SelectedTemplateProvider } from "@/context/SelectedTemplateContext";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 const Templates = () => {
+  const router = useRouter();
+  
+  const handleBack = () => {
+    router.navigate(-1);
+  };
+  
   return (
-    <AppLayout>
-      <EnhancedTemplateGallery />
-    </AppLayout>
+    <SelectedTemplateProvider>
+      <AppLayout>
+        <div className="flex flex-col h-[calc(100vh-56px)]">
+          <div className="flex items-center border-b p-4">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="mr-auto" 
+              onClick={handleBack}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+            <h1 className="text-lg font-semibold text-center">Form Templates</h1>
+            <div className="ml-auto w-20"></div> {/* Spacer for centered title */}
+          </div>
+          
+          <div className="flex-1 overflow-hidden">
+            <TemplateGallery />
+          </div>
+        </div>
+      </AppLayout>
+    </SelectedTemplateProvider>
   );
 };
 

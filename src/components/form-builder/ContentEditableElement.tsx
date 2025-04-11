@@ -38,14 +38,15 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
   const [localContent, setLocalContent] = useState(content);
   const contentRef = useRef<HTMLDivElement>(null);
   const { handleDeleteElement, handleDuplicateElement, handleElementAlign, updateElement } = useFormCanvas();
+  const [isExternalEdit, setIsExternalEdit] = useState(false);
 
   // Update the content editable element when content changes from outside
   useEffect(() => {
-    if (contentRef.current && !isEditing) {
+    if (contentRef.current && !isEditing && !isExternalEdit) {
       contentRef.current.innerHTML = content;
       setLocalContent(content);
     }
-  }, [content, isEditing]);
+  }, [content, isEditing, isExternalEdit]);
 
   // Handle content changes and save them
   const handleBlur = () => {
@@ -56,7 +57,7 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
       setIsEditing(false);
       saveChanges();
       
-      // Also update the element in the form canvas context
+      // Update the element in the form canvas context
       updateElement({
         ...element,
         content: newContent
@@ -70,7 +71,9 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
       const target = e.target as HTMLDivElement;
       const newContent = target.innerHTML;
       setLocalContent(newContent);
+      setIsExternalEdit(true); // Prevent external update while typing
       onContentChange(newContent);
+      setIsExternalEdit(false);
     }
   };
 
