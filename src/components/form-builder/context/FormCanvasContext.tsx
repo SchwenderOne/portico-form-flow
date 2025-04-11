@@ -107,10 +107,18 @@ export const FormCanvasProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   
   // Handle adding AI-generated elements
   const handleAddAIElements = useCallback((newElements: FormElement[], replace: boolean = false) => {
+    console.log("Adding AI elements to canvas:", newElements);
+    
     if (replace) {
       setElements(newElements);
     } else {
-      setElements(prev => [...prev, ...newElements]);
+      // Make sure elements have unique IDs
+      const uniqueElements = newElements.map(el => ({
+        ...el,
+        id: `${el.type}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+      }));
+      
+      setElements(prev => [...prev, ...uniqueElements]);
     }
   }, [setElements]);
 
@@ -161,6 +169,7 @@ export const FormCanvasProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       };
     });
     
+    console.log("Adding elements to canvas:", elementsToAdd);
     setElements((prev) => [...prev, ...elementsToAdd]);
   }, [elements, setElements]);
 

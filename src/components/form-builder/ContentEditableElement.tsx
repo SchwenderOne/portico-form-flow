@@ -10,7 +10,7 @@ interface ContentEditableElementProps {
   content: string;
   onContentChange?: (content: string) => void;
   className?: string;
-  readOnly?: boolean; // Add readOnly prop
+  readOnly?: boolean;
 }
 
 const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
@@ -18,7 +18,7 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
   content,
   onContentChange,
   className = "",
-  readOnly = false, // Default to false
+  readOnly = false,
 }) => {
   const {
     isEditing,
@@ -68,7 +68,7 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
   };
 
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
-    if (isEditing && onContentChange && !readOnly) { // Check if not readOnly
+    if (isEditing && onContentChange && !readOnly) {
       // Update the content as the user types
       const target = e.target as HTMLDivElement;
       const newContent = target.innerHTML;
@@ -80,7 +80,7 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
   };
 
   const handleFontSize = (size: string) => {
-    if (!contentRef.current || readOnly) return; // Check if not readOnly
+    if (!contentRef.current || readOnly) return;
     
     document.execCommand('fontSize', false, size);
     
@@ -94,9 +94,65 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
   };
 
   const handleTextColor = (color: string) => {
-    if (!contentRef.current || readOnly) return; // Check if not readOnly
+    if (!contentRef.current || readOnly) return;
     
     document.execCommand('foreColor', false, color);
+    
+    // Save changes and notify parent
+    if (contentRef.current && onContentChange) {
+      const newContent = contentRef.current.innerHTML;
+      setLocalContent(newContent);
+      onContentChange(newContent);
+    }
+    saveChanges();
+  };
+
+  const handleBackgroundColor = (color: string) => {
+    if (!contentRef.current || readOnly) return;
+    
+    document.execCommand('hiliteColor', false, color);
+    
+    // Save changes and notify parent
+    if (contentRef.current && onContentChange) {
+      const newContent = contentRef.current.innerHTML;
+      setLocalContent(newContent);
+      onContentChange(newContent);
+    }
+    saveChanges();
+  };
+
+  const handleTextAlign = (align: 'left' | 'center' | 'right' | 'justify') => {
+    if (!contentRef.current || readOnly) return;
+    
+    document.execCommand(`justify${align.charAt(0).toUpperCase() + align.slice(1)}`, false, '');
+    
+    // Save changes and notify parent
+    if (contentRef.current && onContentChange) {
+      const newContent = contentRef.current.innerHTML;
+      setLocalContent(newContent);
+      onContentChange(newContent);
+    }
+    saveChanges();
+  };
+
+  const handleFontFamily = (font: string) => {
+    if (!contentRef.current || readOnly) return;
+    
+    document.execCommand('fontName', false, font);
+    
+    // Save changes and notify parent
+    if (contentRef.current && onContentChange) {
+      const newContent = contentRef.current.innerHTML;
+      setLocalContent(newContent);
+      onContentChange(newContent);
+    }
+    saveChanges();
+  };
+  
+  const handleTextTransform = (command: 'superscript' | 'subscript') => {
+    if (!contentRef.current || readOnly) return;
+    
+    document.execCommand(command, false, '');
     
     // Save changes and notify parent
     if (contentRef.current && onContentChange) {
@@ -112,15 +168,15 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
       <div
         ref={contentRef}
         className={`outline-none ${className}`}
-        contentEditable={isEditing && !readOnly} // Only editable if not readOnly
+        contentEditable={isEditing && !readOnly}
         onBlur={handleBlur}
         onInput={handleInput}
-        onDoubleClick={!readOnly ? handleDoubleClick : undefined} // Only handle double click if not readOnly
+        onDoubleClick={!readOnly ? handleDoubleClick : undefined}
         suppressContentEditableWarning={true}
         dangerouslySetInnerHTML={{ __html: localContent }}
       />
       
-      {isEditing && !readOnly && elementRect && ( // Only show toolbar if not readOnly
+      {isEditing && !readOnly && elementRect && (
         <UnifiedFloatingToolbar
           elementId={element.id}
           elementRect={elementRect}
@@ -137,6 +193,10 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
           onAlign={handleElementAlign}
           onFontSize={handleFontSize}
           onTextColor={handleTextColor}
+          onBackgroundColor={handleBackgroundColor}
+          onTextAlign={handleTextAlign}
+          onFontFamily={handleFontFamily}
+          onTextTransform={handleTextTransform}
           element={element}
         />
       )}

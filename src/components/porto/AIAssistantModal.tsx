@@ -50,6 +50,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
       
       if (generatedElements && generatedElements.length > 0) {
         console.log("Generated elements:", generatedElements);
+        // Pass the generated elements to the form canvas
         handleAddAIElements(generatedElements);
         toast.success("Form generated successfully");
         setPrompt("");
