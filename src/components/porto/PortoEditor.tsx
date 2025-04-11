@@ -2,10 +2,11 @@
 import React, { useState } from "react";
 import { PortoSidebar } from "./PortoSidebar";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, HelpCircle } from "lucide-react";
 import { useFormCanvas } from "../form-builder/context/FormCanvasContext";
 import { toast } from "sonner";
 import { AIAssistantModal } from "./AIAssistantModal";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export const PortoEditor: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -24,18 +25,35 @@ export const PortoEditor: React.FC = () => {
     setIsCollapsed(!isCollapsed);
   };
 
+  const handlePreviewForm = () => {
+    toast.success(`Form with ${elements.length} elements ready to preview`);
+  };
+
+  const handleExportForm = () => {
+    toast.success("Form exported successfully");
+  };
+
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-[calc(100vh-60px)] overflow-hidden relative">
       {isCollapsed ? (
         <div className="w-10 bg-background border-r h-full flex flex-col items-center pt-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSidebar}
-            className="mb-4"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleSidebar}
+                  className="mb-4"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Show sidebar
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       ) : (
         <PortoSidebar />
@@ -45,19 +63,46 @@ export const PortoEditor: React.FC = () => {
         <div className="h-14 border-b flex items-center justify-between px-4">
           <div className="flex items-center gap-2">
             {!isCollapsed && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleSidebar}
-                className="mr-2"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleSidebar}
+                      className="mr-2"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    Hide sidebar
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
             <h1 className="text-lg font-medium">Portico Form Builder</h1>
           </div>
 
           <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => toast.info("Help documentation will open in a modal")}
+                    className="h-8 w-8"
+                  >
+                    <HelpCircle className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Help & Documentation
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
             <Button
               variant="outline"
               size="sm"
@@ -66,11 +111,21 @@ export const PortoEditor: React.FC = () => {
             >
               AI Assistant
             </Button>
+            
+            <Button
+              variant="secondary"
+              size="sm"
+              className="text-sm"
+              onClick={handleExportForm}
+            >
+              Export
+            </Button>
+            
             <Button
               variant="default"
               size="sm"
               className="text-sm"
-              onClick={() => toast.success(`Form with ${elements.length} elements ready to preview`)}
+              onClick={handlePreviewForm}
             >
               Preview Form
             </Button>

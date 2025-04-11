@@ -22,7 +22,9 @@ import {
   FileType,
   ShieldCheck,
   FileSpreadsheet,
-  AlertCircle
+  AlertCircle,
+  Loader2,
+  Check
 } from "lucide-react";
 import { 
   exportToJSON, 
@@ -41,7 +43,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 
 interface ExportFormDropdownProps {
@@ -56,9 +57,16 @@ const ExportFormDropdown: React.FC<ExportFormDropdownProps> = ({
   const [anonymizeData, setAnonymizeData] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [previewData, setPreviewData] = useState<Record<string, any> | null>(null);
+  const [isExporting, setIsExporting] = useState<string | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     try {
+      setIsExporting('pdf');
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      
       // In a real app, this would generate and download the PDF
       const pdfData = preparePdfExport(
         formElements, 
@@ -81,16 +89,25 @@ const ExportFormDropdown: React.FC<ExportFormDropdownProps> = ({
       toast.success("PDF export prepared", {
         description: `Your form would now download as ${filename}`
       });
+
+      setIsMenuOpen(false);
     } catch (error) {
       console.error("PDF export error:", error);
       toast.error("Failed to export PDF", {
         description: "Please try again or contact support"
       });
+    } finally {
+      setIsExporting(null);
     }
   };
   
-  const handleExportCSV = () => {
+  const handleExportCSV = async () => {
     try {
+      setIsExporting('csv');
+      
+      // Simulate processing time
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
       const csvContent = exportToCSV(formElements, anonymizeData);
       const filename = generateExportFilename("csv", anonymizeData);
       
@@ -99,16 +116,25 @@ const ExportFormDropdown: React.FC<ExportFormDropdownProps> = ({
       toast.success("CSV exported successfully", {
         description: `File saved as ${filename}`
       });
+
+      setIsMenuOpen(false);
     } catch (error) {
       console.error("CSV export error:", error);
       toast.error("Failed to export CSV", {
         description: "Please try again or contact support"
       });
+    } finally {
+      setIsExporting(null);
     }
   };
   
-  const handleExportJSON = () => {
+  const handleExportJSON = async () => {
     try {
+      setIsExporting('json');
+      
+      // Simulate processing time
+      await new Promise(resolve => setTimeout(resolve, 600));
+      
       const jsonContent = exportToJSON(formElements, anonymizeData);
       const filename = generateExportFilename("json", anonymizeData);
       
@@ -117,32 +143,59 @@ const ExportFormDropdown: React.FC<ExportFormDropdownProps> = ({
       toast.success("JSON exported successfully", {
         description: `File saved as ${filename}`
       });
+
+      setIsMenuOpen(false);
     } catch (error) {
       console.error("JSON export error:", error);
       toast.error("Failed to export JSON", {
         description: "Please try again or contact support"
       });
+    } finally {
+      setIsExporting(null);
     }
   };
   
-  const handlePreviewAnonymization = () => {
-    // Get sample anonymized data
-    const anonymized = testAnonymization();
-    setPreviewData(anonymized);
-    setShowPreviewDialog(true);
+  const handlePreviewAnonymization = async () => {
+    try {
+      setIsExporting('preview');
+      
+      // Simulate processing time
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Get sample anonymized data
+      const anonymized = testAnonymization();
+      setPreviewData(anonymized);
+      setShowPreviewDialog(true);
+    } catch (error) {
+      toast.error("Failed to generate preview", {
+        description: "Please try again or contact support"
+      });
+    } finally {
+      setIsExporting(null);
+    }
   };
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
             size="sm"
             className="flex items-center gap-1"
+            disabled={isExporting !== null}
           >
-            <Download className="h-4 w-4 mr-1" />
-            Export
+            {isExporting ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                Exporting...
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4 mr-1" />
+                Export
+              </>
+            )}
           </Button>
         </DropdownMenuTrigger>
         
@@ -187,8 +240,13 @@ const ExportFormDropdown: React.FC<ExportFormDropdownProps> = ({
                 size="sm" 
                 className="w-full text-xs mt-1"
                 onClick={handlePreviewAnonymization}
+                disabled={isExporting !== null}
               >
-                <AlertCircle className="h-3 w-3 mr-1" />
+                {isExporting === 'preview' ? (
+                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                ) : (
+                  <AlertCircle className="h-3 w-3 mr-1" />
+                )}
                 Preview anonymization
               </Button>
             )}
@@ -197,26 +255,41 @@ const ExportFormDropdown: React.FC<ExportFormDropdownProps> = ({
           <DropdownMenuSeparator />
           
           <DropdownMenuItem 
-            className="flex cursor-pointer" 
+            className="flex cursor-pointer items-center" 
             onClick={handleExportPDF}
+            disabled={isExporting !== null}
           >
-            <FileText className="mr-2 h-4 w-4" />
+            {isExporting === 'pdf' ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <FileText className="mr-2 h-4 w-4" />
+            )}
             <span>Export as PDF</span>
           </DropdownMenuItem>
           
           <DropdownMenuItem 
-            className="flex cursor-pointer"
+            className="flex cursor-pointer items-center"
             onClick={handleExportCSV}
+            disabled={isExporting !== null}
           >
-            <FileSpreadsheet className="mr-2 h-4 w-4" />
+            {isExporting === 'csv' ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+            )}
             <span>Export as CSV</span>
           </DropdownMenuItem>
           
           <DropdownMenuItem 
-            className="flex cursor-pointer"
+            className="flex cursor-pointer items-center"
             onClick={handleExportJSON}
+            disabled={isExporting !== null}
           >
-            <FileJson className="mr-2 h-4 w-4" />
+            {isExporting === 'json' ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <FileJson className="mr-2 h-4 w-4" />
+            )}
             <span>Export as JSON</span>
           </DropdownMenuItem>
           
@@ -247,7 +320,10 @@ const ExportFormDropdown: React.FC<ExportFormDropdownProps> = ({
       <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Anonymized Data Preview</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+              Anonymized Data Preview
+            </DialogTitle>
             <DialogDescription>
               This is how your sensitive data will look when anonymized.
             </DialogDescription>
