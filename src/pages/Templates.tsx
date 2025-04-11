@@ -4,14 +4,14 @@ import AppLayout from "@/components/layout/AppLayout";
 import { TemplateGallery } from "@/components/templates/TemplateGallery";
 import { SelectedTemplateProvider } from "@/context/SelectedTemplateContext";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
 const Templates = () => {
-  const router = useRouter();
+  const navigate = useNavigate();
   
   const handleBack = () => {
-    router.navigate(-1);
+    navigate(-1);
   };
   
   return (
