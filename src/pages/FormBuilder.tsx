@@ -121,13 +121,16 @@ const TemplateFormLoader = () => {
     if (selectedTemplate && selectedTemplate.elements && selectedTemplate.elements.length > 0) {
       console.log("Loading template elements:", selectedTemplate.elements);
       
-      // Replace current elements with template elements
-      if (formCanvas && formCanvas.elements) {
-        // Check if we have access to elements in the context
-        if (typeof formCanvas.handleAddAIElements === 'function') {
-          // Use handleAddAIElements which is available in the context
-          formCanvas.handleAddAIElements(selectedTemplate.elements, true);
-        }
+      try {
+        // Deep clone the elements to avoid reference issues
+        const templateElements = JSON.parse(JSON.stringify(selectedTemplate.elements));
+        
+        // Replace current elements with template elements
+        formCanvas.setElements(templateElements);
+        
+        console.log("Template elements loaded successfully");
+      } catch (error) {
+        console.error("Error loading template elements:", error);
       }
       
       // Clear the selected template to avoid reloading on component re-renders

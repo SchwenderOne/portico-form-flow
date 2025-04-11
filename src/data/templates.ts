@@ -138,7 +138,6 @@ const patientIntakeElements: FormElement[] = [
   }
 ];
 
-// Define generic elements for other templates
 const genericElements: FormElement[] = [
   {
     id: "header-generic",
@@ -170,7 +169,62 @@ const genericElements: FormElement[] = [
   }
 ];
 
-// Update templates with more realistic images
+const contactInfoElements: FormElement[] = [
+  {
+    id: "header-contact",
+    type: "header",
+    content: "Contact Information Update",
+    position: { x: 100, y: 50 },
+    size: { width: 500, height: 60 },
+    groupId: null
+  },
+  {
+    id: "name-contact",
+    type: "text",
+    label: "Full Name",
+    placeholder: "Enter your full name",
+    required: true,
+    position: { x: 100, y: 130 },
+    size: { width: 500, height: 80 },
+    groupId: null,
+    helpText: "Please enter your current legal name"
+  },
+  {
+    id: "email-contact",
+    type: "email",
+    label: "Email Address",
+    placeholder: "Enter your email address",
+    required: true,
+    position: { x: 100, y: 230 },
+    size: { width: 500, height: 80 },
+    groupId: null,
+    validation: {
+      type: "email",
+      message: "Please enter a valid email address"
+    }
+  },
+  {
+    id: "phone-contact",
+    type: "text",
+    label: "Phone Number",
+    placeholder: "Enter your phone number",
+    required: false,
+    position: { x: 100, y: 330 },
+    size: { width: 500, height: 80 },
+    groupId: null
+  },
+  {
+    id: "address-contact",
+    type: "textarea",
+    label: "Current Address",
+    placeholder: "Enter your current address",
+    required: true,
+    position: { x: 100, y: 430 },
+    size: { width: 500, height: 120 },
+    groupId: null
+  }
+];
+
 export const templatesData = [
   {
     id: "1",
@@ -178,7 +232,7 @@ export const templatesData = [
     description: "Standard job application form with all required fields including work experience, education, and skills.",
     category: "HR",
     industry: "Recruitment",
-    image: "https://images.unsplash.com/photo-1551651057-8c07e9ceb00e?auto=format&fit=crop&q=80&w=400&h=250",
+    image: "https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?auto=format&fit=crop&q=80&w=400&h=250",
     created: "2023-10-12",
     author: "HR Team",
     popularity: 4.8,
@@ -191,7 +245,7 @@ export const templatesData = [
     description: "Collect detailed feedback from your customers about products and services.",
     category: "Feedback",
     industry: "Retail",
-    image: "https://images.unsplash.com/photo-1581088247940-69acdbc5c20e?auto=format&fit=crop&q=80&w=400&h=250",
+    image: "https://images.unsplash.com/photo-1633613286848-e6f43bbafb8d?auto=format&fit=crop&q=80&w=400&h=250",
     created: "2023-09-05",
     author: "Marketing Team",
     popularity: 4.6,
@@ -256,12 +310,12 @@ export const templatesData = [
     description: "Simple form to update contact information for existing customers or members.",
     category: "Administrative",
     industry: "Various",
-    image: "https://images.unsplash.com/photo-1574707100000-fe0a1f08049c?auto=format&fit=crop&q=80&w=400&h=250", 
+    image: "https://images.unsplash.com/photo-1534536281715-e28d76689b4d?auto=format&fit=crop&q=80&w=400&h=250", 
     created: "2023-07-22",
     author: "Admin Team",
     popularity: 4.2,
     timeEstimate: "1-2 mins",
-    elements: genericElements
+    elements: contactInfoElements
   },
   {
     id: "8",
