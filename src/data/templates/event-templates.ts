@@ -1,3 +1,4 @@
+
 import { FormElement } from "@/types/form";
 import { TemplateData } from "@/types/template";
 
@@ -231,7 +232,7 @@ export const eventTemplates: TemplateData[] = [
     category: "Events",
     industry: "Corporate",
     created: "2024-02-10",
-    image: "https://images.unsplash.com/photo-1540317580384-e5d43867caa6?q=80&w=1974&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=2012&auto=format&fit=crop",
     author: "Corporate Events",
     popularity: 4.6,
     timeEstimate: "7-10 min",

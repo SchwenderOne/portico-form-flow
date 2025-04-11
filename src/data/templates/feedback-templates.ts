@@ -1,3 +1,4 @@
+
 import { FormElement } from "@/types/form";
 import { TemplateData } from "@/types/template";
 
@@ -157,7 +158,7 @@ export const feedbackTemplates: TemplateData[] = [
     category: "Feedback",
     industry: "Various",
     created: "2024-01-25",
-    image: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?q=80&w=2070&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1546425848-3ce03ca1f3d3?q=80&w=2070&auto=format&fit=crop",
     popularity: 4.9,
     timeEstimate: "2-3 min",
     elements: simpleFeedbackElements

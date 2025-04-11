@@ -1,305 +1,147 @@
+import React, { createContext, useContext, useReducer, useState, useCallback, useEffect } from 'react';
+import { FormElement, FormPosition } from '@/types/form';
+import { v4 as uuidv4 } from 'uuid';
+import { useElementSelection } from '@/hooks/form/useElementSelection';
+import { useElementGrouping } from '@/hooks/form/useElementGrouping';
+import { useElementDuplication } from '@/hooks/form/useElementDuplication';
+import { useElementActions } from '@/hooks/form/useElementActions';
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
-import { FormElement } from "@/types/form";
-import { useFormElements } from "@/hooks/use-form-elements";
-import { useSmartGuides } from "../hooks/useSmartGuides";
-import { GroupingProvider, useGroupingState } from "../GroupingContext";
-import { KeyboardEvent } from "react";
-import { toast } from "sonner";
-
-type FormCanvasContextType = {
+interface FormCanvasContextType {
   elements: FormElement[];
-  setElements: (elements: FormElement[]) => void;
+  setElements: React.Dispatch<React.SetStateAction<FormElement[]>>;
   selectedElements: string[];
-  isDragging: boolean;
-  setIsDragging: React.Dispatch<React.SetStateAction<boolean>>;
+  handleElementSelect: (elementId: string, shiftKey?: boolean) => void;
+  handleAddAIElements: (newElements: FormElement[], replace?: boolean) => void;
+  handleCanvasClick: () => void;
+  handleElementDrop: (event: React.DragEvent<HTMLDivElement>) => void;
+  handleElementMoveWithGuides: (elementId: string, newPosition: FormPosition) => void;
+  handleDeleteElement: () => void;
+  handleDuplicateElement: () => void;
+  handleRequiredToggle: (elementId: string, required: boolean) => void;
+  handleDuplicateGroup: (groupIds: string[]) => void;
+  updateElement: (element: FormElement) => void;
+  showSmartGuides: boolean;
+  guideLines: { x: number; y: number }[];
+  distances: { x: number; y: number }[];
   isDragOver: boolean;
   setIsDragOver: React.Dispatch<React.SetStateAction<boolean>>;
-  isAIModalOpen: boolean;
-  setIsAIModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  handleElementSelect: (id: string, isMultiSelect: boolean) => void;
-  handleElementMove: (id: string, position: { x: number, y: number }) => void;
-  handleElementMoveWithGuides: (id: string, position: { x: number, y: number }) => void;
-  handleElementDrop: (type: string, position: { x: number, y: number }) => void;
-  handleAddAIElements: (elements: FormElement[], replaceExisting?: boolean) => void;
-  handleDeleteElement: (id: string) => void;
-  handleDuplicateElement: (id: string) => void;
-  handleRequiredToggle: (id: string, required: boolean) => void;
-  handleCanvasClick: (e: React.MouseEvent) => void;
-  handleKeyDown: (e: KeyboardEvent<HTMLDivElement>) => void;
-  updateElement: (element: FormElement) => void;
-  addElement: (element: FormElement) => void;
-  handleElementAlign: (id: string, alignment: 'left' | 'center' | 'right') => void;
-  showSmartGuides: boolean;
-  guideLines: { horizontal: number[]; vertical: number[] };
-  distances: { horizontal: { position: number; distance: number }[]; vertical: { position: number; distance: number }[] };
+  handleElementAlign: (alignment: 'left' | 'center' | 'right') => void;
+  handleKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void;
   grouping: {
-    selectedElements: string[];
     groupElements: () => void;
     ungroupElements: () => void;
-    isElementSelected: (id: string) => boolean;
-    selectElements: (ids: string[], clearExisting?: boolean) => void;
-    clearSelection: () => void;
   };
-  handleDuplicateGroup: (ids: string[]) => void;
-  handleOpenAIModal: () => void;
-  undoOperation: () => void;
-  redoOperation: () => void;
-  canUndo: boolean;
-  canRedo: boolean;
-};
+  addElements: (newElements: FormElement[]) => void;
+}
 
-const FormCanvasContext = createContext<FormCanvasContextType | undefined>(undefined);
+export const FormCanvasContext = createContext<any>(null);
 
-export const FormCanvasProvider: React.FC<{
-  children: React.ReactNode;
-}> = ({ children }) => {
-  const [isDragging, setIsDragging] = useState(false);
+export const FormCanvasProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [elements, setElements] = useState<FormElement[]>([]);
+  const [showSmartGuides, setShowSmartGuides] = useState(false);
+  const [guideLines, setGuideLines] = useState<{ x: number; y: number }[]>([]);
+  const [distances, setDistances] = useState<{ x: number; y: number }[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   
   const {
-    elements,
-    setElements,
     selectedElements,
-    handleElementSelect,
-    handleElementMove,
-    handleElementDrop,
-    handleDeleteElement,
-    handleDuplicateElement,
-    handleRequiredToggle,
-    handleGroupElements,
-    handleUngroupElements,
-    handleDuplicateGroup,
-    updateElement,
-    addElement
-  } = useFormElements();
-
+    handleElementSelect
+  } = useElementSelection(elements, setElements);
+  
   const {
-    showSmartGuides,
-    guideLines,
-    distances,
-    calculateSmartGuides,
-    autoNudgePosition
-  } = useSmartGuides(elements, isDragging);
-
-  const grouping = useGroupingState(
-    elements,
-    handleGroupElements,
-    handleUngroupElements
-  );
-
-  useEffect(() => {
-    const handleVersionRestore = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      if (customEvent.detail && Array.isArray(customEvent.detail.elements)) {
-        setElements(customEvent.detail.elements);
-        grouping.clearSelection();
-        toast.success("Form version restored successfully");
-      }
-    };
-
-    document.addEventListener('version-restore', handleVersionRestore);
-    
-    return () => {
-      document.removeEventListener('version-restore', handleVersionRestore);
-    };
-  }, [setElements, grouping]);
-
-  const handleElementAlign = useCallback((id: string, alignment: 'left' | 'center' | 'right') => {
-    const element = elements.find(el => el.id === id);
-    if (!element) return;
-    
-    const canvasWidth = 800;
-    
-    let newX: number;
-    
-    switch (alignment) {
-      case 'left':
-        newX = 0;
-        break;
-      case 'center':
-        newX = (canvasWidth - element.size.width) / 2;
-        break;
-      case 'right':
-        newX = canvasWidth - element.size.width;
-        break;
-      default:
-        newX = element.position.x;
-    }
-    
-    updateElement({
-      ...element,
-      position: {
-        ...element.position,
-        x: newX
-      }
-    });
-    
-    toast.success(`Element aligned ${alignment}`);
-  }, [elements, updateElement]);
-
-  const [canUndo, setCanUndo] = useState(false);
-  const [canRedo, setCanRedo] = useState(false);
-
-  const undoOperation = () => {
-    toast.info("Undo functionality will be available soon");
-  };
-
-  const redoOperation = () => {
-    toast.info("Redo functionality will be available soon");
-  };
-
-  const handleKeyDown = useCallback((e: KeyboardEvent<HTMLDivElement>) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
-      e.preventDefault();
-      undoOperation();
-    }
-    
-    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
-      e.preventDefault();
-      redoOperation();
-    }
-    
-    if ((e.key === 'Delete' || e.key === 'Backspace') && grouping.selectedElements.length > 0) {
-      e.preventDefault();
-      grouping.selectedElements.forEach(id => handleDeleteElement(id));
-      grouping.clearSelection();
-    }
-    
-    if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
-      e.preventDefault();
-      if (grouping.selectedElements.length === 1) {
-        handleDuplicateElement(grouping.selectedElements[0]);
-      } else if (grouping.selectedElements.length > 1) {
-        handleDuplicateGroup(grouping.selectedElements);
-        toast.success("Group duplicated successfully");
-      }
-    }
-    
-    if ((e.ctrlKey || e.metaKey) && e.key === 'g') {
-      e.preventDefault();
-      if (grouping.selectedElements.length > 1) {
-        grouping.groupElements();
-      }
-    }
-    
-    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'g') {
-      e.preventDefault();
-      grouping.ungroupElements();
-    }
-  }, [grouping, handleDeleteElement, handleDuplicateElement, handleDuplicateGroup]);
-
-  const handleElementMoveWithGuides = (id: string, position: { x: number, y: number }) => {
-    calculateSmartGuides(id, position);
-    const nudgedPosition = autoNudgePosition(id, position);
-    handleElementMove(id, nudgedPosition);
-  };
-
-  const handleAddAIElements = useCallback((elements: FormElement[], replaceExisting = false) => {
-    if (!elements || elements.length === 0) return;
-    
-    if (replaceExisting) {
-      setElements(elements.map((element, index) => ({
-        ...element,
-        position: {
-          x: 100,
-          y: 50 + (index > 0 ? index * 100 : 0)
-        }
-      })));
-      
-      if (elements.length > 0) {
-        handleElementSelect(elements[0].id, false);
-      }
-      
-      toast.success(`Replaced with ${elements.length} new elements`);
-      return;
-    }
-    
-    const lowestElementBottom = Math.max(
-      ...elements.map(el => el.position.y + el.size.height),
-      50
-    );
-    
-    let currentY = lowestElementBottom + 30;
-    
-    currentY = Math.round(currentY / 25) * 25;
-    
-    const newElements = elements.map((element, index) => {
-      const adjustedElement = {
-        ...element,
-        position: {
-          x: 100,
-          y: currentY
-        }
-      };
-      
-      const elementHeight = element.size.height || 80;
-      const spacing = 20;
-      currentY += elementHeight + spacing;
-      
-      currentY = Math.round(currentY / 25) * 25;
-      
-      return adjustedElement;
-    });
-    
-    setElements(prev => [...prev, ...newElements]);
-    
-    if (elements.length > 0) {
-      const lastElement = elements[elements.length - 1];
-      handleElementSelect(lastElement.id, false);
-    }
-    
-    toast.success(`${elements.length} elements added to canvas`);
-  }, [setElements, handleElementSelect]);
-
-  const handleOpenAIModal = () => {
-    setIsAIModalOpen(true);
-  };
-
-  const handleCanvasClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      grouping.clearSelection();
-    }
-  };
-
-  const contextValue: FormCanvasContextType = {
-    elements,
-    setElements, // Add this line to expose setElements
-    selectedElements,
-    isDragging,
-    setIsDragging,
-    isDragOver,
-    setIsDragOver,
-    isAIModalOpen,
-    setIsAIModalOpen,
-    handleElementSelect,
-    handleElementMove,
-    handleElementMoveWithGuides,
-    handleElementDrop,
-    handleAddAIElements,
-    handleDeleteElement,
+    groupElements,
+    ungroupElements
+  } = useElementGrouping(elements, setElements, selectedElements);
+  
+  const {
     handleDuplicateElement,
+    handleDuplicateGroup
+  } = useElementDuplication(elements, setElements, selectedElements);
+  
+  const {
+    handleDeleteElement,
     handleRequiredToggle,
+    handleElementAlign,
+    handleElementDrop,
+    handleElementMoveWithGuides,
+    handleAddAIElements,
     handleCanvasClick,
     handleKeyDown,
-    updateElement,
-    addElement,
-    handleElementAlign,
-    showSmartGuides,
-    guideLines,
-    distances,
-    grouping,
-    handleDuplicateGroup,
-    handleOpenAIModal,
-    undoOperation,
-    redoOperation,
-    canUndo,
-    canRedo
-  };
+    updateElement
+  } = useElementActions(elements, setElements, selectedElements, setShowSmartGuides, setGuideLines, setDistances);
+
+  // Add elements to the canvas (for template field selection)
+  const addElements = useCallback((newElements: FormElement[]) => {
+    // Get max y position to position new elements below existing ones
+    const maxY = elements.reduce((max, el) => 
+      Math.max(max, el.position.y + el.size.height), 0);
+    
+    // Add 20px spacing
+    const startY = maxY > 0 ? maxY + 20 : 100;
+    
+    // Assign new positions and IDs to avoid conflicts
+    const elementsToAdd = newElements.map((element, index) => {
+      // Create a new ID for the element
+      const newId = `${element.type}-${uuidv4().substring(0, 8)}`;
+      
+      // Update groupId references if element is part of a group
+      let newGroupId = element.groupId;
+      if (element.groupId) {
+        // Create a mapping of old group IDs to new ones
+        const groupMapping = newElements.reduce((acc, el) => {
+          if (el.groupId && !acc[el.groupId]) {
+            acc[el.groupId] = `group-${uuidv4().substring(0, 8)}`;
+          }
+          return acc;
+        }, {} as Record<string, string>);
+        
+        newGroupId = element.groupId ? groupMapping[element.groupId] : null;
+      }
+      
+      return {
+        ...element,
+        id: newId,
+        groupId: newGroupId,
+        position: {
+          x: element.position.x,
+          y: startY + (index * 100) // Stack elements vertically
+        }
+      };
+    });
+    
+    setElements((prev) => [...prev, ...elementsToAdd]);
+  }, [elements, setElements]);
 
   return (
-    <FormCanvasContext.Provider value={contextValue}>
+    <FormCanvasContext.Provider
+      value={{
+        elements,
+        setElements,
+        selectedElements,
+        handleElementSelect,
+        handleAddAIElements,
+        handleCanvasClick,
+        handleElementDrop,
+        handleElementMoveWithGuides,
+        handleDeleteElement,
+        handleDuplicateElement,
+        handleRequiredToggle,
+        handleDuplicateGroup,
+        updateElement,
+        showSmartGuides,
+        guideLines,
+        distances,
+        isDragOver,
+        setIsDragOver,
+        handleElementAlign,
+        handleKeyDown,
+        grouping: {
+          groupElements,
+          ungroupElements
+        },
+        addElements, // Add the new function for adding elements
+      }}
+    >
       {children}
     </FormCanvasContext.Provider>
   );
@@ -307,7 +149,7 @@ export const FormCanvasProvider: React.FC<{
 
 export const useFormCanvas = () => {
   const context = useContext(FormCanvasContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useFormCanvas must be used within a FormCanvasProvider');
   }
   return context;
