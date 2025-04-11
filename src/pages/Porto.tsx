@@ -32,7 +32,6 @@ const Porto = () => {
         <PortoProvider>
           <CollaborationProvider formId={formId}>
             <FormCanvasProvider>
-              {/* Only render the PortoEditor component */}
               <PortoEditor />
               
               {/* Toaster must be inside the providers to have access to contexts */}

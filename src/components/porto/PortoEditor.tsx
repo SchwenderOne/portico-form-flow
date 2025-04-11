@@ -11,6 +11,7 @@ import { PortoSettings } from "./PortoSettings";
 import { PortoPreview } from "./PortoPreview";
 import { CollaboratorAvatars } from "@/context/CollaborationContext";
 import { toast } from "sonner";
+import { PortoToolbar } from "./PortoToolbar";
 
 export const PortoEditor: React.FC = () => {
   const { 
@@ -117,8 +118,10 @@ export const PortoEditor: React.FC = () => {
           <div className="flex flex-1 h-full overflow-hidden">
             <PortoSidebar />
             <div className="flex-1 flex flex-col relative">
+              {/* Add toolbar for selected elements */}
+              <PortoToolbar />
               <div className="flex-1 overflow-hidden relative">
-                {/* Place collaborator avatars in the top right corner only once */}
+                {/* Place collaborator avatars in the top right corner */}
                 <div className="absolute top-2 right-2 z-10">
                   <CollaboratorAvatars />
                 </div>

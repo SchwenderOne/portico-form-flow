@@ -50,13 +50,14 @@ Example format:
 ]
 `;
 
-    // Verify API key is available and logged
+    // Verify API key is available
     if (!OPENROUTER_API_KEY) {
       console.error("OpenRouter API key is missing");
       throw new Error("API credentials are not configured");
     }
 
-    console.log("OpenRouter API key is valid, sending request...");
+    // Add debug log to verify API key
+    console.log("Using OpenRouter API key:", OPENROUTER_API_KEY.substring(0, 5) + "...");
     
     const response = await fetch(OPENROUTER_API_URL, {
       method: "POST",
