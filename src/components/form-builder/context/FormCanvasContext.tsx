@@ -132,6 +132,14 @@ export const FormCanvasProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     handleDuplicateGroup
   } = useElementDuplication(elements, setElements, setSelectedElements);
   
+  // Use element actions hook to get handleDeleteElement and other functions
+  const {
+    updateElement,
+    handleElementMove,
+    handleElementDrop,
+    handleDeleteElement
+  } = useElementActions(elements, setElements, selectedElements, setSelectedElements);
+  
   // Handle canvas click to deselect elements
   const handleCanvasClick = useCallback(() => {
     setSelectedElements([]);
@@ -279,14 +287,6 @@ export const FormCanvasProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   }, [setElements, setSelectedElements]);
 
-  // Get element actions from the hook
-  const {
-    updateElement,
-    handleElementMove,
-    handleElementDrop,
-    handleDeleteElement
-  } = useElementActions(elements, setElements, selectedElements, setSelectedElements);
-
   // Add elements to the canvas (for template field selection)
   const addElements = useCallback((newElements: FormElement[]) => {
     // Get max y position to position new elements below existing ones
@@ -411,3 +411,4 @@ export const useFormCanvas = () => {
   }
   return context;
 };
+
