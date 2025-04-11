@@ -46,12 +46,19 @@ interface PortoContextType {
   setCurrentTemplate: (templateId: string | null) => void;
   // Add missing properties needed by components
   isPublished: boolean;
-  publishForm: () => void;
+  publishForm: () => voi 
   unpublishForm: () => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
   exportForm: (format: 'json' | 'pdf' | 'html') => void;
   saveFormAsTemplate: () => void;
+  // Add the three missing properties
+  useGrid: boolean;
+  gridSize: number;
+  canvasScale: number;
+  toggleGrid?: () => void;
+  setGridSize?: (size: number) => void;
+  setCanvasScale?: (scale: number) => void;
 }
 
 const PortoContext = createContext<PortoContextType | undefined>(undefined);
@@ -77,6 +84,16 @@ export const PortoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Editing state
   const [isEdited, setIsEdited] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+
+  // Add the missing states
+  const [useGrid, setUseGrid] = useState(true);
+  const [gridSize, setGridSize] = useState(20);
+  const [canvasScale, setCanvasScale] = useState(1);
+  
+  // Toggle grid
+  const toggleGrid = () => {
+    setUseGrid(!useGrid);
+  };
   
   // Track changes to mark form as edited
   useEffect(() => {
@@ -163,7 +180,14 @@ export const PortoProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         isDarkMode,
         toggleDarkMode,
         exportForm,
-        saveFormAsTemplate
+        saveFormAsTemplate,
+        // Add the missing properties to the context
+        useGrid,
+        gridSize,
+        canvasScale,
+        toggleGrid,
+        setGridSize,
+        setCanvasScale
       }}
     >
       {children}

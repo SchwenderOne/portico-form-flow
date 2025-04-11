@@ -19,9 +19,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 interface ElementContentProps {
   element: FormElement;
   isEditing: boolean;
+  isPreview?: boolean; // Add isPreview prop
 }
 
-const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) => {
+const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing, isPreview = false }) => {
   // Add default state values for form controls
   const [textValue, setTextValue] = useState('');
   const [selectValue, setSelectValue] = useState('');
@@ -34,6 +35,9 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
   const { complianceSettings } = useCompliance();
 
   const renderField = () => {
+    // When in preview mode, disable editing for all fields
+    const effectiveIsEditing = isPreview ? false : isEditing;
+
     switch (element.type) {
       case 'text':
         return (
@@ -41,7 +45,7 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
             label={element.label || ''} 
             placeholder={element.placeholder} 
             required={element.required} 
-            isEditing={isEditing} 
+            isEditing={effectiveIsEditing} 
             value={textValue}
             onChange={setTextValue}
           />
@@ -52,7 +56,7 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
             label={element.label || ''} 
             placeholder={element.placeholder} 
             required={element.required} 
-            isEditing={isEditing} 
+            isEditing={effectiveIsEditing} 
             value={textValue}
             onChange={setTextValue}
           />
@@ -63,7 +67,7 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
             id={element.id}
             label={element.label || ''} 
             required={element.required} 
-            isEditing={isEditing} 
+            isEditing={effectiveIsEditing} 
             checked={checkboxValue}
             onCheckedChange={setCheckboxValue}
           />
@@ -74,7 +78,7 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
             id={element.id}
             checked={gdprConsentValue}
             onCheckedChange={setGdprConsentValue}
-            isEditing={isEditing}
+            isEditing={effectiveIsEditing}
             privacyPolicyUrl={complianceSettings.privacyPolicyUrl}
             termsOfServiceUrl={complianceSettings.termsOfServiceUrl}
           />
@@ -110,7 +114,7 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
             label={element.label || ''} 
             options={element.options || []} 
             required={element.required} 
-            isEditing={isEditing}
+            isEditing={effectiveIsEditing}
             selectedOption={selectValue}
             onChange={setSelectValue}
           />
@@ -120,20 +124,20 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
           <FileField 
             label={element.label || ''} 
             required={element.required} 
-            isEditing={isEditing} 
+            isEditing={effectiveIsEditing} 
           />
         );
       case 'header':
-        return <HeaderField content={(element as any).content || ''} isEditing={isEditing} />;
+        return <HeaderField content={(element as any).content || ''} isEditing={effectiveIsEditing} />;
       case 'paragraph':
-        return <ParagraphField content={(element as any).content || ''} isEditing={isEditing} />;
+        return <ParagraphField content={(element as any).content || ''} isEditing={effectiveIsEditing} />;
       case 'email':
         return (
           <EmailField 
             label={element.label || ''} 
             placeholder={element.placeholder} 
             required={element.required} 
-            isEditing={isEditing}
+            isEditing={effectiveIsEditing}
             value={textValue}
             onChange={setTextValue}
           />
@@ -143,7 +147,7 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
           <DateField 
             label={element.label || ''} 
             required={element.required} 
-            isEditing={isEditing}
+            isEditing={effectiveIsEditing}
             date={dateValue}
             onChange={setDateValue}
           />
@@ -154,7 +158,7 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
             label={element.label || ''} 
             placeholder={element.placeholder} 
             required={element.required} 
-            isEditing={isEditing}
+            isEditing={effectiveIsEditing}
             value={textValue}
             onChange={setTextValue}
           />
@@ -168,16 +172,16 @@ const ElementContent: React.FC<ElementContentProps> = ({ element, isEditing }) =
     <div className="form-element-content w-full">
       {renderField()}
       
-      {/* Help Text */}
-      {element.helpText && element.type !== 'header' && element.type !== 'paragraph' && (
+      {/* Help Text - Don't show in preview mode unless configured differently */}
+      {element.helpText && element.type !== 'header' && element.type !== 'paragraph' && !isPreview && (
         <div className="mt-1 flex items-start gap-1.5">
           <InfoIcon className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
           <p className="text-xs text-muted-foreground">{element.helpText}</p>
         </div>
       )}
       
-      {/* Validation Status - only show this when there's a validation type set */}
-      {element.validation?.type && !isEditing && (
+      {/* Validation Status - only show this when there's a validation type set and not in preview or editing mode */}
+      {element.validation?.type && !isEditing && !isPreview && (
         <div className="mt-1 px-2 py-1 bg-yellow-50 border border-yellow-200 rounded-sm flex items-center text-yellow-700">
           <AlertTriangle className="h-3.5 w-3.5 mr-1.5" />
           <span className="text-xs">

@@ -10,6 +10,7 @@ interface ContentEditableElementProps {
   content: string;
   onContentChange?: (content: string) => void;
   className?: string;
+  readOnly?: boolean; // Add readOnly prop
 }
 
 const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
@@ -17,6 +18,7 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
   content,
   onContentChange,
   className = "",
+  readOnly = false, // Default to false
 }) => {
   const {
     isEditing,
@@ -66,7 +68,7 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
   };
 
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
-    if (isEditing && onContentChange) {
+    if (isEditing && onContentChange && !readOnly) { // Check if not readOnly
       // Update the content as the user types
       const target = e.target as HTMLDivElement;
       const newContent = target.innerHTML;
@@ -78,7 +80,7 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
   };
 
   const handleFontSize = (size: string) => {
-    if (!contentRef.current) return;
+    if (!contentRef.current || readOnly) return; // Check if not readOnly
     
     document.execCommand('fontSize', false, size);
     
@@ -92,7 +94,7 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
   };
 
   const handleTextColor = (color: string) => {
-    if (!contentRef.current) return;
+    if (!contentRef.current || readOnly) return; // Check if not readOnly
     
     document.execCommand('foreColor', false, color);
     
@@ -110,15 +112,15 @@ const ContentEditableElement: React.FC<ContentEditableElementProps> = ({
       <div
         ref={contentRef}
         className={`outline-none ${className}`}
-        contentEditable={isEditing}
+        contentEditable={isEditing && !readOnly} // Only editable if not readOnly
         onBlur={handleBlur}
         onInput={handleInput}
-        onDoubleClick={handleDoubleClick}
+        onDoubleClick={!readOnly ? handleDoubleClick : undefined} // Only handle double click if not readOnly
         suppressContentEditableWarning={true}
         dangerouslySetInnerHTML={{ __html: localContent }}
       />
       
-      {isEditing && elementRect && (
+      {isEditing && !readOnly && elementRect && ( // Only show toolbar if not readOnly
         <UnifiedFloatingToolbar
           elementId={element.id}
           elementRect={elementRect}
