@@ -1,7 +1,5 @@
-
 import React, { useState, useEffect } from "react";
 import FormCanvas from "@/components/form-builder/FormCanvas";
-import AppLayout from "@/components/layout/AppLayout";
 import { FormMetadataSheet, registerFormMetadataSheetControls } from "@/components/form-builder/FormMetadataSheet";
 import { FormMetadataProvider } from "@/context/FormMetadataContext";
 import { BrandSettingsSheet, registerBrandSettingsSheetControls } from "@/components/form-builder/BrandSettingsSheet";
@@ -68,46 +66,44 @@ const FormBuilder = () => {
 
   return (
     <ErrorBoundary>
-      <AppLayout hideHeader={true}>
-        <TeamProvider>
-          <FormMetadataProvider>
-            <BrandSettingsProvider>
-              <ComplianceProvider>
-                <CollaborationProvider formId={formId}>
-                  <FormCanvasProvider>
-                    <TemplateFormLoader />
-                    <div className="h-[calc(100vh-0px)] overflow-hidden bg-gray-100">
-                      <FormCanvas />
-                      
-                      <FormMetadataSheet 
-                        showTrigger={false} 
-                        open={metadataSheetOpen} 
-                        onOpenChange={setMetadataSheetOpen} 
-                      />
-                      
-                      <BrandSettingsSheet 
-                        open={brandSheetOpen}
-                        onOpenChange={setBrandSheetOpen}
-                      />
-                      
-                      <VersionHistorySheet 
-                        showTrigger={false}
-                        open={versionHistoryOpen}
-                        onOpenChange={setVersionHistoryOpen}
-                      />
-                      
-                      <TeamManagementSheet
-                        open={teamSheetOpen}
-                        onOpenChange={setTeamSheetOpen}
-                      />
-                    </div>
-                  </FormCanvasProvider>
-                </CollaborationProvider>
-              </ComplianceProvider>
-            </BrandSettingsProvider>
-          </FormMetadataProvider>
-        </TeamProvider>
-      </AppLayout>
+      <TeamProvider>
+        <FormMetadataProvider>
+          <BrandSettingsProvider>
+            <ComplianceProvider>
+              <CollaborationProvider formId={formId}>
+                <FormCanvasProvider>
+                  <TemplateFormLoader />
+                  <div className="h-[calc(100vh-56px)] overflow-hidden bg-gray-100">
+                    <FormCanvas />
+                    
+                    <FormMetadataSheet 
+                      showTrigger={false} 
+                      open={metadataSheetOpen} 
+                      onOpenChange={setMetadataSheetOpen} 
+                    />
+                    
+                    <BrandSettingsSheet 
+                      open={brandSheetOpen}
+                      onOpenChange={setBrandSheetOpen}
+                    />
+                    
+                    <VersionHistorySheet 
+                      showTrigger={false}
+                      open={versionHistoryOpen}
+                      onOpenChange={setVersionHistoryOpen}
+                    />
+                    
+                    <TeamManagementSheet
+                      open={teamSheetOpen}
+                      onOpenChange={setTeamSheetOpen}
+                    />
+                  </div>
+                </FormCanvasProvider>
+              </CollaborationProvider>
+            </ComplianceProvider>
+          </BrandSettingsProvider>
+        </FormMetadataProvider>
+      </TeamProvider>
     </ErrorBoundary>
   );
 };
