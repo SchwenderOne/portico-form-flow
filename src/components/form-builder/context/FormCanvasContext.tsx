@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useReducer, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { FormElement, FormPosition } from '@/types/form';
 import { v4 as uuidv4 } from 'uuid';
 import { useElementSelection } from '@/hooks/form/useElementSelection';
@@ -14,10 +14,10 @@ interface FormCanvasContextType {
   handleElementSelect: (elementId: string, shiftKey?: boolean) => void;
   handleAddAIElements: (newElements: FormElement[], replace?: boolean) => void;
   handleCanvasClick: () => void;
-  handleElementDrop: (event: React.DragEvent<HTMLDivElement>) => void;
+  handleElementDrop: (event: React.DragEvent<HTMLDivElement> | string, position?: FormPosition) => void;
   handleElementMoveWithGuides: (elementId: string, newPosition: FormPosition) => void;
-  handleDeleteElement: () => void;
-  handleDuplicateElement: () => void;
+  handleDeleteElement: (elementId?: string) => void;
+  handleDuplicateElement: (elementId?: string) => void;
   handleRequiredToggle: (elementId: string, required: boolean) => void;
   handleDuplicateGroup: (groupIds: string[]) => void;
   updateElement: (element: FormElement) => void;
@@ -26,16 +26,21 @@ interface FormCanvasContextType {
   distances: { x: number; y: number }[];
   isDragOver: boolean;
   setIsDragOver: React.Dispatch<React.SetStateAction<boolean>>;
-  handleElementAlign: (alignment: 'left' | 'center' | 'right') => void;
+  handleElementAlign: (elementId: string, alignment: 'left' | 'center' | 'right') => void;
   handleKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void;
   grouping: {
     groupElements: () => void;
     ungroupElements: () => void;
   };
   addElements: (newElements: FormElement[]) => void;
+  setIsDragging?: (isDragging: boolean) => void;
+  undoOperation?: () => void;
+  redoOperation?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
 }
 
-export const FormCanvasContext = createContext<any>(null);
+export const FormCanvasContext = createContext<FormCanvasContextType | null>(null);
 
 export const FormCanvasProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [elements, setElements] = useState<FormElement[]>([]);
@@ -43,44 +48,47 @@ export const FormCanvasProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [guideLines, setGuideLines] = useState<{ x: number; y: number }[]>([]);
   const [distances, setDistances] = useState<{ x: number; y: number }[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   
-  // Fix: Pass no arguments to useElementSelection
+  // Use element selection hook
   const {
     selectedElements,
     setSelectedElements,
     handleElementSelect
   } = useElementSelection();
   
-  // Fix: Pass required parameters to useElementGrouping
+  // Use element grouping hook
   const {
     handleGroupElements,
     handleUngroupElements,
     handleRequiredToggle
   } = useElementGrouping(elements, setElements, selectedElements);
   
-  // Fix: Pass correct parameters to useElementDuplication
+  // Use element duplication hook
   const {
     handleDuplicateElement,
     handleDuplicateGroup
   } = useElementDuplication(elements, setElements, setSelectedElements);
   
-  // Create additional handlers needed for the context
+  // Handle canvas click to deselect elements
   const handleCanvasClick = useCallback(() => {
     setSelectedElements([]);
   }, [setSelectedElements]);
   
-  const handleElementAlign = useCallback((alignment: 'left' | 'center' | 'right') => {
-    // Implementation for element alignment
-    console.log(`Aligning selected elements to ${alignment}`);
+  // Handle element alignment
+  const handleElementAlign = useCallback((elementId: string, alignment: 'left' | 'center' | 'right') => {
+    console.log(`Aligning element ${elementId} to ${alignment}`);
+    // Implementation would adjust the element position based on alignment
   }, []);
   
+  // Handle keyboard events
   const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
-    // Implementation for key down events
     console.log('Key pressed:', event.key);
+    // Implement keyboard shortcuts (delete, duplicate, etc.)
   }, []);
   
+  // Handle moving elements with guides
   const handleElementMoveWithGuides = useCallback((elementId: string, newPosition: FormPosition) => {
-    // Implementation for moving elements with guides
     setElements(prev => 
       prev.map(el => 
         el.id === elementId ? { ...el, position: newPosition } : el
@@ -88,6 +96,7 @@ export const FormCanvasProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     );
   }, [setElements]);
   
+  // Handle adding AI-generated elements
   const handleAddAIElements = useCallback((newElements: FormElement[], replace: boolean = false) => {
     if (replace) {
       setElements(newElements);
@@ -96,13 +105,12 @@ export const FormCanvasProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   }, [setElements]);
 
-  // Get element actions from the hook with consistent parameter order
+  // Get element actions from the hook
   const {
     updateElement,
     handleElementMove,
     handleElementDrop,
-    handleDeleteElement,
-    alignElement
+    handleDeleteElement
   } = useElementActions(elements, setElements, selectedElements, setSelectedElements);
 
   // Add elements to the canvas (for template field selection)
@@ -174,7 +182,12 @@ export const FormCanvasProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           groupElements: handleGroupElements,
           ungroupElements: handleUngroupElements
         },
-        addElements
+        addElements,
+        setIsDragging: setIsDragging ? setIsDragging : undefined,
+        undoOperation: undefined, // Implement if needed
+        redoOperation: undefined, // Implement if needed
+        canUndo: false, // Implement if needed
+        canRedo: false  // Implement if needed
       }}
     >
       {children}
