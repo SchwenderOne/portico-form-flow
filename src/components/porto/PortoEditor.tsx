@@ -15,7 +15,12 @@ export const PortoEditor: React.FC = () => {
   const [isRightSidebarCollapsed, setIsRightSidebarCollapsed] = useState(true);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [isBrandSettingsOpen, setIsBrandSettingsOpen] = useState(false);
-  const { elements, selectedElement, updateElement } = useFormCanvas();
+  const { elements, selectedElements, updateElement } = useFormCanvas();
+  
+  // Get the currently selected element based on selectedElements array
+  const selectedElement = selectedElements.length === 1 
+    ? elements.find(el => el.id === selectedElements[0]) 
+    : null;
 
   const handleOpenAIModal = () => {
     setIsAIModalOpen(true);
