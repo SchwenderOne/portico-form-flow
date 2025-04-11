@@ -1,149 +1,133 @@
 
-import React, { useState, useEffect } from "react";
-import { PortoHeader } from "./PortoHeader";
+import React, { useState } from "react";
 import { PortoSidebar } from "./PortoSidebar";
-import { PortoCanvas } from "./PortoCanvas";
-import { usePorto } from "./context/PortoContext";
-import { useFormCanvas } from "@/components/form-builder/context/FormCanvasContext";
-import { AIAssistantModal } from "@/components/porto/AIAssistantModal";
-import { PortoFormTemplates } from "./PortoFormTemplates";
-import { PortoSettings } from "./PortoSettings";
-import { PortoPreview } from "./PortoPreview";
-import { CollaboratorAvatars } from "@/context/CollaborationContext";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useFormCanvas } from "../form-builder/context/FormCanvasContext";
 import { toast } from "sonner";
-import { PortoToolbar } from "./PortoToolbar";
-import AppHeader from "@/components/layout/AppHeader";
-import AppSidebar from "@/components/layout/AppSidebar";
+import { AIAssistantModal } from "./AIAssistantModal";
 
 export const PortoEditor: React.FC = () => {
-  const { 
-    activeSection, 
-    previewMode, 
-    setFormElements, 
-    formElements,
-    isEdited,
-    lastSaved,
-    saveForm
-  } = usePorto();
-  
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-  const formCanvas = useFormCanvas();
+  const { elements } = useFormCanvas();
 
-  // Sync form elements between contexts
-  useEffect(() => {
-    // When FormCanvas has elements but Porto doesn't, update Porto
-    if (formCanvas.elements && formCanvas.elements.length > 0 && 
-        (!formElements || formElements.length === 0)) {
-      console.log("Syncing from FormCanvas to Porto context");
-      setFormElements([...formCanvas.elements]);
-    }
-    
-    // When Porto has elements but FormCanvas doesn't, update FormCanvas
-    if (formElements && formElements.length > 0 && 
-        (!formCanvas.elements || formCanvas.elements.length === 0 || 
-         JSON.stringify(formElements) !== JSON.stringify(formCanvas.elements))) {
-      console.log("Syncing from Porto context to FormCanvas");
-      formCanvas.setElements([...formElements]);
-    }
-  }, [formCanvas.elements, setFormElements, formElements, formCanvas]);
+  const handleOpenAIModal = () => {
+    setIsAIModalOpen(true);
+  };
 
-  // Auto-save notification
-  useEffect(() => {
-    if (lastSaved) {
-      // Only show this once when saved changes occur
-      const lastSavedTime = lastSaved.toLocaleTimeString();
-      toast.info(`Changes auto-saved at ${lastSavedTime}`, {
-        duration: 2000,
-        id: "auto-save" // Prevents duplicate toasts
-      });
-    }
-  }, [lastSaved]);
+  const handleCloseAIModal = () => {
+    setIsAIModalOpen(false);
+  };
 
-  // Auto-save every 30 seconds if there are unsaved changes
-  useEffect(() => {
-    if (isEdited) {
-      const autoSaveTimer = setTimeout(() => {
-        saveForm();
-      }, 30000);
-      
-      return () => clearTimeout(autoSaveTimer);
-    }
-  }, [isEdited, saveForm]);
-
-  // Prompt before leaving if there are unsaved changes
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isEdited) {
-        const message = "You have unsaved changes. Are you sure you want to leave?";
-        e.returnValue = message;
-        return message;
-      }
-    };
-    
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [isEdited]);
-
-  // Handle keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Save with Ctrl+S or Cmd+S
-      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault();
-        saveForm();
-      }
-    };
-    
-    document.addEventListener('keydown', handleKeyDown);
-    
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [saveForm]);
-
-  const renderActiveSection = () => {
-    if (previewMode) {
-      return <PortoPreview />;
-    }
-
-    switch (activeSection) {
-      case "templates":
-        return <PortoFormTemplates />;
-      case "settings":
-        return <PortoSettings />;
-      case "editor":
-      default:
-        return (
-          <div className="flex flex-1 h-full overflow-hidden">
-            <PortoSidebar />
-            <div className="flex-1 flex flex-col relative">
-              <PortoToolbar />
-              <div className="flex-1 overflow-hidden relative">
-                <div className="absolute top-2 right-2 z-10">
-                  <CollaboratorAvatars />
-                </div>
-                <PortoCanvas />
-              </div>
-            </div>
-          </div>
-        );
-    }
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <PortoHeader onOpenAIModal={() => setIsAIModalOpen(true)} />
-      <div className="flex-1 overflow-hidden">
-        {renderActiveSection()}
+    <div className="flex h-screen overflow-hidden">
+      {isCollapsed ? (
+        <div className="w-10 bg-background border-r h-full flex flex-col items-center pt-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="mb-4"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      ) : (
+        <PortoSidebar />
+      )}
+
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="h-14 border-b flex items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            {!isCollapsed && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleSidebar}
+                className="mr-2"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            )}
+            <h1 className="text-lg font-medium">Portico Form Builder</h1>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-sm"
+              onClick={handleOpenAIModal}
+            >
+              AI Assistant
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              className="text-sm"
+              onClick={() => toast.success(`Form with ${elements.length} elements ready to preview`)}
+            >
+              Preview Form
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex-1 bg-gray-100 overflow-auto p-4">
+          <div className="bg-white rounded-lg shadow-sm min-h-full p-4">
+            {elements.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-center p-8">
+                <h2 className="text-xl font-semibold mb-2">Design Your Form</h2>
+                <p className="text-muted-foreground mb-6 max-w-md">
+                  Drag elements from the sidebar or use the AI Assistant to generate a complete form
+                </p>
+                <Button onClick={handleOpenAIModal}>Generate with AI</Button>
+              </div>
+            ) : (
+              <div>
+                {elements.map((element) => (
+                  <div
+                    key={element.id}
+                    className="border rounded-md p-4 mb-4"
+                    style={{
+                      marginLeft: `${element.position.x}px`,
+                      marginTop: `${element.position.y - (element.position.y > 0 ? 50 : 0)}px`,
+                      width: `${element.size.width}px`,
+                    }}
+                  >
+                    {element.type === "header" ? (
+                      <h3 className="text-lg font-semibold">{element.content}</h3>
+                    ) : element.type === "paragraph" ? (
+                      <p>{element.content}</p>
+                    ) : (
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">
+                          {element.label} {element.required && <span className="text-red-500">*</span>}
+                        </label>
+                        <input
+                          type={element.type === "email" ? "email" : "text"}
+                          placeholder={element.placeholder}
+                          className="w-full px-3 py-2 border rounded-md"
+                          disabled
+                        />
+                        {element.helpText && (
+                          <p className="text-xs text-muted-foreground">{element.helpText}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-      
-      <AIAssistantModal
-        isOpen={isAIModalOpen}
-        onClose={() => setIsAIModalOpen(false)}
-      />
+
+      <AIAssistantModal isOpen={isAIModalOpen} onClose={handleCloseAIModal} />
     </div>
   );
 };

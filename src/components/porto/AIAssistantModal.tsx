@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Lightbulb, Bot } from "lucide-react";
+import { AlertCircle, Lightbulb, Bot, Loader2 } from "lucide-react";
 import { useFormCanvas } from "../form-builder/context/FormCanvasContext";
 import { generateFormWithOpenRouter } from "@/services/openrouter-service";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -52,7 +52,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
         console.log("Generated elements:", generatedElements);
         // Pass the generated elements to the form canvas
         handleAddAIElements(generatedElements);
-        toast.success("Form generated successfully");
+        toast.success(`Added ${generatedElements.length} form fields to your canvas`);
         setPrompt("");
         onClose();
       } else {
@@ -80,6 +80,16 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
   const handleUseExamplePrompt = (examplePrompt: string) => {
     setPrompt(examplePrompt);
     setError(null); // Clear any previous errors
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Submit on Ctrl+Enter or Cmd+Enter
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      if (prompt.trim() && !isGenerating) {
+        handleGenerateForm();
+      }
+    }
   };
 
   return (
@@ -110,9 +120,14 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
               id="ai-prompt"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="Describe the form you want to create..."
               className="min-h-[100px]"
+              disabled={isGenerating}
             />
+            <div className="text-xs text-muted-foreground">
+              Press <kbd className="rounded border px-1 py-0.5 bg-muted">Ctrl</kbd> + <kbd className="rounded border px-1 py-0.5 bg-muted">Enter</kbd> to submit
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -128,6 +143,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                     variant="outline"
                     className="w-full justify-start h-auto py-2 text-sm"
                     onClick={() => handleUseExamplePrompt(examplePrompt)}
+                    disabled={isGenerating}
                   >
                     {examplePrompt}
                   </Button>
@@ -138,14 +154,22 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={isGenerating}>
             Cancel
           </Button>
           <Button 
             onClick={handleGenerateForm} 
             disabled={isGenerating || !prompt.trim()}
+            className="gap-2"
           >
-            {isGenerating ? "Generating..." : "Generate Form"}
+            {isGenerating ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>Generate Form</>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

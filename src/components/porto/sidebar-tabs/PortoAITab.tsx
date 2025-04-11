@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Wand2, Sparkles, Lightbulb, MessageSquare, AlertCircle, Bot } from "lucide-react";
+import { Wand2, Sparkles, Lightbulb, MessageSquare, AlertCircle, Bot, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { generateFormWithOpenRouter } from "@/services/openrouter-service";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -15,7 +15,7 @@ export const PortoAITab: React.FC = () => {
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { handleAddAIElements } = useFormCanvas();
+  const { handleAddAIElements, elements } = useFormCanvas();
 
   const handleGenerateForm = async () => {
     if (!prompt.trim()) {
@@ -36,7 +36,7 @@ export const PortoAITab: React.FC = () => {
       if (generatedElements && generatedElements.length > 0) {
         console.log("Generated elements from sidebar:", generatedElements);
         handleAddAIElements(generatedElements);
-        toast.success("Form generated based on your prompt");
+        toast.success(`Added ${generatedElements.length} form fields to your canvas`);
         setPrompt("");
         setError(null);
       } else {
@@ -73,6 +73,16 @@ export const PortoAITab: React.FC = () => {
     "Generate a feedback survey with rating and comment fields"
   ];
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Submit on Ctrl+Enter or Cmd+Enter
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      if (prompt.trim() && !isGenerating) {
+        handleGenerateForm();
+      }
+    }
+  };
+
   return (
     <ScrollArea className="h-full">
       <div className="p-4 space-y-6">
@@ -99,20 +109,28 @@ export const PortoAITab: React.FC = () => {
               placeholder="Describe the form you want to create..."
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={handleKeyDown}
               rows={5}
+              disabled={isGenerating}
             />
+            <div className="text-xs text-muted-foreground">
+              Press <kbd className="rounded border px-1 py-0.5 bg-muted">Ctrl</kbd> + <kbd className="rounded border px-1 py-0.5 bg-muted">Enter</kbd> to submit
+            </div>
           </div>
           
           <Button 
-            className="w-full mt-2" 
+            className="w-full mt-2 gap-2" 
             onClick={handleGenerateForm}
             disabled={isGenerating || !prompt.trim()}
           >
             {isGenerating ? (
-              <>Generating...</>
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Generating...
+              </>
             ) : (
               <>
-                <Wand2 className="h-4 w-4 mr-2" />
+                <Wand2 className="h-4 w-4" />
                 Generate Form
               </>
             )}
@@ -120,28 +138,37 @@ export const PortoAITab: React.FC = () => {
         </div>
         
         <Separator />
-        
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Lightbulb className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-medium">AI Suggestions</h3>
-          </div>
-          
-          <div className="space-y-2">
-            {formSuggestions.map((suggestion, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                className="w-full justify-start h-auto py-3 text-sm"
-                onClick={() => handleSuggestionClick(suggestion)}
-              >
-                {suggestion}
-              </Button>
-            ))}
-          </div>
-        </div>
-        
-        <Separator />
+
+        {elements.length > 0 && (
+          <>
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-medium">Smart Suggestions</h3>
+              </div>
+              
+              <p className="text-xs text-muted-foreground mb-2">
+                Based on your current form with {elements.length} fields, you might want to add:
+              </p>
+              
+              <div className="space-y-2">
+                {formSuggestions.map((suggestion, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    className="w-full justify-start h-auto py-3 text-sm"
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    disabled={isGenerating}
+                  >
+                    {suggestion}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            
+            <Separator />
+          </>
+        )}
         
         <div>
           <div className="flex items-center gap-2 mb-3">
@@ -156,6 +183,7 @@ export const PortoAITab: React.FC = () => {
                 variant="outline"
                 className="w-full justify-start h-auto py-3 text-sm"
                 onClick={() => handleSuggestionClick(examplePrompt)}
+                disabled={isGenerating}
               >
                 {examplePrompt}
               </Button>
