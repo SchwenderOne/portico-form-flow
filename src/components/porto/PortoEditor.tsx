@@ -2,15 +2,17 @@
 import React, { useState } from "react";
 import { PortoSidebar } from "./PortoSidebar";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, HelpCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, HelpCircle, PaintBucket } from "lucide-react";
 import { useFormCanvas } from "../form-builder/context/FormCanvasContext";
 import { toast } from "sonner";
 import { AIAssistantModal } from "./AIAssistantModal";
+import { BrandSettingsSheet } from "../form-builder/BrandSettingsSheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export const PortoEditor: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+  const [isBrandSettingsOpen, setIsBrandSettingsOpen] = useState(false);
   const { elements } = useFormCanvas();
 
   const handleOpenAIModal = () => {
@@ -85,6 +87,24 @@ export const PortoEditor: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setIsBrandSettingsOpen(true)}
+                    className="h-8 w-8"
+                  >
+                    <PaintBucket className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Brand Settings
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -183,6 +203,7 @@ export const PortoEditor: React.FC = () => {
       </div>
 
       <AIAssistantModal isOpen={isAIModalOpen} onClose={handleCloseAIModal} />
+      <BrandSettingsSheet open={isBrandSettingsOpen} onOpenChange={setIsBrandSettingsOpen} />
     </div>
   );
 };

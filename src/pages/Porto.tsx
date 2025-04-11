@@ -4,6 +4,8 @@ import { FormCanvasProvider } from "@/components/form-builder/context/FormCanvas
 import { CollaborationProvider } from "@/context/CollaborationContext";
 import { PortoEditor } from "@/components/porto/PortoEditor";
 import { PortoProvider } from "@/components/porto/context/PortoContext";
+import { BrandSettingsProvider } from "@/context/BrandSettingsContext";
+import { BrandSettingsApplier } from "@/components/branding/BrandSettingsApplier";
 import { Toaster } from "@/components/ui/sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -28,15 +30,20 @@ const Porto = () => {
   return (
     <AppLayout>
       <div className="h-[calc(100vh-60px)] w-full overflow-hidden">
-        {/* Wrap everything in the PortoProvider context */}
-        <PortoProvider>
-          <CollaborationProvider formId={formId}>
-            <FormCanvasProvider>
-              <PortoEditor />
-              <Toaster position="top-center" />
-            </FormCanvasProvider>
-          </CollaborationProvider>
-        </PortoProvider>
+        {/* Wrap everything in the BrandSettingsProvider context */}
+        <BrandSettingsProvider>
+          {/* Apply brand settings to CSS variables */}
+          <BrandSettingsApplier />
+          
+          <PortoProvider>
+            <CollaborationProvider formId={formId}>
+              <FormCanvasProvider>
+                <PortoEditor />
+                <Toaster position="top-center" />
+              </FormCanvasProvider>
+            </CollaborationProvider>
+          </PortoProvider>
+        </BrandSettingsProvider>
         
         {showWelcome && (
           <div className="fixed bottom-4 right-4 max-w-md z-50 transition-all duration-500 ease-in-out transform translate-y-0 opacity-100">

@@ -28,10 +28,32 @@ export function BrandSettingsApplier() {
       root.style.setProperty('--primary-rgb', `${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}`);
     }
 
+    // Convert secondary color to HSL
+    const secondaryRgb = hexToRgb(brandSettings.colors.secondary);
+    if (secondaryRgb) {
+      const secondaryHsl = rgbToHsl(secondaryRgb.r, secondaryRgb.g, secondaryRgb.b);
+      root.style.setProperty('--secondary', `${secondaryHsl.h} ${secondaryHsl.s}% ${secondaryHsl.l}%`);
+    }
+
+    // Convert accent color to HSL
+    const accentRgb = hexToRgb(brandSettings.colors.accent);
+    if (accentRgb) {
+      const accentHsl = rgbToHsl(accentRgb.r, accentRgb.g, accentRgb.b);
+      root.style.setProperty('--accent', `${accentHsl.h} ${accentHsl.s}% ${accentHsl.l}%`);
+    }
+
     // Typography variables
     root.style.setProperty('--brand-font-family', brandSettings.typography.fontFamily);
     root.style.setProperty('--brand-heading-size', brandSettings.typography.headingSize);
     root.style.setProperty('--brand-body-size', brandSettings.typography.bodySize);
+
+    // Field style variables
+    root.style.setProperty('--brand-border-radius', brandSettings.fieldStyles.borderRadius);
+    root.style.setProperty('--brand-border-style', brandSettings.fieldStyles.borderStyle);
+    root.style.setProperty('--brand-padding', brandSettings.fieldStyles.padding);
+
+    // Update form element styles
+    root.style.setProperty('--radius', brandSettings.fieldStyles.borderRadius);
 
     // Add the font to the document if it's from Google Fonts
     if (brandSettings.typography.fontFamily && 
@@ -46,14 +68,14 @@ export function BrandSettingsApplier() {
       }
     }
 
-    // Field style variables
-    root.style.setProperty('--brand-border-radius', brandSettings.fieldStyles.borderRadius);
-    root.style.setProperty('--brand-border-style', brandSettings.fieldStyles.borderStyle);
-    root.style.setProperty('--brand-padding', brandSettings.fieldStyles.padding);
-
     // Apply CSS-level font-family directly to make sure fonts take effect immediately
     if (brandSettings.typography.fontFamily) {
       document.body.style.fontFamily = brandSettings.typography.fontFamily;
+    }
+
+    // Update brand identity elements
+    if (brandSettings.identity.brandName) {
+      document.title = brandSettings.identity.brandName;
     }
 
     console.log("Brand settings applied:", brandSettings);
