@@ -4,12 +4,12 @@ import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { 
-  SidebarSeparator,
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger
 } from "@/components/ui/tooltip";
+import { Separator } from "@/components/ui/separator";
 import { ChevronRight } from "lucide-react";
 import { MenuItem } from "./SidebarMenuItems";
 import { BrandSettings } from "@/types/brand";
@@ -73,7 +73,7 @@ const CollapsedSidebar: React.FC<CollapsedSidebarProps> = ({
               ))}
             </div>
             
-            <SidebarSeparator />
+            <Separator className="mx-2" />
             
             <div className="px-2">
               {distributeSection.map((item) => (
@@ -94,7 +94,7 @@ const CollapsedSidebar: React.FC<CollapsedSidebarProps> = ({
               ))}
             </div>
             
-            <SidebarSeparator />
+            <Separator className="mx-2" />
             
             <div className="px-2">
               {analyzeSection.map((item) => (
@@ -115,7 +115,7 @@ const CollapsedSidebar: React.FC<CollapsedSidebarProps> = ({
               ))}
             </div>
             
-            <SidebarSeparator />
+            <Separator className="mx-2" />
             
             <div className="px-2">
               {collaborateSection.map((item) => (
@@ -136,7 +136,7 @@ const CollapsedSidebar: React.FC<CollapsedSidebarProps> = ({
               ))}
             </div>
             
-            <SidebarSeparator />
+            <Separator className="mx-2" />
             
             <div className="px-2">
               {controlSection.map((item) => (
